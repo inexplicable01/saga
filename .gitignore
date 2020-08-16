@@ -2,3 +2,11 @@
 venv/Lib/site-packages/PyQt5/Qt/qml/QtQuick/Dialogs/plugins.qmltypes
 venv/Lib/site-packages/PyQt5/Qt/qml/QtQuick/Dialogs/plugins.qmltypes
 /venv/
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/saga.iml
+.idea/vcs.xml
+blahbahl.txt
+blahblah.py
+.idea/workspace.xml
