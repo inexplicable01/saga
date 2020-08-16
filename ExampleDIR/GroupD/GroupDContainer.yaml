@@ -1,0 +1,16 @@
+containerName: 'GroupD'
+containerId: 'alksdjfkljsdfj'
+inputObjs:
+- R1: R1.txt
+  Container: 'asdfasdf'
+- VideoOutput: LongVideo.mp4
+  Container: 'asdfasdf'
+outputObjs:
+- GroupDGoodies: GroupDGoodies.txt
+  Container: 'asdfasdf'
+- GroupDOutContain: GroupDOutContain.txt
+  Container: 'asdfasdf'
+requiredObjs:
+references:
+mainBranch: Main
+yamlTracking: dictofFrameIDS

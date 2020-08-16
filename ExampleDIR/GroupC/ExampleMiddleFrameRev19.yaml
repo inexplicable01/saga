@@ -1,0 +1,70 @@
+AttachedFiles:
+- commitUTCdatetime: '20200320'
+  dateformat: US
+  db_id: ''
+  file_frame_name: Misc1.txt
+- commitUTCdatetime: '20200320'
+  dateformat: US
+  db_id: ''
+  file_frame_name: Misc2.txt
+FrameInstanceId: 5ea108e94949096d6d324ad0
+FrameName: Middle
+commitMessage: First Commit
+filestrack:
+- commitUTCdatetime: 1587626281.072917
+  db_id: 5ea108e94949096d6d324acf
+  file_frame_name: M1
+  file_name: M1.txt
+  lastEdited: 1587611876.6633823
+  localFilePath: C:\Users\waich\PycharmProjects\Saga\ExampleDIR/GroupC
+  md5: 912ec803b2ce49e4a541068d495ab570
+  style: InputFile
+- commitUTCdatetime: 1587625655.943038
+  db_id: 5ea10677386b6d65e5720392
+  file_frame_name: M2
+  file_name: M2.txt
+  lastEdited: 1587260637.2646847
+  localFilePath: C:\Users\waich\PycharmProjects\Saga\ExampleDIR/GroupC
+  md5: 912ec803b2ce49e4a541068d495ab570
+  style: InputFile
+- commitUTCdatetime: 1587626077.702134
+  db_id: 5ea1081dda27092aec15e26b
+  file_frame_name: R1
+  file_name: R1.txt
+  lastEdited: 1587268824.4823484
+  localFilePath: C:\Users\waich\PycharmProjects\Saga\ExampleDIR/GroupC
+  md5: 018d284ce40192ac196cb1235794c9de
+  style: OutputFile
+- commitUTCdatetime: 1587625655.94801
+  db_id: 5ea10677386b6d65e5720394
+  file_frame_name: MUD
+  file_name: MUD.txt
+  lastEdited: 1587260650.963201
+  localFilePath: C:\Users\waich\PycharmProjects\Saga\ExampleDIR/GroupC
+  md5: a6bb4faacdff9dcdcb6f6e22bc51eac9
+  style: OutputFile
+- commitUTCdatetime: 1587625655.950005
+  db_id: 5ea10677386b6d65e5720395
+  file_frame_name: MAN
+  file_name: MAN.txt
+  lastEdited: 1587260991.7321484
+  localFilePath: C:\Users\waich\PycharmProjects\Saga\ExampleDIR/GroupC
+  md5: 81dc9bdb52d04dc20036dbd8313ed055
+  style: OutputFile
+- commitUTCdatetime: 1587625658.441229
+  db_id: 5ea1067acc164bc2028889da
+  file_frame_name: VideoOutput
+  file_name: LongVideo.mp4
+  lastEdited: 1585452668.323447
+  localFilePath: C:/Users/waich/PycharmProjects/Saga/ExampleDIR/GroupC
+  md5: 64f79e458510f31085f645d4e3972289
+  style: OutputFile
+inlinks:
+- fromFrame: CORE
+  infile: MUD.txt
+- fromFrame: EDL
+  infile: MAN.txt
+outlinks:
+- outfile: R1.txt
+  toFrame: Struct
+parentContainerId: alsjfasdf
