@@ -44,12 +44,12 @@ class Container:
         # # frameYamlfileb = framefs.get(file_id=ObjectId(curframe.FrameInstanceId))
         with open(self.refframe) as file:
             frameRefYaml = yaml.load(file, Loader=yaml.FullLoader)
-        frameRef = Frame(frameRefYaml)
+        frameRef = Frame(frameRefYaml,self.containerworkingfolder)
 
         # allowCommit, changes = self.Container.checkFrame(cframe)
         print(frameRef.FrameName)
         for ContainerObjName, filetrackobj in cframe.filestrack.items():
-            fileb = open(os.path.join(filetrackobj.localFilePath, filetrackobj.file_name), 'rb')
+            fileb = open(os.path.join(self.containerworkingfolder, filetrackobj.file_name), 'rb')
             # Should file be committed?
             commit_file, md5 = self.CheckCommit(filetrackobj, fileb,frameRef)
             if commit_file:
@@ -57,12 +57,13 @@ class Container:
                 storageinfo = fs.put(fileb,
                                      ContainerObjName=filetrackobj.ContainerObjName,
                                      file_name=filetrackobj.file_name,
-                                     localFilePath=filetrackobj.localFilePath,
+                                     localFilePath=self.containerworkingfolder,
                                      lastEdited=filetrackobj.lastEdited
                                      )
                 committed = True
                 filetrackobj.md5 = md5
                 filetrackobj.db_id = storageinfo.__str__()
+                filetrackobj.lastEdited = os.path.getmtime(os.path.join(self.containerworkingfolder, filetrackobj.file_name))
                 filetrackobj.commitUTCdatetime = datetime.timestamp(datetime.utcnow())
 
         if committed:
@@ -91,9 +92,9 @@ class Container:
         if (md5 != frameRef.filestrack[filetrackobj.ContainerObjName].md5):
             return True, md5
         if frameRef.filestrack[filetrackobj.ContainerObjName].lastEdited != os.path.getmtime(
-                os.path.join(filetrackobj.localFilePath, filetrackobj.file_name)):
+                os.path.join(self.containerworkingfolder, filetrackobj.file_name)):
             frameRef.filestrack[filetrackobj.ContainerObjName].lastEdited = os.path.getmtime(
-                os.path.join(filetrackobj.localFilePath, filetrackobj.file_name))
+                os.path.join(self.containerworkingfolder, filetrackobj.file_name))
             return True, md5
         return False, md5
         # Make new Yaml file  some meta data sohould exit in Yaml file
@@ -105,7 +106,7 @@ class Container:
 
         with open(self.refframe) as file:
             fyaml = yaml.load(file, Loader=yaml.FullLoader)
-        ref = Frame(fyaml)
+        ref = Frame(fyaml,self.containerworkingfolder)
         print('ref',ref.FrameName)
         changes = cframe.compareToAnotherFrame(ref, self.filestomonitor)
         # print(len(changes))

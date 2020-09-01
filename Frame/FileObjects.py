@@ -2,12 +2,11 @@ import hashlib
 import os
 
 class FileTrackObj:
-    def __init__(self, ContainerObjName, file_name,localFilePath,style=None,lastEdited=None, md5=None,db_id=None,commitUTCdatetime=None):
+    def __init__(self, ContainerObjName, localfilepath, file_name,style=None,lastEdited=None, md5=None,db_id=None,commitUTCdatetime=None):
         self.ContainerObjName = ContainerObjName
         self.file_name = file_name
-        self.localFilePath = localFilePath
         if  md5 is None:
-            fullpath = os.path.join(localFilePath, file_name)
+            fullpath = os.path.join(localfilepath, file_name)
             fileb = open(fullpath , 'rb')
             md5hash = hashlib.md5(fileb.read())
             md5=md5hash.hexdigest()

@@ -66,8 +66,7 @@ class UI(QMainWindow):
         # path = QFileDialog.getOpenFileName(self, "Open")[0]
         # if path:
         #     print(path)
-        path='C:/Users/waich/LocalGitProjects/saga/ExampleDIR/GroupC/GroupCContainer.yaml'
-
+        path='C:/Users/waich/Projects/ExampleDIR/GroupC/GroupCContainer.yaml'
         self.Container = Container(path)
 
         try:
@@ -75,9 +74,9 @@ class UI(QMainWindow):
                 fyaml = yaml.load(file, Loader=yaml.FullLoader)
         except:
             print(sys.exc_info()[0])
-
-        self.cframe = Frame(fyaml)
-        # print('self.cframe.FrameName')
+        print(self.Container.containerworkingfolder)
+        self.cframe = Frame(fyaml, self.Container.containerworkingfolder)
+        print('self.cframe.FrameName')
         self.framelabel.setText(self.cframe.FrameName)
         # self.revlabel.setText(self.cframe.FrameName)
 

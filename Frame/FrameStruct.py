@@ -12,7 +12,7 @@ from PyQt5.QtCore import *
 
 
 class Frame:
-    def __init__(self, FrameYaml):
+    def __init__(self, FrameYaml, localfilepath):
 
         self.parentContainerId = FrameYaml['parentContainerId']
         self.FrameName = FrameYaml['FrameName']
@@ -23,22 +23,24 @@ class Frame:
         self.outlinks = FrameYaml['outlinks']
         self.AttachedFiles = FrameYaml['AttachedFiles']
         # self.inoutcheck()
-
+        self.localfilepath=localfilepath
         filestrack = {}
         for ftrack in FrameYaml['filestrack']:
-            # print(ftrack)
+
             ContainerObjName = ftrack['ContainerObjName']
 
             filestrack[ContainerObjName] = FileTrackObj(ContainerObjName=ftrack['ContainerObjName'],
                                                        file_name=ftrack['file_name'],
-                                                       localFilePath=ftrack['localFilePath'],
+                                                       localfilepath=self.localfilepath,
                                                        md5=ftrack['md5'],
                                                        style=ftrack['style'],
                                                        db_id=ftrack['db_id'],
                                                        commitUTCdatetime=ftrack['commitUTCdatetime'],
                                                        lastEdited=ftrack['lastEdited']
                                                        )
+            # print(ftrack)
         self.filestrack = filestrack
+        print('self.localfilepath',self.localfilepath)
 
     #        self.misc= misc
 
@@ -50,7 +52,6 @@ class Frame:
         # print('md5',md5)
         fileobj = FileTrackObj(ContainerObjName=ContainerObjName,
                      file_name=os.path.basename(filepath),
-                     localFilePath=os.path.dirname(filepath)
                      )
         # print('fileobj', fileobj)
         self.filestrack[ContainerObjName]=fileobj
@@ -77,9 +78,9 @@ class Frame:
     def addFileTotrack(self, fullpath, ContainerObjName, style):
         [path, file_name] = os.path.split(fullpath)
         if os.path.exists(fullpath):
-            newfiletrackobj = FileTrackObj(localFilePath=path,
-                                           file_name=file_name,
+            newfiletrackobj = FileTrackObj(file_name=file_name,
                                            ContainerObjName=ContainerObjName,
+                                           localfilepath=self.localfilepath,
                                            style=style,
                                            lastEdited=os.path.getmtime(fullpath) )
 
@@ -123,7 +124,6 @@ class Frame:
 
     def updateFrame(self, filestomonitor):
         for ContainerObjName in filestomonitor:
-
             ##  Is ContainerObjName in Frame, , if yes
             ##
             if ContainerObjName not in self.filestrack.keys():
@@ -134,16 +134,15 @@ class Frame:
                     self.cframe.add_fileTrack(path, ContainerObjName, 'Style')
                     continue
             ## Does the file exist?
-            path = self.filestrack[ContainerObjName].localFilePath + '/' + self.filestrack[ContainerObjName].file_name
+            # print('self.localfilepath', self.localfilepath)
+            path = self.localfilepath + '/' + self.filestrack[ContainerObjName].file_name
             if not os.path.exists(path):
                 # if not, go find a new file to track
-                print('asdf')
                 path = QFileDialog.getOpenFileName(self, "Open")[0]
                 if path:
                     self.cframe.add_fileTrack(path, ContainerObjName, 'Style')
                     # reassign key contrainobj with new fileobj
                     continue
-
             fileb = open(path, 'rb')
             md5hash = hashlib.md5(fileb.read())
             md5 = md5hash.hexdigest()
