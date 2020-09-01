@@ -7,6 +7,14 @@ venv/Lib/site-packages/PyQt5/Qt/qml/QtQuick/Dialogs/plugins.qmltypes
 .idea/modules.xml
 .idea/saga.iml
 .idea/vcs.xml
-blahbahl.txt
-blahblah.py
+garbage/blahbahl.txt
+garbage/blahblah.py
 .idea/workspace.xml
+garbage/ExampleMiddleFrameRev20.yaml
+garbage/
+Frame/__pycache__/FrameStruct.cpython-37.pyc
+Frame/__pycache__/FileObjects.cpython-37.pyc
+Frame/__pycache__/Container.cpython-37.pyc
+Frame/__pycache__/commit.cpython-37.pyc
+Frame/__pycache__/FrameStruct.cpython-37.pyc
+garbage/ExampleMiddleFrameRev20.yaml

@@ -1,34 +1,20 @@
+import hashlib
 import os
 import yaml
-import hashlib
+from Frame.FileObjects import FileTrackObj
+import time
+from PyQt5.QtWidgets import *
+from PyQt5 import uic
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 
-class Container:
-    def __init__(self, containerName,containerId,inputObjs,outputObjs,requiredObjs,references,mainBranch,yamlTracking):
-        self.containerName=containerName
-        self.containerId=containerId
-        self.inputObjs=inputObjs
-        self.outputObjs=outputObjs
-        self.requiredObjs=requiredObjs
-        self.references=references
-        self.mainBranch=mainBranch
-        self.yamlTracking=yamlTracking
 
-    # def readYaml(containeryaml):
-    #          __init__(containerName=containeryaml['containerName'],
-    #                        containerId=containeryaml['containerId'],
-    #                        inputLinks=containeryaml['inputLinks'],
-    #                        outputLinks=containeryaml['outputLinks'],
-    #                        requiredFiles=containeryaml['requiredFiles'],
-    #                        references=containeryaml['references'],
-    #                        mainBranch=containeryaml['mainBranch'],
-    #                        yamlTracking=containeryaml['yamlTracking'])
-    #     return self
 
 
 class Frame:
     def __init__(self, FrameYaml):
 
-        self.parentContainerId = 'alsjfasdf'
+        self.parentContainerId = FrameYaml['parentContainerId']
         self.FrameName = FrameYaml['FrameName']
         self.FrameInstanceId = FrameYaml['FrameInstanceId']
         self.commitMessage = FrameYaml['commitMessage']
@@ -41,9 +27,9 @@ class Frame:
         filestrack = {}
         for ftrack in FrameYaml['filestrack']:
             # print(ftrack)
-            file_frame_name = ftrack['file_frame_name']
+            ContainerObjName = ftrack['ContainerObjName']
 
-            filestrack[file_frame_name] = FileTrackObj(file_frame_name=ftrack['file_frame_name'],
+            filestrack[ContainerObjName] = FileTrackObj(ContainerObjName=ftrack['ContainerObjName'],
                                                        file_name=ftrack['file_name'],
                                                        localFilePath=ftrack['localFilePath'],
                                                        md5=ftrack['md5'],
@@ -56,8 +42,18 @@ class Frame:
 
     #        self.misc= misc
 
-    def add_fileTrack(self, FileTrackObj):
-        self.filestrack.append(FileTrackObj)
+    def add_fileTrack(self, filepath,ContainerObjName):
+
+        fileb = open(filepath, 'rb')
+        md5hash = hashlib.md5(fileb.read())
+        md5 = md5hash.hexdigest()
+        # print('md5',md5)
+        fileobj = FileTrackObj(ContainerObjName=ContainerObjName,
+                     file_name=os.path.basename(filepath),
+                     localFilePath=os.path.dirname(filepath)
+                     )
+        # print('fileobj', fileobj)
+        self.filestrack[ContainerObjName]=fileobj
 
     def add_inlinks(self, inlinks):
         self.inlinks.append(inlinks)
@@ -77,32 +73,28 @@ class Frame:
             filestocheck.append(filetrackobj['file_name'])
         return filestocheck
 
-    # def inoutcheck(self):
-    #     for inlink in self.inlinks:
-    #         # print(inlink)
-    #     for outlink in self.outlinks:
-    #         # print(outlink)
 
-    def addFileTotrack(self, fullpath, file_frame_name, style):
+    def addFileTotrack(self, fullpath, ContainerObjName, style):
         [path, file_name] = os.path.split(fullpath)
         if os.path.exists(fullpath):
             newfiletrackobj = FileTrackObj(localFilePath=path,
                                            file_name=file_name,
-                                           file_frame_name=file_frame_name,
+                                           ContainerObjName=ContainerObjName,
                                            style=style,
-                                           lastEdited=os.path.getmtime(path) )
+                                           lastEdited=os.path.getmtime(fullpath) )
 
-            self.filestrack[file_frame_name] = newfiletrackobj
+            self.filestrack[ContainerObjName] = newfiletrackobj
         else:
             raise(fullpath + ' does not exist')
 
 
-    def writeoutFrameYaml(self, outyaml):
+    def writeoutFrameYaml(self, yamlfn):
+        outyaml = open(yamlfn, 'w')
         dictout = {}
         for key, value in vars(self).items():
             if 'filestrack' == key:
                 filestrack = []
-                for file_frame_name, filetrackobj in value.items():
+                for ContainerObjName, filetrackobj in value.items():
                     filestrack.append(filetrackobj.yamlify())
                 dictout[key] = filestrack
             else:
@@ -111,35 +103,54 @@ class Frame:
         yaml.dump(dictout, outyaml)
         outyaml.close()
 
+    def compareToAnotherFrame(self, frame2,filestomonitor):
+        changes = []
+        # print(self.filestrack.keys())
+        # print(frame2.filestrack.keys())
+        for ContainerObjName in filestomonitor:
+            if ContainerObjName not in self.filestrack.keys():
+                changes.append({'ContainerObjName' :ContainerObjName, 'reason':'missing'})
+                continue
+            if self.filestrack[ContainerObjName].md5 != frame2.filestrack[ContainerObjName].md5:
+                changes.append({'ContainerObjName' :ContainerObjName, 'reason':'MD5 Changed'})
+                print('MD5 Changed')
+                continue
+            if self.filestrack[ContainerObjName].lastEdited != frame2.filestrack[ContainerObjName].lastEdited:
+                changes.append({'ContainerObjName':ContainerObjName, 'reason':'DateChangeOnly'})
+                print('Date changed without Md5 changin')
+                continue
+        return changes
 
-class FileTrackObj:
-    def __init__(self, file_frame_name, file_name,localFilePath,style,lastEdited=None, md5=None,db_id=None,commitUTCdatetime=None):
-        self.file_frame_name = file_frame_name
-        self.file_name = file_name
-        self.localFilePath = localFilePath
-        if  md5 is None:
-            fullpath = os.path.join(localFilePath, file_name)
-            fileb = open(fullpath , 'rb')
+    def updateFrame(self, filestomonitor):
+        for ContainerObjName in filestomonitor:
+
+            ##  Is ContainerObjName in Frame, , if yes
+            ##
+            if ContainerObjName not in self.filestrack.keys():
+                # if no, go find file
+                print(self.filestrack.keys(),ContainerObjName)
+                path = QFileDialog.getOpenFileName(self, "Open")[0]
+                if path:
+                    self.cframe.add_fileTrack(path, ContainerObjName, 'Style')
+                    continue
+            ## Does the file exist?
+            path = self.filestrack[ContainerObjName].localFilePath + '/' + self.filestrack[ContainerObjName].file_name
+            if not os.path.exists(path):
+                # if not, go find a new file to track
+                print('asdf')
+                path = QFileDialog.getOpenFileName(self, "Open")[0]
+                if path:
+                    self.cframe.add_fileTrack(path, ContainerObjName, 'Style')
+                    # reassign key contrainobj with new fileobj
+                    continue
+
+            fileb = open(path, 'rb')
             md5hash = hashlib.md5(fileb.read())
-            md5=md5hash.hexdigest()
-        self.lastEdited= lastEdited#
-        self.md5 = md5
-        self.style = style
-        self.db_id = db_id
-        self.commitUTCdatetime = commitUTCdatetime
-
-    def yamlify(self):
-        dictout = {}
-        for key, value in vars(self).items():
-            dictout[key] = value
-        return dictout
-
-class InputFileObj(FileTrackObj):
-    def __init__(self, file_frame_name, file_name,localFilePath,style,fromContainerId,md5=None,db_id=None,commitUTCdatetime=None):
-        super().__init__(self, file_frame_name, file_name,localFilePath,style,md5,db_id,commitUTCdatetime)
-        self.fromContainerId=fromContainerId
-
-class OutFileObj(FileTrackObj):
-    def __init__(self, file_frame_name, file_name,localFilePath,style,toContainerID,md5=None,db_id=None,commitUTCdatetime=None):
-        super().__init__(self, file_frame_name, file_name,localFilePath,style,md5,db_id,commitUTCdatetime)
-        self.toContainerID=toContainerID
+            md5 = md5hash.hexdigest()
+            # calculate md5 of file, if md5 has changed, update md5
+            if md5 != self.filestrack[ContainerObjName].md5:
+                self.filestrack[ContainerObjName].md5 = md5
+                self.filestrack[ContainerObjName].lastEdited = os.path.getmtime(path)
+            # if file has been updated, update last edited
+            if os.path.getmtime(path) != self.filestrack[ContainerObjName].lastEdited:
+                self.filestrack[ContainerObjName].lastEdited = os.path.getmtime(path)

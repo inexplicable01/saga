@@ -17,8 +17,8 @@
    <widget class="QGraphicsView" name="frameView">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>130</y>
+      <x>60</x>
+      <y>250</y>
       <width>441</width>
       <height>301</height>
      </rect>
@@ -40,8 +40,8 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>90</y>
+      <x>60</x>
+      <y>110</y>
       <width>211</width>
       <height>31</height>
      </rect>
@@ -53,8 +53,8 @@
    <widget class="QPushButton" name="commitBttn">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>470</y>
+      <x>60</x>
+      <y>650</y>
       <width>171</width>
       <height>61</height>
      </rect>
@@ -66,9 +66,9 @@
    <widget class="QGraphicsView" name="graphicsView_2">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>580</x>
       <y>490</y>
-      <width>581</width>
+      <width>421</width>
       <height>221</height>
      </rect>
     </property>
@@ -76,7 +76,7 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>580</x>
       <y>460</y>
       <width>111</width>
       <height>16</height>
@@ -86,27 +86,79 @@
      <string>Container History</string>
     </property>
    </widget>
-   <widget class="QPlainTextEdit" name="frameText">
-    <property name="geometry">
-     <rect>
-      <x>530</x>
-      <y>20</y>
-      <width>471</width>
-      <height>341</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QPushButton" name="refreshBttn">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>540</y>
+      <x>60</x>
+      <y>570</y>
       <width>171</width>
       <height>61</height>
      </rect>
     </property>
     <property name="text">
      <string>Refresh</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="framelabel">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>150</y>
+      <width>181</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QTextBrowser" name="frametextBrowser">
+    <property name="geometry">
+     <rect>
+      <x>590</x>
+      <y>31</y>
+      <width>361</width>
+      <height>341</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="frameName">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>160</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Frame Name</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="staticrev">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>160</y>
+      <width>55</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Rev</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="revlabel">
+    <property name="geometry">
+     <rect>
+      <x>380</x>
+      <y>160</y>
+      <width>55</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
   </widget>
