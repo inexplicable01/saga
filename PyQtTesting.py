@@ -27,6 +27,8 @@ class UI(QMainWindow):
         self.commitBttn.setEnabled(False)
         self.commitBttn.clicked.connect(self.commit)
 
+        self.commitmsgEdit.setDisabled(True)
+
         # self.frametextBrowser.append('here I am')
         self.show()
 
@@ -34,6 +36,7 @@ class UI(QMainWindow):
         try:
             allowCommit, changes = self.Container.checkFrame(self.cframe)
             self.commitBttn.setEnabled(allowCommit)
+            self.commitmsgEdit.setDisabled(not allowCommit)
             # print('c',changes)
             changesarr=[]
             for change in changes:
@@ -50,12 +53,22 @@ class UI(QMainWindow):
             print(err)
 
     def commit(self):
-        self.cframe, committed = self.Container.commit(self.cframe)
+        # print(self.commitmsgEdit.toPlainText() + str())
+        error_dialog = QErrorMessage()
+        # print()
+        if len(self.commitmsgEdit.toPlainText())<=7:
+            error_dialog.showMessage('You need to put in a commit message longer than 8 characters')
+            error_dialog.exec_()
+            return
+            # return
+        self.cframe, committed = self.Container.commit(self.cframe,self.commitmsgEdit.toPlainText())
         if committed:
             self.Container.save()
             self.framelabel.setText(self.cframe.FrameName)
             self.checkdelta()
             self.frametextBrowser.clear()
+            self.commithist.clear()
+            self.commithist.append(self.Container.commithistory())
 
     def printToFrameText(self,changes):
         self.frametextBrowser.append(self.Container.printDelta(changes))
@@ -78,9 +91,11 @@ class UI(QMainWindow):
         self.cframe = Frame(fyaml, self.Container.containerworkingfolder)
         print('self.cframe.FrameName')
         self.framelabel.setText(self.cframe.FrameName)
-        # self.revlabel.setText(self.cframe.FrameName)
 
-        print(path)
+        # self.commithist.setText(self.Container.commitMessage)
+        # self.Container.commithistory()
+        self.commithist.append(self.Container.commithistory())
+        # print()
 
         scene = QGraphicsScene()
         boxwidth= 40

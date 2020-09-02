@@ -22,13 +22,17 @@ class Frame:
         self.inlinks = FrameYaml['inlinks']
         self.outlinks = FrameYaml['outlinks']
         self.AttachedFiles = FrameYaml['AttachedFiles']
+        try:
+            self.commitUTCdatetime = FrameYaml['commitUTCdatetime']
+        except:
+            self.commitUTCdatetime = 1587625655.939034
         # self.inoutcheck()
         self.localfilepath=localfilepath
         filestrack = {}
         for ftrack in FrameYaml['filestrack']:
 
             ContainerObjName = ftrack['ContainerObjName']
-
+            print('ftrack',ftrack)
             filestrack[ContainerObjName] = FileTrackObj(ContainerObjName=ftrack['ContainerObjName'],
                                                        file_name=ftrack['file_name'],
                                                        localfilepath=self.localfilepath,

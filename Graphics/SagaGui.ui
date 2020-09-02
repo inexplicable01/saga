@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1050</width>
+    <width>1487</width>
     <height>823</height>
    </rect>
   </property>
@@ -17,8 +17,8 @@
    <widget class="QGraphicsView" name="frameView">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>250</y>
+      <x>50</x>
+      <y>130</y>
       <width>441</width>
       <height>301</height>
      </rect>
@@ -28,7 +28,7 @@
     <property name="geometry">
      <rect>
       <x>50</x>
-      <y>20</y>
+      <y>10</y>
       <width>191</width>
       <height>41</height>
      </rect>
@@ -40,8 +40,8 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>110</y>
+      <x>50</x>
+      <y>60</y>
       <width>211</width>
       <height>31</height>
      </rect>
@@ -53,8 +53,8 @@
    <widget class="QPushButton" name="commitBttn">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>650</y>
+      <x>50</x>
+      <y>670</y>
       <width>171</width>
       <height>61</height>
      </rect>
@@ -68,7 +68,7 @@
      <rect>
       <x>580</x>
       <y>490</y>
-      <width>421</width>
+      <width>851</width>
       <height>221</height>
      </rect>
     </property>
@@ -77,20 +77,20 @@
     <property name="geometry">
      <rect>
       <x>580</x>
-      <y>460</y>
-      <width>111</width>
+      <y>160</y>
+      <width>371</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string>Container History</string>
+     <string>Container Commit History</string>
     </property>
    </widget>
    <widget class="QPushButton" name="refreshBttn">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>570</y>
+      <x>310</x>
+      <y>450</y>
       <width>171</width>
       <height>61</height>
      </rect>
@@ -102,8 +102,8 @@
    <widget class="QLabel" name="framelabel">
     <property name="geometry">
      <rect>
-      <x>150</x>
-      <y>150</y>
+      <x>130</x>
+      <y>100</y>
       <width>181</width>
       <height>31</height>
      </rect>
@@ -118,15 +118,15 @@
       <x>590</x>
       <y>31</y>
       <width>361</width>
-      <height>341</height>
+      <height>71</height>
      </rect>
     </property>
    </widget>
    <widget class="QLabel" name="frameName">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>160</y>
+      <x>50</x>
+      <y>110</y>
       <width>81</width>
       <height>16</height>
      </rect>
@@ -138,8 +138,8 @@
    <widget class="QLabel" name="staticrev">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>160</y>
+      <x>360</x>
+      <y>110</y>
       <width>55</width>
       <height>16</height>
      </rect>
@@ -151,8 +151,8 @@
    <widget class="QLabel" name="revlabel">
     <property name="geometry">
      <rect>
-      <x>380</x>
-      <y>160</y>
+      <x>370</x>
+      <y>110</y>
       <width>55</width>
       <height>16</height>
      </rect>
@@ -161,13 +161,59 @@
      <string/>
     </property>
    </widget>
+   <widget class="QTextBrowser" name="commithist">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>190</y>
+      <width>891</width>
+      <height>251</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>580</x>
+      <y>460</y>
+      <width>111</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Container Map</string>
+    </property>
+   </widget>
+   <widget class="QTextEdit" name="commitmsgEdit">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>570</y>
+      <width>421</width>
+      <height>87</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>540</y>
+      <width>421</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Commit Message</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1050</width>
+     <width>1487</width>
      <height>26</height>
     </rect>
    </property>
