@@ -12,7 +12,7 @@ import time
 from datetime import datetime
 
 fileobjtypes = ['inputObjs', 'requiredObjs', 'outputObjs']
-Rev = 'Rev'
+Rev = '/Rev'
 
 class Container:
     def __init__(self, containerfn):
@@ -111,7 +111,6 @@ class Container:
 
     def checkFrame(self, cframe):
         allowCommit = False
-
         cframe.updateFrame(self.filestomonitor)
 
         with open(self.refframe) as file:

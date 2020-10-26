@@ -38,7 +38,7 @@ class Frame:
                                                        localfilepath=self.localfilepath,
                                                        md5=ftrack['md5'],
                                                        style=ftrack['style'],
-                                                       db_id=ftrack['db_id'],
+                                                       file_id=ftrack['file_id'],
                                                        commitUTCdatetime=ftrack['commitUTCdatetime'],
                                                        lastEdited=ftrack['lastEdited']
                                                        )

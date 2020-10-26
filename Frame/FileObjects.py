@@ -2,7 +2,7 @@ import hashlib
 import os
 
 class FileTrackObj:
-    def __init__(self, ContainerObjName, localfilepath, file_name,style=None,lastEdited=None, md5=None,db_id=None,commitUTCdatetime=None):
+    def __init__(self, ContainerObjName, localfilepath, file_name,style=None,lastEdited=None, md5=None,file_id=None,commitUTCdatetime=None):
         self.ContainerObjName = ContainerObjName
         self.file_name = file_name
         if  md5 is None:
@@ -13,7 +13,7 @@ class FileTrackObj:
         self.lastEdited= lastEdited#
         self.md5 = md5
         self.style = style
-        self.db_id = db_id
+        self.file_id = file_id
         self.commitUTCdatetime = commitUTCdatetime
 
     def yamlify(self):
@@ -26,11 +26,11 @@ class FileTrackObj:
         print(self.md5)
 
 class InputFileObj(FileTrackObj):
-    def __init__(self, ContainerObjName, file_name,localFilePath,style,fromContainerId,md5=None,db_id=None,commitUTCdatetime=None):
-        super().__init__(self, ContainerObjName, file_name,localFilePath,style,md5,db_id,commitUTCdatetime)
+    def __init__(self, ContainerObjName, file_name,localFilePath,style,fromContainerId,md5=None,file_id=None,commitUTCdatetime=None):
+        super().__init__(self, ContainerObjName, file_name,localFilePath,style,md5,file_id,commitUTCdatetime)
         self.fromContainerId=fromContainerId
 
 class OutFileObj(FileTrackObj):
-    def __init__(self, ContainerObjName, file_name,localFilePath,style,toContainerID,md5=None,db_id=None,commitUTCdatetime=None):
-        super().__init__(self, ContainerObjName, file_name,localFilePath,style,md5,db_id,commitUTCdatetime)
+    def __init__(self, ContainerObjName, file_name,localFilePath,style,toContainerID,md5=None,file_id=None,commitUTCdatetime=None):
+        super().__init__(self, ContainerObjName, file_name,localFilePath,style,md5,file_id,commitUTCdatetime)
         self.toContainerID=toContainerID

@@ -79,11 +79,11 @@ class UI(QMainWindow):
         # path = QFileDialog.getOpenFileName(self, "Open")[0]
         # if path:
         #     print(path)
-        path='C:/Users/waich/Projects/ExampleDIR/GroupC/GroupCContainer.yaml'
+        path='C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
         self.Container = Container(path)
-
+        refframe = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/Main/Rev1.yaml'
         try:
-            with open(self.Container.refframe) as file:
+            with open(refframe) as file:
                 fyaml = yaml.load(file, Loader=yaml.FullLoader)
         except:
             print(sys.exc_info()[0])
