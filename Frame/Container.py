@@ -16,11 +16,11 @@ BASE = "http://127.0.0.1:5000/"
 from datetime import datetime
 
 fileobjtypes = ['inputObjs', 'requiredObjs', 'outputObjs']
-Rev = '/Rev'
+Rev = 'Rev'
 
 
 class Container:
-    def __init__(self, containerfn):
+    def __init__(self, containerfn,currentbranch,revnum):
         self.containerworkingfolder = os.path.dirname(containerfn)
         with open(containerfn) as file:
             containeryaml = yaml.load(file, Loader=yaml.FullLoader)
@@ -31,8 +31,9 @@ class Container:
         self.outputObjs = containeryaml['outputObjs']
         self.requiredObjs = containeryaml['requiredObjs']
         self.references = containeryaml['references']
-        self.yamlTracking = containeryaml['yamlTracking']
-
+        # self.yamlTracking = containeryaml['yamlTracking']
+        self.currentbranch = currentbranch
+        self.revnum = revnum
         self.filestomonitor = []
         for typeindex, fileobjtype in enumerate(fileobjtypes):
             # print(typeindex, fileobjtype)
@@ -40,7 +41,7 @@ class Container:
                 self.filestomonitor.append(fileObj['ContainerObjName'])
         # print(self.yamlTracking['currentbranch'] + Rev  + str(self.yamlTracking['rev']) +".yaml")
         self.refframe = os.path.join(self.containerworkingfolder,
-                                     self.yamlTracking['currentbranch'] + Rev + str(self.yamlTracking['rev']) + ".yaml")
+                                     currentbranch +'/'+ Rev + revnum + ".yaml")
 
     def commit(self, cframe: Frame, commitmsg):
         committed = False
@@ -56,13 +57,13 @@ class Container:
         filesToUpload = {}
         updateinfo = {}
         for ContainerObjName, filetrackobj in cframe.filestrack.items():
-            fileb = open(os.path.join(self.containerworkingfolder, filetrackobj.file_name), 'rb')
+            filepath = os.path.join(self.containerworkingfolder, filetrackobj.file_name)
             # Should file be committed?
-            commit_file, md5 = self.CheckCommit(filetrackobj, fileb, frameRef)
+            commit_file, md5 = self.CheckCommit(filetrackobj, filepath, frameRef)
             committime = datetime.timestamp(datetime.utcnow())
             if commit_file:
                 # new file needs to be committed as the new local file is not the same as previous md5
-                filesToUpload[ContainerObjName] = fileb
+                filesToUpload[ContainerObjName] = open(filepath,'rb')
                 updateinfo[ContainerObjName] = {
                     'file_name': filetrackobj.file_name,
                     'lastEdited': filetrackobj.lastEdited,
@@ -72,13 +73,14 @@ class Container:
 
         updateinfojson = json.dumps(updateinfo)
         print (updateinfo)
+        # response = requests.post(BASE + 'FRAMES',files=filesToUpload)
         response = requests.post(BASE + 'FRAMES',
-                                 data={'containerID': self.containerId, 'branch': self.yamlTracking['currentbranch'],
+                                 data={'containerID': self.containerId, 'branch': self.currentbranch,
                                        'updateinfo': updateinfojson, 'commitmsg':commitmsg},  files=filesToUpload)
         print(response)
         if response.headers['commitsuccess']:
             # Updating new frame information
-            frameyamlfn = os.path.join(self.containerId, self.yamlTracking['currentbranch'], response.headers['file_name'])
+            frameyamlfn = os.path.join(self.containerId, self.currentbranch, response.headers['file_name'])
             open(frameyamlfn, 'wb').write(response.content)
             # Frame(frameyaml,None)
             with open(frameyamlfn) as file:
@@ -92,7 +94,8 @@ class Container:
         else:
             return cframe, response.headers['commitsuccess']
 
-    def CheckCommit(self, filetrackobj, fileb, frameRef):
+    def CheckCommit(self, filetrackobj, filepath, frameRef):
+        fileb = open(filepath, 'rb')
         md5hash = hashlib.md5(fileb.read())
         md5 = md5hash.hexdigest()
         if filetrackobj.ContainerObjName not in frameRef.filestrack.keys():
@@ -123,8 +126,8 @@ class Container:
 
     def commithistory(self):
         historyStr = ''
-        # glob.glob()
-        yamllist = glob.glob(self.containerworkingfolder + '/' + self.yamlTracking['currentbranch'] + '*.yaml')
+        # glob.glob() +'/'+ Rev + revnum + ".yaml"
+        yamllist = glob.glob(self.containerworkingfolder + '/' + self.currentbranch + '*.yaml')
         for yamlfn in yamllist:
             # print(yamlfn)
             with open(yamlfn) as file:
@@ -145,8 +148,7 @@ class Container:
     def save(self):
         dictout = {}
         outyaml = open(os.path.join(self.containerworkingfolder, self.containerfn), 'w')
-        keytosave = ['containerName', 'containerId', 'outputObjs', 'inputObjs', 'requiredObjs', 'references',
-                     'yamlTracking']
+        keytosave = ['containerName', 'containerId', 'outputObjs', 'inputObjs', 'requiredObjs', 'references']
         for key, value in vars(self).items():
             if key in keytosave:
                 dictout[key] = value

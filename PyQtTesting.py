@@ -91,10 +91,10 @@ class UI(QMainWindow):
         # if path:
         #     print(path)
         path='C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
-        self.Container = Container(path)
-        refframe = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/Main/Rev3.yaml'
+        self.Container = Container(path, 'Main', '1')
+        # refframe = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/Main/Rev3.yaml'
         try:
-            with open(refframe) as file:
+            with open(self.Container.refframe) as file:
                 fyaml = yaml.load(file, Loader=yaml.FullLoader)
         except:
             print(sys.exc_info()[0])
