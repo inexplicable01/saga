@@ -8,15 +8,20 @@ import os
 import yaml
 import glob
 import time
+import requests
+import json
 
+# BASE = "http://fatpanda1985.pythonanywhere.com/"
+BASE = "http://127.0.0.1:5000/"
 from datetime import datetime
 
 fileobjtypes = ['inputObjs', 'requiredObjs', 'outputObjs']
 Rev = '/Rev'
 
+
 class Container:
     def __init__(self, containerfn):
-        self.containerworkingfolder= os.path.dirname(containerfn)
+        self.containerworkingfolder = os.path.dirname(containerfn)
         with open(containerfn) as file:
             containeryaml = yaml.load(file, Loader=yaml.FullLoader)
         self.containerfn = containerfn
@@ -28,73 +33,66 @@ class Container:
         self.references = containeryaml['references']
         self.yamlTracking = containeryaml['yamlTracking']
 
-        self.filestomonitor =[]
+        self.filestomonitor = []
         for typeindex, fileobjtype in enumerate(fileobjtypes):
             # print(typeindex, fileobjtype)
             for fileindex, fileObj in enumerate(getattr(self, fileobjtype)):
                 self.filestomonitor.append(fileObj['ContainerObjName'])
         # print(self.yamlTracking['currentbranch'] + Rev  + str(self.yamlTracking['rev']) +".yaml")
-        self.refframe = os.path.join(self.containerworkingfolder,self.yamlTracking['currentbranch'] + Rev + str(self.yamlTracking['rev']) +".yaml")
+        self.refframe = os.path.join(self.containerworkingfolder,
+                                     self.yamlTracking['currentbranch'] + Rev + str(self.yamlTracking['rev']) + ".yaml")
 
-    def commit(self,cframe : Frame, commitmsg):
+    def commit(self, cframe: Frame, commitmsg):
         committed = False
-        client = MongoClient()
-        db = client.SagaDataBase
-        framedb = client.framedb
-        fs = gridfs.GridFS(db)
-        framefs = gridfs.GridFS(framedb)
-        # print('here')
+
         # # frameYamlfileb = framefs.get(file_id=ObjectId(curframe.FrameInstanceId))
         with open(self.refframe) as file:
             frameRefYaml = yaml.load(file, Loader=yaml.FullLoader)
-        frameRef = Frame(frameRefYaml,self.containerworkingfolder)
+        frameRef = Frame(frameRefYaml, self.containerworkingfolder)
 
         # allowCommit, changes = self.Container.checkFrame(cframe)
         print(frameRef.FrameName)
+
+        filesToUpload = {}
+        updateinfo = {}
         for ContainerObjName, filetrackobj in cframe.filestrack.items():
             fileb = open(os.path.join(self.containerworkingfolder, filetrackobj.file_name), 'rb')
             # Should file be committed?
-            commit_file, md5 = self.CheckCommit(filetrackobj, fileb,frameRef)
+            commit_file, md5 = self.CheckCommit(filetrackobj, fileb, frameRef)
             committime = datetime.timestamp(datetime.utcnow())
             if commit_file:
                 # new file needs to be committed as the new local file is not the same as previous md5
-                storageinfo = fs.put(fileb,
-                                     ContainerObjName=filetrackobj.ContainerObjName,
-                                     file_name=filetrackobj.file_name,
-                                     localFilePath=self.containerworkingfolder,
-                                     lastEdited=filetrackobj.lastEdited
-                                     )
-                committed = True
-                filetrackobj.md5 = md5
-                filetrackobj.db_id = storageinfo.__str__()
-                filetrackobj.lastEdited = os.path.getmtime(os.path.join(self.containerworkingfolder, filetrackobj.file_name))
-                filetrackobj.commitUTCdatetime = committime
+                filesToUpload[ContainerObjName] = fileb
+                updateinfo[ContainerObjName] = {
+                    'file_name': filetrackobj.file_name,
+                    'lastEdited': filetrackobj.lastEdited,
+                    'md5': filetrackobj.md5,
+                    'style': filetrackobj.style,
+                }
 
-        if committed:
-            print('Something washhh updated.')
-
+        updateinfojson = json.dumps(updateinfo)
+        print (updateinfo)
+        response = requests.post(BASE + 'FRAMES',
+                                 data={'containerID': self.containerId, 'branch': self.yamlTracking['currentbranch'],
+                                       'updateinfo': updateinfojson, 'commitmsg':commitmsg},  files=filesToUpload)
+        print(response)
+        if response.headers['commitsuccess']:
             # Updating new frame information
-            newframe = copy.deepcopy(cframe)
-            newframeId = ObjectId()
-            newframe.FrameInstanceId = newframeId.__str__()  # save newframe, write new frame generate new id for new frame
-            self.yamlTracking['rev'] = self.yamlTracking['rev'] +1
-            newrevname = self.yamlTracking['currentbranch'] + Rev + str(self.yamlTracking['rev'])
-            newframe.FrameName = newrevname
-            newframe.commitMessage =commitmsg
-            newframe.commitUTCdatetime = committime
-
+            frameyamlfn = os.path.join(self.containerId, self.yamlTracking['currentbranch'], response.headers['file_name'])
+            open(frameyamlfn, 'wb').write(response.content)
+            # Frame(frameyaml,None)
+            with open(frameyamlfn) as file:
+                frameyaml = yaml.load(file, Loader=yaml.FullLoader)
+            newframe = Frame(frameyaml, self.containerworkingfolder)
             # Write out new frame information
-            newframefullpath = os.path.join(self.containerworkingfolder,newrevname +".yaml")
-            newframe.writeoutFrameYaml(newframefullpath)
-            # The frame file is saved to the frame FS
-            frameYamlfileb = open(newframefullpath, 'rb')
-            framefs.put(frameYamlfileb, _id=newframeId, yamlfile=newrevname +".yaml")
-            self.refframe = newframefullpath
-            return newframe, committed
-        else:
-            return cframe, committed
 
-    def CheckCommit(self,filetrackobj, fileb, frameRef):
+            # The frame file is saved to the frame FS
+            self.refframe = frameyamlfn
+            return newframe, response.headers['commitsuccess']
+        else:
+            return cframe, response.headers['commitsuccess']
+
+    def CheckCommit(self, filetrackobj, fileb, frameRef):
         md5hash = hashlib.md5(fileb.read())
         md5 = md5hash.hexdigest()
         if filetrackobj.ContainerObjName not in frameRef.filestrack.keys():
@@ -115,16 +113,16 @@ class Container:
 
         with open(self.refframe) as file:
             fyaml = yaml.load(file, Loader=yaml.FullLoader)
-        ref = Frame(fyaml,self.containerworkingfolder)
-        print('ref',ref.FrameName)
+        ref = Frame(fyaml, self.containerworkingfolder)
+        print('ref', ref.FrameName)
         changes = cframe.compareToAnotherFrame(ref, self.filestomonitor)
         # print(len(changes))
-        if len(changes)>0:
+        if len(changes) > 0:
             allowCommit = True
         return allowCommit, changes
 
     def commithistory(self):
-        historyStr=''
+        historyStr = ''
         # glob.glob()
         yamllist = glob.glob(self.containerworkingfolder + '/' + self.yamlTracking['currentbranch'] + '*.yaml')
         for yamlfn in yamllist:
@@ -134,20 +132,21 @@ class Container:
             # print(pastYaml)
             pastframe = Frame(pastYaml, self.containerworkingfolder)
             # print(pastframe.commitMessage)
-            historyStr= historyStr +  pastframe.FrameName  + '\t' + pastframe.commitMessage+'\t\t\t\t' + \
-                        time.ctime(pastframe.commitUTCdatetime)+'\t\n'
+            historyStr = historyStr + pastframe.FrameName + '\t' + pastframe.commitMessage + '\t\t\t\t' + \
+                         time.ctime(pastframe.commitUTCdatetime) + '\t\n'
         return historyStr
 
     def printDelta(self, changes):
-        framestr=''
+        framestr = ''
         for change in changes:
-            framestr=framestr+change['ContainerObjName'] + '     ' + change['reason'] +'\n'
+            framestr = framestr + change['ContainerObjName'] + '     ' + change['reason'] + '\n'
         return framestr
 
     def save(self):
         dictout = {}
-        outyaml = open(os.path.join(self.containerworkingfolder, self.containerfn),'w')
-        keytosave = ['containerName','containerId','outputObjs','inputObjs','requiredObjs','references','yamlTracking']
+        outyaml = open(os.path.join(self.containerworkingfolder, self.containerfn), 'w')
+        keytosave = ['containerName', 'containerId', 'outputObjs', 'inputObjs', 'requiredObjs', 'references',
+                     'yamlTracking']
         for key, value in vars(self).items():
             if key in keytosave:
                 dictout[key] = value

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1487</width>
-    <height>823</height>
+    <width>1202</width>
+    <height>691</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -207,13 +207,26 @@
      <string>Commit Message</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="sadbutton">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>20</y>
+      <width>151</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>WhateverButton</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1487</width>
+     <width>1202</width>
      <height>26</height>
     </rect>
    </property>

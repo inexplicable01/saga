@@ -15,7 +15,6 @@ class UI(QMainWindow):
     def __init__(self):
         # self.logf = open("C:\\Users\\waich\\LocalGitProjects\\saga\\error.txt", 'w+')
         super(UI, self).__init__()
-
         uic.loadUi("Graphics/SagaGui.ui", self)
 
         self.fileobjtypes = ['inputObjs', 'requiredObjs', 'outputObjs']
@@ -24,6 +23,10 @@ class UI(QMainWindow):
         # self.refreshBttn.setText('Check Button')
         self.refreshBttn.clicked.connect(self.checkdelta)
 
+        self.counter= True
+        self.sadbutton.setText('New Happy text')
+        self.sadbutton.clicked.connect(self.happyorsad)
+
         self.commitBttn.setEnabled(False)
         self.commitBttn.clicked.connect(self.commit)
 
@@ -31,6 +34,14 @@ class UI(QMainWindow):
 
         # self.frametextBrowser.append('here I am')
         self.show()
+
+    def happyorsad(self):
+        if self.counter:
+            self.sadbutton.setText('HappyText')
+            self.counter=not self.counter
+        else:
+            self.sadbutton.setText('sadText')
+            self.counter=not self.counter
 
     def checkdelta(self):
         try:
@@ -81,7 +92,7 @@ class UI(QMainWindow):
         #     print(path)
         path='C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
         self.Container = Container(path)
-        refframe = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/Main/Rev1.yaml'
+        refframe = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/Main/Rev3.yaml'
         try:
             with open(refframe) as file:
                 fyaml = yaml.load(file, Loader=yaml.FullLoader)
