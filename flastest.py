@@ -3,9 +3,9 @@ import requests
 import yaml
 from Frame.Container import Container
 from Frame.FrameStruct import Frame
-# BASE = "http://fatpanda1985.pythonanywhere.com/"
+BASE = "http://fatpanda1985.pythonanywhere.com/"
 
-BASE = "http://127.0.0.1:5000/"
+# BASE = "http://127.0.0.1:5000/"
 ## BareBones script to download a container
 
 
