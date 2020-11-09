@@ -11,8 +11,7 @@ import time
 import requests
 import json
 
-# BASE = "http://fatpanda1985.pythonanywhere.com/"
-BASE = "http://127.0.0.1:5000/"
+
 from datetime import datetime
 
 fileobjtypes = ['inputObjs', 'requiredObjs', 'outputObjs']
@@ -43,7 +42,7 @@ class Container:
         self.refframe = os.path.join(self.containerworkingfolder,
                                      currentbranch +'/'+ Rev + revnum + ".yaml")
 
-    def commit(self, cframe: Frame, commitmsg):
+    def commit(self, cframe: Frame, commitmsg, BASE):
         committed = False
 
         # # frameYamlfileb = framefs.get(file_id=ObjectId(curframe.FrameInstanceId))

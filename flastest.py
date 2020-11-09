@@ -3,15 +3,15 @@ import requests
 import yaml
 from Frame.Container import Container
 from Frame.FrameStruct import Frame
-# BASE = "http://fatpanda1985.pythonanywhere.com/"
+BASE = "http://fatpanda1985.pythonanywhere.com/"
 
-BASE = "http://127.0.0.1:5000/"
+# BASE = "http://127.0.0.1:5000/"
 ## BareBones script to download a container
 
 
 containerID = 'ContainerC'
 
-response = requests.get(BASE+'CONTAINERS', data={'containerID':containerID})
+response = requests.get(BASE+'CONTAINERS/containerID', data={'containerID':containerID})
 # requests is a python object/class, that sends a http request
 # http request has address, header/body (places where you put small information, what's the request about)
 # requests.get(url, data)
