@@ -9,6 +9,72 @@ from Frame.FileObjects import FileTrackObj
 from Frame.commit import commit
 import os
 import sys
+import requests
+import json
+
+BASE = "http://fatpanda1985.pythonanywhere.com/"
+# BASE = "http://127.0.0.1:5000/"
+headers = ['ID', 'Description', 'Branch name', 'Rev Count']
+
+class TableModel(QAbstractTableModel):
+    def __init__(self, data):
+        super(TableModel, self).__init__()
+        self._data = data
+
+    def data(self, index, role):
+        if role == Qt.DisplayRole:
+            # See below for the nested-list data structure.
+            # .row() indexes into the outer list,
+            # .column() indexes into the sub-list
+            return self._data[index.row()][index.column()]
+
+    # def headerData(self, section, Qt_Orientation,role):
+    #     return headers[section]
+
+    def rowCount(self, index):
+        # The length of the outer list.
+        return len(self._data)
+
+    def columnCount(self, index):
+        # The following takes the first sub-list, and returns
+        # the length (only works if all rows are an equal length)
+        return len(self._data[0])
+
+class ContainerListModel(QAbstractTableModel):
+    def __init__(self, containerinfolist):
+        super(ContainerListModel, self).__init__()
+        containdata=[]
+        for containerid, containvalue in containerinfolist.items():
+            for branch in containvalue['branches']:
+                row = [containerid, containvalue['ContainerDescription'] ,
+                       branch['name'],
+                       branch['revcount']]
+                containdata.append(row)
+        self.containdata = containdata
+
+    def data(self, index, role):
+        if role == Qt.DisplayRole:
+            # See below for the nested-list data structure.
+            # .row() indexes into the outer list,
+            # .column() indexes into the sub-list
+            return self.containdata[index.row()][index.column()]
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return headers[section]
+            # return 'Column {}'.format(section + 1)
+        # if orientation == Qt.Vertical and role == Qt.DisplayRole:
+        #     return 'Row {}'.format(section + 1)
+        # return super().headerData(section, orientation, role)
+
+    def rowCount(self, index):
+        # The length of the outer list.
+        return len(self.containdata)
+
+    def columnCount(self, index):
+        # The following takes the first sub-list, and returns
+        # the length (only works if all rows are an equal length)
+        return len(self.containdata[0])
 
 # Form, Window=uic.loadUiType()
 class UI(QMainWindow):
@@ -22,6 +88,8 @@ class UI(QMainWindow):
         self.openContainerBttn.clicked.connect(self.readcontainer)
         # self.refreshBttn.setText('Check Button')
         self.refreshBttn.clicked.connect(self.checkdelta)
+
+        self.returncontlist.clicked.connect(self.getContainerInfo)
 
         self.counter= True
         self.sadbutton.setText('New Happy text')
@@ -42,6 +110,15 @@ class UI(QMainWindow):
         else:
             self.sadbutton.setText('sadText')
             self.counter=not self.counter
+
+    def getContainerInfo(self):
+        response = requests.get(BASE + 'CONTAINERS/List')
+        print(response.headers['containerinfolist'])
+        self.infodump.append(response.headers['response'])
+        containerinfolist = json.loads(response.headers['containerinfolist'])
+        self.containerlisttable.setModel(ContainerListModel(containerinfolist))
+
+        # self.containerlisttable.setHorizontalHeaderLabels(['asd','asd','asd','df'])
 
     def checkdelta(self):
         try:
@@ -72,7 +149,7 @@ class UI(QMainWindow):
             error_dialog.exec_()
             return
             # return
-        self.cframe, committed = self.Container.commit(self.cframe,self.commitmsgEdit.toPlainText())
+        self.cframe, committed = self.Container.commit(self.cframe,self.commitmsgEdit.toPlainText(), BASE)
         if committed:
             self.Container.save()
             self.framelabel.setText(self.cframe.FrameName)
@@ -91,7 +168,7 @@ class UI(QMainWindow):
         # if path:
         #     print(path)
         path='C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
-        self.Container = Container(path, 'Main', '1')
+        self.Container = Container(path, 'Main', '2')
         # refframe = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/Main/Rev3.yaml'
         try:
             with open(self.Container.refframe) as file:

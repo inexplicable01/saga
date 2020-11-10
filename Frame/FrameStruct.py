@@ -157,3 +157,4 @@ class Frame:
             # if file has been updated, update last edited
             if os.path.getmtime(path) != self.filestrack[ContainerObjName].lastEdited:
                 self.filestrack[ContainerObjName].lastEdited = os.path.getmtime(path)
+# C:\Users\waich\LocalGitProjects\SagaServer\Files\MAN.txt
