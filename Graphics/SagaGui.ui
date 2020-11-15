@@ -37,7 +37,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="Map">
      <attribute name="title">
@@ -96,6 +96,19 @@
       </property>
       <property name="text">
        <string>Container Map</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="addcontainer">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>360</y>
+        <width>311</width>
+        <height>131</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>AddContainer_Testing</string>
       </property>
      </widget>
     </widget>

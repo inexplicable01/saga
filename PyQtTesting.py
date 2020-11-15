@@ -16,6 +16,29 @@ BASE = "http://fatpanda1985.pythonanywhere.com/"
 # BASE = "http://127.0.0.1:5000/"
 headers = ['ID', 'Description', 'Branch name', 'Rev Count']
 
+
+class InputDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.first = QLineEdit(self)
+        self.second = QLineEdit(self)
+        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self);
+
+        layout = QFormLayout(self)
+        layout.addRow("First text", self.first)
+        layout.addRow("Second text", self.second)
+        layout.addWidget(buttonBox)
+
+        buttonBox.accepted.connect(self.accept)
+        buttonBox.rejected.connect(self.reject)
+
+    def getInputs(self):
+        if self.exec_() == QDialog.Accepted:
+            return (self.first.text(), self.second.text())
+
+
+
 class TableModel(QAbstractTableModel):
     def __init__(self, data):
         super(TableModel, self).__init__()
@@ -59,6 +82,7 @@ class ContainerListModel(QAbstractTableModel):
             # .column() indexes into the sub-list
             return self.containdata[index.row()][index.column()]
 
+
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return headers[section]
@@ -83,6 +107,7 @@ class UI(QMainWindow):
         super(UI, self).__init__()
         uic.loadUi("Graphics/SagaGui.ui", self)
 
+
         self.fileobjtypes = ['inputObjs', 'requiredObjs', 'outputObjs']
         self.openContainerBttn.setText('Open Container')
         self.openContainerBttn.clicked.connect(self.readcontainer)
@@ -90,6 +115,10 @@ class UI(QMainWindow):
         self.refreshBttn.clicked.connect(self.checkdelta)
 
         self.returncontlist.clicked.connect(self.getContainerInfo)
+
+        self.containername = 'Default Container Name'
+
+        self.addcontainer.clicked.connect(self.newContainerInfo)
 
         self.counter= True
         self.sadbutton.setText('New Happy text')
@@ -119,6 +148,24 @@ class UI(QMainWindow):
         self.containerlisttable.setModel(ContainerListModel(containerinfolist))
 
         # self.containerlisttable.setHorizontalHeaderLabels(['asd','asd','asd','df'])
+
+    def newContainerInfo(self):
+        inputwindow = InputDialog()
+        inputs = inputwindow.getInputs()
+        print(inputs)
+
+
+        # if result == True:
+        #     self.containername = text
+        #     print(self.containername)
+
+
+    def containerAddition(self):
+        cmap = QGraphicsScene()
+        cmap.addRect(-100, -200, 40, 40, QPen(Qt.black), QBrush(Qt.yellow))
+        self.graphicsView_2.setScene(cmap)
+
+
 
     def checkdelta(self):
         try:
@@ -167,8 +214,8 @@ class UI(QMainWindow):
         # path = QFileDialog.getOpenFileName(self, "Open")[0]
         # if path:
         #     print(path)
-        path='C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
-        self.Container = Container(path, 'Main', '2')
+        path='C:/Users/happy/Documents/GitHub/ContainerC/containerstate.yaml'
+        self.Container = Container(path, 'Main', '4')
         # refframe = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/Main/Rev3.yaml'
         try:
             with open(self.Container.refframe) as file:
@@ -212,6 +259,6 @@ class UI(QMainWindow):
 
 app=QApplication([])
 window = UI()
-app.exec_()
+sys.exit(app.exec_())
 
 
