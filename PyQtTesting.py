@@ -113,16 +113,19 @@ class UI(QMainWindow):
         self.openContainerBttn.clicked.connect(self.readcontainer)
         # self.refreshBttn.setText('Check Button')
         self.refreshBttn.clicked.connect(self.checkdelta)
-
         self.returncontlist.clicked.connect(self.getContainerInfo)
 
+<<<<<<< HEAD
         self.containername = 'Default Container Name'
 
         self.addcontainer.clicked.connect(self.newContainerInfo)
+=======
+        self.navButton.clicked.connect(self.navigateTotab)
+>>>>>>> master
 
         self.counter= True
-        self.sadbutton.setText('New Happy text')
-        self.sadbutton.clicked.connect(self.happyorsad)
+        self.resetbutton.clicked.connect(self.resetrequest)
+        self.rebasebutton.clicked.connect(self.rebaserequest)
 
         self.commitBttn.setEnabled(False)
         self.commitBttn.clicked.connect(self.commit)
@@ -132,13 +135,16 @@ class UI(QMainWindow):
         # self.frametextBrowser.append('here I am')
         self.show()
 
-    def happyorsad(self):
-        if self.counter:
-            self.sadbutton.setText('HappyText')
-            self.counter=not self.counter
-        else:
-            self.sadbutton.setText('sadText')
-            self.counter=not self.counter
+    def resetrequest(self):
+        response = requests.get(BASE + 'RESET')
+        print(response.content)
+
+    def rebaserequest(self):
+        response = requests.post(BASE + 'RESET')
+        print(response.content)
+
+    def navigateTotab(self):
+        self.tabWidget.setCurrentIndex(2)
 
     def getContainerInfo(self):
         response = requests.get(BASE + 'CONTAINERS/List')
