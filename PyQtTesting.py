@@ -12,8 +12,8 @@ import sys
 import requests
 import json
 
-BASE = "http://fatpanda1985.pythonanywhere.com/"
-# BASE = "http://127.0.0.1:5000/"
+# BASE = "http://fatpanda1985.pythonanywhere.com/"
+BASE = "http://127.0.0.1:5000/"
 headers = ['ID', 'Description', 'Branch name', 'Rev Count']
 
 class TableModel(QAbstractTableModel):
@@ -92,8 +92,8 @@ class UI(QMainWindow):
         self.returncontlist.clicked.connect(self.getContainerInfo)
 
         self.counter= True
-        self.sadbutton.setText('New Happy text')
-        self.sadbutton.clicked.connect(self.happyorsad)
+        self.resetbutton.clicked.connect(self.resetrequest)
+        self.rebasebutton.clicked.connect(self.rebaserequest)
 
         self.commitBttn.setEnabled(False)
         self.commitBttn.clicked.connect(self.commit)
@@ -103,13 +103,11 @@ class UI(QMainWindow):
         # self.frametextBrowser.append('here I am')
         self.show()
 
-    def happyorsad(self):
-        if self.counter:
-            self.sadbutton.setText('HappyText')
-            self.counter=not self.counter
-        else:
-            self.sadbutton.setText('sadText')
-            self.counter=not self.counter
+    def resetrequest(self):
+        requests.get(BASE + 'RESET')
+
+    def rebaserequest(self):
+        requests.post(BASE + 'RESET')
 
     def getContainerInfo(self):
         response = requests.get(BASE + 'CONTAINERS/List')

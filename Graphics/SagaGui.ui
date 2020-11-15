@@ -129,17 +129,17 @@
        <string>Current Frame of Container</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="sadbutton">
+     <widget class="QPushButton" name="resetbutton">
       <property name="geometry">
        <rect>
         <x>220</x>
         <y>10</y>
-        <width>151</width>
+        <width>111</width>
         <height>28</height>
        </rect>
       </property>
       <property name="text">
-       <string>WhateverButton</string>
+       <string>ResetButton</string>
       </property>
      </widget>
      <widget class="QTextBrowser" name="frametextBrowser">
@@ -296,6 +296,19 @@
        </rect>
       </property>
      </widget>
+     <widget class="QPushButton" name="rebasebutton">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>10</y>
+        <width>111</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>RebaseButton</string>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>
@@ -305,7 +318,7 @@
      <x>0</x>
      <y>0</y>
      <width>1032</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>
