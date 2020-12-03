@@ -2,6 +2,8 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from Graphics.QAbstract.ContainerListModel import ContainerListModel
+from Graphics.CGuiControls import ContainerMap
 import yaml
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
@@ -12,69 +14,46 @@ import sys
 import requests
 import json
 
-BASE = "http://fatpanda1985.pythonanywhere.com/"
-# BASE = "http://127.0.0.1:5000/"
-headers = ['ID', 'Description', 'Branch name', 'Rev Count']
+# BASE = "http://fatpanda1985.pythonanywhere.com/"
+BASE = "http://127.0.0.1:5000/"
 
-class TableModel(QAbstractTableModel):
-    def __init__(self, data):
-        super(TableModel, self).__init__()
-        self._data = data
 
-    def data(self, index, role):
-        if role == Qt.DisplayRole:
-            # See below for the nested-list data structure.
-            # .row() indexes into the outer list,
-            # .column() indexes into the sub-list
-            return self._data[index.row()][index.column()]
 
-    # def headerData(self, section, Qt_Orientation,role):
-    #     return headers[section]
+class ErrorMessage(QMessageBox):
+    def __init__(self, parent=None):
+        super().__init__()
+        self.setWindowTitle('ErrorMessage')
+        self.setIcon(QMessageBox.Warning)
+        self.setText('Please Select File Type')
+        self.setStandardButtons(QMessageBox.Ok)
+        self.exec_()
 
-    def rowCount(self, index):
-        # The length of the outer list.
-        return len(self._data)
+class InputDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle('File Information')
+        self.setMinimumSize(500,100)
+        self.first = QLineEdit(self)
+        self.second = QLineEdit(self)
+        self.third = QLineEdit(self)
+        self.fourth = QLineEdit(self)
+        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self);
 
-    def columnCount(self, index):
-        # The following takes the first sub-list, and returns
-        # the length (only works if all rows are an equal length)
-        return len(self._data[0])
+        layout = QFormLayout(self)
+        layout.addRow("File Name", self.first)
+        layout.addRow("File Path", self.second)
+        layout.addRow("Owner", self.third)
+        layout.addRow("Description", self.fourth)
+        layout.addWidget(buttonBox)
 
-class ContainerListModel(QAbstractTableModel):
-    def __init__(self, containerinfolist):
-        super(ContainerListModel, self).__init__()
-        containdata=[]
-        for containerid, containvalue in containerinfolist.items():
-            for branch in containvalue['branches']:
-                row = [containerid, containvalue['ContainerDescription'] ,
-                       branch['name'],
-                       branch['revcount']]
-                containdata.append(row)
-        self.containdata = containdata
+        buttonBox.accepted.connect(self.accept)
+        buttonBox.rejected.connect(self.reject)
 
-    def data(self, index, role):
-        if role == Qt.DisplayRole:
-            # See below for the nested-list data structure.
-            # .row() indexes into the outer list,
-            # .column() indexes into the sub-list
-            return self.containdata[index.row()][index.column()]
+    def getInputs(self):
+        if self.exec_() == QDialog.Accepted:
+            return (self.first.text(), self.second.text(), self.third.text(), self.fourth.text())
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return headers[section]
-            # return 'Column {}'.format(section + 1)
-        # if orientation == Qt.Vertical and role == Qt.DisplayRole:
-        #     return 'Row {}'.format(section + 1)
-        # return super().headerData(section, orientation, role)
 
-    def rowCount(self, index):
-        # The length of the outer list.
-        return len(self.containdata)
-
-    def columnCount(self, index):
-        # The following takes the first sub-list, and returns
-        # the length (only works if all rows are an equal length)
-        return len(self.containdata[0])
 
 # Form, Window=uic.loadUiType()
 class UI(QMainWindow):
@@ -90,7 +69,28 @@ class UI(QMainWindow):
         self.refreshBttn.clicked.connect(self.checkdelta)
         self.returncontlist.clicked.connect(self.getContainerInfo)
 
+
+        self.generateContainerBttn.clicked.connect(self.generateContainerMap)
+
+        # Section to set up adding new file button and file type selection - Jimmy
+        #Need to read and learn more about slots/events/signals, toggling of radio button won't send info to btnstate
+        # without lambda function, potential memory leak?
+        # self.radioButton.toggled.connect(lambda:self.btnstate(self.radioButton))
+        # self.radioButton_2.toggled.connect(lambda:self.btnstate(self.radioButton_2))
+        # self.radioButton_3.toggled.connect(lambda:self.btnstate(self.radioButton_3))
+        # self.containerName = [self.inputCheck,self.requiredCheck,self.outputCheck]
+        # print(self.containerName)
+
+        # if self.containerName == [False,False,False]:
+        #     self.pushButton_2.clicked.connect(ErrorMessage)
+        # else:
+        self.newContainerInputs = []
+        self.pushButton_2.clicked.connect(self.newFileInfo)
+
         self.navButton.clicked.connect(self.navigateTotab)
+
+
+
 
         self.counter= True
         self.resetbutton.clicked.connect(self.resetrequest)
@@ -103,6 +103,19 @@ class UI(QMainWindow):
 
         # self.frametextBrowser.append('here I am')
         self.show()
+
+
+        ###########Gui Variables##############
+        self.containermap =ContainerMap([], self.containerMapView)
+
+    def btnstate(self,b):
+        if b.text() == 'Input':
+            print('Checked')
+        if b.text() == 'Required':
+            print('Checked')
+        if b.text() == 'Output':
+            print('Checked')
+
 
     def resetrequest(self):
         response = requests.get(BASE + 'RESET')
@@ -117,12 +130,45 @@ class UI(QMainWindow):
 
     def getContainerInfo(self):
         response = requests.get(BASE + 'CONTAINERS/List')
-        print(response.headers['containerinfolist'])
+        # print(response.headers['containerinfolist'])
         self.infodump.append(response.headers['response'])
         containerinfolist = json.loads(response.headers['containerinfolist'])
         self.containerlisttable.setModel(ContainerListModel(containerinfolist))
 
         # self.containerlisttable.setHorizontalHeaderLabels(['asd','asd','asd','df'])
+
+
+    def newFileInfo(self):
+        inputwindow = InputDialog()
+        inputs = inputwindow.getInputs()
+        self.newContainerInputs = inputs
+        self.containerAddition(inputs[1])
+
+    def generateContainerMap(self):
+        response = requests.get(BASE + 'CONTAINERS/List')
+        containerinfolist = json.loads(response.headers['containerinfolist'])
+        for containerID in containerinfolist.keys():
+            response = requests.get(BASE+'CONTAINERS/containerID', data={'containerID':containerID})
+            open(os.path.join('ContainerMapWorkDir',containerID+'_'+response.headers['file_name']), 'wb').write(response.content)
+            self.containermap.addActiveContainers(Container(os.path.join('ContainerMapWorkDir',containerID+'_'+response.headers['file_name'])))
+        self.containermap.editcontainerConnections()
+        self.containermap.plot()
+
+    # def containerMapView(self, title):
+    #     filemap = QGraphicsScene()
+    #     filemap.addRect(-100, -200, 40, 40, QPen(Qt.black), QBrush(Qt.yellow))
+    #     text = filemap.addText(title)
+    #     text.setPos(-100, -200)
+    #     self.graphicsView_3.setScene(filemap)
+
+    def containerAddition(self, title):
+        filemap = QGraphicsScene()
+        filemap.addRect(-100, -200, 40, 40, QPen(Qt.black), QBrush(Qt.yellow))
+        text = filemap.addText(title)
+        text.setPos(-100, -200)
+        self.graphicsView_3.setScene(filemap)
+
+
 
     def checkdelta(self):
         try:

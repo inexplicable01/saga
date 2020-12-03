@@ -1,0 +1,9 @@
+containerId: ContainerD
+containerName: ContainerD
+inputObjs:
+- Container: ContainerC
+  ContainerObjName: R1
+outputObjs:
+references:
+requiredObjs:
+- ContainerObjName: DSomething

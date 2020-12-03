@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1049</width>
-    <height>678</height>
+    <width>1275</width>
+    <height>768</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,12 +35,12 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>1031</width>
-      <height>641</height>
+      <width>1261</width>
+      <height>721</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="Map">
      <attribute name="title">
@@ -78,13 +78,13 @@
        <string>Return List of Available Containers</string>
       </property>
      </widget>
-     <widget class="QGraphicsView" name="graphicsView_2">
+     <widget class="QGraphicsView" name="containerMapView">
       <property name="geometry">
        <rect>
         <x>20</x>
         <y>220</y>
-        <width>491</width>
-        <height>131</height>
+        <width>451</width>
+        <height>331</height>
        </rect>
       </property>
      </widget>
@@ -99,6 +99,19 @@
       </property>
       <property name="text">
        <string>Container Map</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="generateContainerBttn">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>570</y>
+        <width>311</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Generate Container Map</string>
       </property>
      </widget>
     </widget>
@@ -516,13 +529,13 @@
        <string>Add File Object</string>
       </property>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>430</x>
         <y>50</y>
         <width>84</width>
-        <height>64</height>
+        <height>76</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -557,8 +570,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1049</width>
-     <height>26</height>
+     <width>1275</width>
+     <height>21</height>
     </rect>
    </property>
   </widget>
@@ -566,7 +579,4 @@
  </widget>
  <resources/>
  <connections/>
- <buttongroups>
-  <buttongroup name="buttonGroup"/>
- </buttongroups>
 </ui>
