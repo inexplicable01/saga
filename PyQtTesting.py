@@ -4,6 +4,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
 from Graphics.CGuiControls import ContainerMap
+from Graphics.DetailedMap import DetailedMap
 import yaml
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
@@ -100,13 +101,14 @@ class UI(QMainWindow):
         self.commitBttn.clicked.connect(self.commit)
 
         self.commitmsgEdit.setDisabled(True)
-
+        self.selecteddetail={'selectedobjname':None}
         # self.frametextBrowser.append('here I am')
         self.show()
 
 
         ###########Gui Variables##############
-        self.containermap =ContainerMap([], self.containerMapView)
+        self.detailedmap = DetailedMap(self.detailsMapView, self.selecteddetail)
+        self.containermap =ContainerMap({}, self.containerMapView, self.selecteddetail,self.detailedmap)
 
     def btnstate(self,b):
         if b.text() == 'Input':
@@ -153,6 +155,7 @@ class UI(QMainWindow):
             self.containermap.addActiveContainers(Container(os.path.join('ContainerMapWorkDir',containerID+'_'+response.headers['file_name'])))
         self.containermap.editcontainerConnections()
         self.containermap.plot()
+        self.detailedmap.passobj(self.containermap)
 
     # def containerMapView(self, title):
     #     filemap = QGraphicsScene()

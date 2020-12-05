@@ -39,3 +39,5 @@ ContainerC/R1.txt
 /ContainerC/
 sagatest.py
 *.pyc
+*.pyc
+Graphics/__pycache__/CGuiControls.cpython-37.pyc

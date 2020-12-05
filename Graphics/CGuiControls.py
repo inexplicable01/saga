@@ -18,14 +18,16 @@ rectheight = 40
 rectwidth = 40
 
 class ContainerMap():
-    def __init__(self, activeContainers, qtview):
-        self.activeContainers = activeContainers
+    def __init__(self, activeContainers, qtview, selecteddetail,detailedmap):
+        self.activeContainers = activeContainers  # contain the container objs
         self.qtview = qtview
-        self.activeContainersObj={}
+        self.selecteddetail=selecteddetail
+        self.detailedmap=detailedmap
+        self.activeContainersObj={} # contain the Rect objects
         self.containerscene = QGraphicsScene()
         self.qtview.setScene(self.containerscene)
-        self.containerConnections = {}
-        self.containerConnectLines={}
+        self.containerConnections = {} # dictionary of Id: list of OD
+        self.containerConnectLines={}  # dictionary of lineId:LineObject
 
     def drawline(self):
         for containerId_in, containerId_outlist in self.containerConnections.items():
@@ -36,7 +38,10 @@ class ContainerMap():
                     Q2 = copy.deepcopy(self.activeContainersObj[containerId_out].QPos)
                     Q1 += QPointF(rectheight/2, rectwidth/2)
                     Q2 += QPointF(rectheight/2, rectwidth/2)
-                    self.containerConnectLines[lineid] = self.containerscene.addLine(QLineF(Q1, Q2), QPen(Qt.green))
+
+                    self.containerConnectLines[lineid] = containerLine(Q1,Q2,lineid, self.detailedmap)
+                    self.containerscene.addItem(self.containerConnectLines[lineid])
+                    # self.containerConnectLines[lineid] = self.containerscene.addLine(QLineF(Q1, Q2), QPen(Qt.green))
                 else:
                     Q1 = copy.deepcopy(self.activeContainersObj[containerId_in].QPos)
                     Q2 = copy.deepcopy(self.activeContainersObj[containerId_out].QPos)
@@ -44,12 +49,9 @@ class ContainerMap():
                     Q2 += QPointF(rectheight/2, rectwidth/2)
                     self.containerConnectLines[lineid].setLine(QLineF(Q1, Q2))
 
-    def updateline(self):
-        print('Update Lines')
-
 
     def editcontainerConnections(self):
-        for container in self.activeContainers:
+        for container in self.activeContainers.values():
             # print(container.containerId)
             if container.inputObjs:
                 for input in container.inputObjs:
@@ -68,15 +70,15 @@ class ContainerMap():
                         self.containerConnections[container.containerId].append(output['Container'])
         print(self.containerConnections)
 
-    def addActiveContainers(self, container):
-        self.activeContainers.append(container)
+    def addActiveContainers(self, container:Container):
+        self.activeContainers[container.containerId]=container
 
     def plot(self):
         idx=0
-        for container in self.activeContainers:
+        for container in self.activeContainers.values():
             # print(container.containerName)
             text = self.containerscene.addText(container.containerName)
-            self.activeContainersObj[container.containerName]=containerRect(idx, text, self.drawline)
+            self.activeContainersObj[container.containerName]=containerRect(idx, text, self.drawline, self.detailedmap,self.selecteddetail)
             self.containerscene.addItem(self.activeContainersObj[container.containerName])
             idx +=1
         self.drawline()
@@ -84,7 +86,7 @@ class ContainerMap():
 
 
 class containerRect(QGraphicsRectItem):
-    def __init__(self, idx,text,drawline, rectheight=rectheight, rectwidth=rectwidth):
+    def __init__(self, idx,text,drawline, detailedmap,selecteddetail,rectheight=rectheight, rectwidth=rectwidth):
         super().__init__(0, 0, rectheight, rectwidth)
         self.rectheight = rectheight
         self.rectwidth = rectwidth
@@ -95,6 +97,8 @@ class containerRect(QGraphicsRectItem):
         self.text = text
         self.text.setPos(self.QPos)
         self.drawline=drawline
+        self.detailedmap = detailedmap
+        self.selecteddetail=selecteddetail
         # self.setFlag(QGraphicsItem.ItemIsMovable, True)
 
     def dragMoveEvent(self, event):
@@ -115,3 +119,24 @@ class containerRect(QGraphicsRectItem):
 
     def mouseReleaseEvent(self,event):
         self.drawline()
+        self.selecteddetail['selectedobjname']=self.text.toPlainText()
+        self.detailedmap.selectedobj(self.text.toPlainText())
+
+class containerLine(QGraphicsLineItem):
+    def __init__(self, Q1,Q2,lineid,detailedmap):
+        # self.containerConnectLines[lineid] = self.containerscene.addLine(QLineF(Q1, Q2), QPen(Qt.green))
+        super().__init__(QLineF(Q1, Q2))
+        self.setPen(QPen(QBrush(Qt.green), 6))
+        self.lineid=lineid
+        self.detailedmap=detailedmap
+
+        # self.setFlag(QGraphicsItem.ItemIsMovable, True)
+    def mousePressEvent(self,event):
+        print(self.lineid)
+        self.detailedmap.selectedobj(self.lineid)
+
+    # def mouseReleaseEvent(self,event):
+    #     # self.drawline()
+    #     # self.selecteddetail['selectedobjname']=self.text.toPlainText()
+    #     # self.detailedmap.selectedobj(self.text.toPlainText())
+    #     print(self.lineid)

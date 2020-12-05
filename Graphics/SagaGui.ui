@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1275</width>
-    <height>768</height>
+    <width>1364</width>
+    <height>771</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,7 +35,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>1261</width>
+      <width>1351</width>
       <height>721</height>
      </rect>
     </property>
@@ -112,6 +112,16 @@
       </property>
       <property name="text">
        <string>Generate Container Map</string>
+      </property>
+     </widget>
+     <widget class="QGraphicsView" name="detailsMapView">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>220</y>
+        <width>841</width>
+        <height>331</height>
+       </rect>
       </property>
      </widget>
     </widget>
@@ -570,8 +580,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1275</width>
-     <height>21</height>
+     <width>1364</width>
+     <height>26</height>
     </rect>
    </property>
   </widget>
