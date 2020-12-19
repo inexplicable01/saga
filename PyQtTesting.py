@@ -5,6 +5,7 @@ from PyQt5.QtCore import *
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
 from Graphics.CGuiControls import ContainerMap
 from Graphics.DetailedMap import DetailedMap
+from Graphics.TrayActions import SignIn, SignOut
 import yaml
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
@@ -14,10 +15,11 @@ import os
 import sys
 import requests
 import json
+from functools import partial
+from Config import BASE
 
-# BASE = "http://fatpanda1985.pythonanywhere.com/"
-BASE = "http://127.0.0.1:5000/"
-
+if os.path.exists("token.txt"):
+  os.remove("token.txt")
 
 
 class ErrorMessage(QMessageBox):
@@ -90,9 +92,6 @@ class UI(QMainWindow):
 
         self.navButton.clicked.connect(self.navigateTotab)
 
-
-
-
         self.counter= True
         self.resetbutton.clicked.connect(self.resetrequest)
         self.rebasebutton.clicked.connect(self.rebaserequest)
@@ -105,10 +104,21 @@ class UI(QMainWindow):
         # self.frametextBrowser.append('here I am')
         self.show()
 
+        self.userdata=None
 
         ###########Gui Variables##############
         self.detailedmap = DetailedMap(self.detailsMapView, self.selecteddetail)
         self.containermap =ContainerMap({}, self.containerMapView, self.selecteddetail,self.detailedmap)
+
+        ###########Tray Actions #############
+        self.actionSign_In.triggered.connect(partial(SignIn,self))
+        self.actionSign_Out.triggered.connect(partial(SignOut,self))
+
+        self.checkUserStatus()
+
+    def print(self):
+        print('sign in ')
+
 
     def btnstate(self,b):
         if b.text() == 'Input':
@@ -156,6 +166,24 @@ class UI(QMainWindow):
         self.containermap.editcontainerConnections()
         self.containermap.plot()
         self.detailedmap.passobj(self.containermap)
+
+    def checkUserStatus(self):
+        try:
+            with open('token.txt') as json_file:
+                authtoken = json.load(json_file)
+                response = requests.get(
+                    BASE + '/auth/status',
+                    headers={"Authorization": 'Bearer ' + authtoken['auth_token']}
+                )
+                usertoken = response.json()
+                if usertoken['status'] == 'success':
+                    self.userstatuslbl.setText('User ' + usertoken['data']['email'] + ' Signed in')
+                    self.userdata = usertoken['data']
+                else:
+                    self.userstatuslbl.setText('Please sign in')
+
+        except Exception as e:
+            print('No User Signed in yet')
 
     # def containerMapView(self, title):
     #     filemap = QGraphicsScene()
