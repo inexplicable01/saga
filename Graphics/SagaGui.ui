@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1049</width>
-    <height>678</height>
+    <width>1364</width>
+    <height>771</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,8 +35,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>1031</width>
-      <height>641</height>
+      <width>1351</width>
+      <height>721</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -78,13 +78,13 @@
        <string>Return List of Available Containers</string>
       </property>
      </widget>
-     <widget class="QGraphicsView" name="graphicsView_2">
+     <widget class="QGraphicsView" name="containerMapView">
       <property name="geometry">
        <rect>
         <x>20</x>
         <y>220</y>
-        <width>491</width>
-        <height>131</height>
+        <width>451</width>
+        <height>331</height>
        </rect>
       </property>
      </widget>
@@ -101,17 +101,27 @@
        <string>Container Map</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="addcontainer">
+     <widget class="QPushButton" name="generateContainerBttn">
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>360</y>
+        <y>570</y>
         <width>311</width>
-        <height>131</height>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
-       <string>AddContainer_Testing</string>
+       <string>Generate Container Map</string>
+      </property>
+     </widget>
+     <widget class="QGraphicsView" name="detailsMapView">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>220</y>
+        <width>841</width>
+        <height>331</height>
+       </rect>
       </property>
      </widget>
     </widget>
@@ -529,13 +539,13 @@
        <string>Add File Object</string>
       </property>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>430</x>
         <y>50</y>
         <width>84</width>
-        <height>64</height>
+        <height>76</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -570,7 +580,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1049</width>
+     <width>1364</width>
      <height>26</height>
     </rect>
    </property>
@@ -579,7 +589,4 @@
  </widget>
  <resources/>
  <connections/>
- <buttongroups>
-  <buttongroup name="buttonGroup"/>
- </buttongroups>
 </ui>

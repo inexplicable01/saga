@@ -2,6 +2,9 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from Graphics.QAbstract.ContainerListModel import ContainerListModel
+from Graphics.CGuiControls import ContainerMap
+from Graphics.DetailedMap import DetailedMap
 import yaml
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
@@ -12,9 +15,11 @@ import sys
 import requests
 import json
 
-BASE = "http://fatpanda1985.pythonanywhere.com/"
-# BASE = "http://127.0.0.1:5000/"
-headers = ['ID', 'Description', 'Branch name', 'Rev Count']
+
+# BASE = "http://fatpanda1985.pythonanywhere.com/"
+BASE = "http://127.0.0.1:5000/"
+
+
 
 class ErrorMessage(QMessageBox):
     def __init__(self, parent=None):
@@ -122,6 +127,7 @@ class UI(QMainWindow):
         # self.refreshBttn.setText('Check Button')
         self.refreshBttn.clicked.connect(self.checkdelta)
         self.returncontlist.clicked.connect(self.getContainerInfo)
+        self.generateContainerBttn.clicked.connect(self.generateContainerMap)
 
         # Section to set up adding new file button and file type selection - Jimmy
         #Need to read and learn more about slots/events/signals, toggling of radio button won't send info to btnstate
@@ -131,6 +137,7 @@ class UI(QMainWindow):
         # self.radioButton_3.toggled.connect(lambda:self.btnstate(self.radioButton_3))
         # self.containerName = [self.inputCheck,self.requiredCheck,self.outputCheck]
         # print(self.containerName)
+
         self.radioButton.pressed.connect(self.selectFileType)
         self.radioButton_2.pressed.connect(self.selectFileType)
         self.radioButton_3.pressed.connect(self.selectFileType)
@@ -138,6 +145,7 @@ class UI(QMainWindow):
         self.pushButton_2.clicked.connect(self.newFileInfo)
 
         self.navButton.clicked.connect(self.navigateTotab)
+
 
 
         self.counter= True
@@ -148,14 +156,18 @@ class UI(QMainWindow):
         self.commitBttn.clicked.connect(self.commit)
 
         self.commitmsgEdit.setDisabled(True)
-
+        self.selecteddetail={'selectedobjname':None}
         # self.frametextBrowser.append('here I am')
         self.show()
 
+        ###########Gui Variables##############
+        self.detailedmap = DetailedMap(self.detailsMapView, self.selecteddetail)
+        self.containermap =ContainerMap({}, self.containerMapView, self.selecteddetail,self.detailedmap)
 
     def selectFileType(self):
         buttonName = self.sender()
         self.newContainerInputs = [buttonName.text()]
+
 
     def resetrequest(self):
         response = requests.get(BASE + 'RESET')
@@ -170,12 +182,13 @@ class UI(QMainWindow):
 
     def getContainerInfo(self):
         response = requests.get(BASE + 'CONTAINERS/List')
-        print(response.headers['containerinfolist'])
+        # print(response.headers['containerinfolist'])
         self.infodump.append(response.headers['response'])
         containerinfolist = json.loads(response.headers['containerinfolist'])
         self.containerlisttable.setModel(ContainerListModel(containerinfolist))
 
         # self.containerlisttable.setHorizontalHeaderLabels(['asd','asd','asd','df'])
+
 
     def newFileInfo(self):
         if not self.newContainerInputs:
@@ -188,8 +201,23 @@ class UI(QMainWindow):
                 self.newContainerInputs.extend(inputs)
                 self.containerAddition(inputs[0])
 
+    def generateContainerMap(self):
+        response = requests.get(BASE + 'CONTAINERS/List')
+        containerinfolist = json.loads(response.headers['containerinfolist'])
+        for containerID in containerinfolist.keys():
+            response = requests.get(BASE+'CONTAINERS/containerID', data={'containerID':containerID})
+            open(os.path.join('ContainerMapWorkDir',containerID+'_'+response.headers['file_name']), 'wb').write(response.content)
+            self.containermap.addActiveContainers(Container(os.path.join('ContainerMapWorkDir',containerID+'_'+response.headers['file_name'])))
+        self.containermap.editcontainerConnections()
+        self.containermap.plot()
+        self.detailedmap.passobj(self.containermap)
 
-
+    # def containerMapView(self, title):
+    #     filemap = QGraphicsScene()
+    #     filemap.addRect(-100, -200, 40, 40, QPen(Qt.black), QBrush(Qt.yellow))
+    #     text = filemap.addText(title)
+    #     text.setPos(-100, -200)
+    #     self.graphicsView_3.setScene(filemap)
 
 
     def containerAddition(self, title):

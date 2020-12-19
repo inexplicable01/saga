@@ -1,0 +1,11 @@
+containerId: ContainerA
+containerName: ContainerA
+inputObjs:
+references:
+outputObjs:
+- Container: ContainerC
+  ContainerObjName: Dogs
+- Container: ContainerC
+  ContainerObjName: MUD
+requiredObjs:
+- ContainerObjName: AModel1
