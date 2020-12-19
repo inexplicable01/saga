@@ -23,32 +23,27 @@ class ErrorMessage(QMessageBox):
         self.setIcon(QMessageBox.Warning)
         self.setText('Please Select File Type')
         self.setStandardButtons(QMessageBox.Ok)
+    def showError(self):
         self.exec_()
 
 class InputDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle('File Information')
-        self.setMinimumSize(500,100)
-        self.first = QLineEdit(self)
-        self.second = QLineEdit(self)
-        self.third = QLineEdit(self)
-        self.fourth = QLineEdit(self)
-        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self);
+        uic.loadUi("Graphics/file_info.ui", self)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+        self.openDirButton.clicked.connect(self.openDirectory)
 
-        layout = QFormLayout(self)
-        layout.addRow("File Name", self.first)
-        layout.addRow("File Path", self.second)
-        layout.addRow("Owner", self.third)
-        layout.addRow("Description", self.fourth)
-        layout.addWidget(buttonBox)
 
-        buttonBox.accepted.connect(self.accept)
-        buttonBox.rejected.connect(self.reject)
+    def openDirectory(self):
+        self.openDirectoryDialog = QFileDialog.getOpenFileName(self, "Get Dir Path")
+        self.lineEdit_2.setText(self.openDirectoryDialog[0])
 
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:
-            return (self.first.text(), self.second.text(), self.third.text(), self.fourth.text())
+            return (self.lineEdit.text(), self.lineEdit_2.text(), self.lineEdit_3.text(), self.lineEdit_4.text())
+        else:
+            return None
 
 
 
@@ -136,10 +131,9 @@ class UI(QMainWindow):
         # self.radioButton_3.toggled.connect(lambda:self.btnstate(self.radioButton_3))
         # self.containerName = [self.inputCheck,self.requiredCheck,self.outputCheck]
         # print(self.containerName)
-
-        # if self.containerName == [False,False,False]:
-        #     self.pushButton_2.clicked.connect(ErrorMessage)
-        # else:
+        self.radioButton.pressed.connect(self.selectFileType)
+        self.radioButton_2.pressed.connect(self.selectFileType)
+        self.radioButton_3.pressed.connect(self.selectFileType)
         self.newContainerInputs = []
         self.pushButton_2.clicked.connect(self.newFileInfo)
 
@@ -158,13 +152,10 @@ class UI(QMainWindow):
         # self.frametextBrowser.append('here I am')
         self.show()
 
-    def btnstate(self,b):
-        if b.text() == 'Input':
-            print('Checked')
-        if b.text() == 'Required':
-            print('Checked')
-        if b.text() == 'Output':
-            print('Checked')
+
+    def selectFileType(self):
+        buttonName = self.sender()
+        self.newContainerInputs = [buttonName.text()]
 
     def resetrequest(self):
         response = requests.get(BASE + 'RESET')
@@ -187,10 +178,16 @@ class UI(QMainWindow):
         # self.containerlisttable.setHorizontalHeaderLabels(['asd','asd','asd','df'])
 
     def newFileInfo(self):
-        inputwindow = InputDialog()
-        inputs = inputwindow.getInputs()
-        self.newContainerInputs = inputs
-        self.containerAddition(inputs[1])
+        if not self.newContainerInputs:
+            error = ErrorMessage()
+            error.showError()
+        else:
+            inputwindow = InputDialog()
+            inputs = inputwindow.getInputs()
+            if inputs:
+                self.newContainerInputs.extend(inputs)
+                self.containerAddition(inputs[0])
+
 
 
 
