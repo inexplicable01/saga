@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1364</width>
-    <height>771</height>
+    <width>1306</width>
+    <height>788</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -117,9 +117,9 @@
      <widget class="QGraphicsView" name="detailsMapView">
       <property name="geometry">
        <rect>
-        <x>490</x>
+        <x>480</x>
         <y>220</y>
-        <width>841</width>
+        <width>691</width>
         <height>331</height>
        </rect>
       </property>
@@ -574,18 +574,49 @@
      </widget>
     </widget>
    </widget>
+   <widget class="QLabel" name="userstatuslbl">
+    <property name="geometry">
+     <rect>
+      <x>1000</x>
+      <y>0</y>
+      <width>301</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>User Status</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1364</width>
+     <width>1306</width>
      <height>26</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuProfile">
+    <property name="title">
+     <string>Profile</string>
+    </property>
+    <addaction name="actionSign_In"/>
+    <addaction name="actionSign_Out"/>
+   </widget>
+   <addaction name="menuProfile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionSign_In">
+   <property name="text">
+    <string>Sign In</string>
+   </property>
+  </action>
+  <action name="actionSign_Out">
+   <property name="text">
+    <string>Sign Out</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
