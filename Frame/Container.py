@@ -30,6 +30,7 @@ class Container:
         self.outputObjs = containeryaml['outputObjs']
         self.requiredObjs = containeryaml['requiredObjs']
         self.references = containeryaml['references']
+        self.allowUsers = containeryaml['allowedUser']
         # self.yamlTracking = containeryaml['yamlTracking']
         self.currentbranch = currentbranch
         self.revnum = revnum
@@ -43,7 +44,7 @@ class Container:
         self.refframe = os.path.join(self.containerworkingfolder,
                                      currentbranch +'/'+ Rev + revnum + ".yaml")
 
-    def commit(self, cframe: Frame, commitmsg, BASE):
+    def commit(self, cframe: Frame, commitmsg, authtoken, BASE):
         committed = False
 
         # # frameYamlfileb = framefs.get(file_id=ObjectId(curframe.FrameInstanceId))
@@ -73,10 +74,14 @@ class Container:
 
         updateinfojson = json.dumps(updateinfo)
         print (updateinfo)
-        # response = requests.post(BASE + 'FRAMES',files=filesToUpload)
+
+
         response = requests.post(BASE + 'FRAMES',
+                                 headers={"Authorization": 'Bearer ' + authtoken['auth_token']},
                                  data={'containerID': self.containerId, 'branch': self.currentbranch,
                                        'updateinfo': updateinfojson, 'commitmsg':commitmsg},  files=filesToUpload)
+
+
         print(response)
         if response.headers['commitsuccess']:
             # Updating new frame information

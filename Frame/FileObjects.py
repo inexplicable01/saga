@@ -2,7 +2,7 @@ import hashlib
 import os
 
 class FileTrackObj:
-    def __init__(self, ContainerObjName, localfilepath, file_name,style=None,lastEdited=None, md5=None,file_id=None,commitUTCdatetime=None):
+    def __init__(self, ContainerObjName, localfilepath, file_name,style=None,lastEdited=None, committedby='waichak', md5=None,file_id=None,commitUTCdatetime=None):
         self.ContainerObjName = ContainerObjName
         self.file_name = file_name
         if  md5 is None:
@@ -11,6 +11,7 @@ class FileTrackObj:
             md5hash = hashlib.md5(fileb.read())
             md5=md5hash.hexdigest()
         self.lastEdited= lastEdited#
+        self.committedby = committedby  #
         self.md5 = md5
         self.style = style
         self.file_id = file_id

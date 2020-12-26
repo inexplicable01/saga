@@ -105,6 +105,8 @@ class UI(QMainWindow):
         self.show()
 
         self.userdata=None
+        self.authtoken = None
+        self.tabWidget.setEnabled(False)
 
         ###########Gui Variables##############
         self.detailedmap = DetailedMap(self.detailsMapView, self.selecteddetail)
@@ -179,9 +181,13 @@ class UI(QMainWindow):
                 if usertoken['status'] == 'success':
                     self.userstatuslbl.setText('User ' + usertoken['data']['email'] + ' Signed in')
                     self.userdata = usertoken['data']
+                    self.authtoken = authtoken
+                    self.tabWidget.setEnabled(True)
                 else:
+                    self.authtoken = None
                     self.userstatuslbl.setText('Please sign in')
-
+                    self.userdata = None
+                    self.tabWidget.setEnabled(False)
         except Exception as e:
             print('No User Signed in yet')
 
@@ -230,7 +236,12 @@ class UI(QMainWindow):
             error_dialog.exec_()
             return
             # return
-        self.cframe, committed = self.Container.commit(self.cframe,self.commitmsgEdit.toPlainText(), BASE)
+        if self.userdata['email'] not in self.Container.allowUsers:
+            error_dialog.showMessage('You do not have the privilege to commit to this container')
+            error_dialog.exec_()
+            return
+            #
+        self.cframe, committed = self.Container.commit(self.cframe,self.commitmsgEdit.toPlainText(), self.authtoken, BASE)
         if committed:
             self.Container.save()
             self.framelabel.setText(self.cframe.FrameName)
@@ -249,7 +260,7 @@ class UI(QMainWindow):
         # if path:
         #     print(path)
         path='C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
-        self.Container = Container(path, 'Main', '2')
+        self.Container = Container(path, 'Main', '3')
         # refframe = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/Main/Rev3.yaml'
         try:
             with open(self.Container.refframe) as file:
