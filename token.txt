@@ -1,0 +1,1 @@
+{"auth_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MDkwMTg4NzcsImlhdCI6MTYwOTAxODgxNywic3ViIjo1fQ.fCdrlOemzdy6ikYRrzz1d2O7aplcFS838-UjoK5k4LU", "message": "Successfully logged in.", "status": "success", "useremail": "usercemail@gmail.com"}

@@ -6,6 +6,7 @@ from Graphics.QAbstract.ContainerListModel import ContainerListModel
 from Graphics.CGuiControls import ContainerMap
 from Graphics.DetailedMap import DetailedMap
 from Graphics.TrayActions import SignIn, SignOut
+from Graphics.Dialogs import ErrorMessage, inputFileDialog, selectFileDialog
 import yaml
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
@@ -17,46 +18,11 @@ import requests
 import json
 from functools import partial
 from Config import BASE
+from ContainerDetails import refContainer
+from NewContainerGraphics import newContainerGraphics
 
 if os.path.exists("token.txt"):
   os.remove("token.txt")
-
-
-class ErrorMessage(QMessageBox):
-    def __init__(self, parent=None):
-        super().__init__()
-        self.setWindowTitle('ErrorMessage')
-        self.setIcon(QMessageBox.Warning)
-        self.setText('Please Select File Type')
-        self.setStandardButtons(QMessageBox.Ok)
-        self.exec_()
-
-class InputDialog(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle('File Information')
-        self.setMinimumSize(500,100)
-        self.first = QLineEdit(self)
-        self.second = QLineEdit(self)
-        self.third = QLineEdit(self)
-        self.fourth = QLineEdit(self)
-        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self);
-
-        layout = QFormLayout(self)
-        layout.addRow("File Name", self.first)
-        layout.addRow("File Path", self.second)
-        layout.addRow("Owner", self.third)
-        layout.addRow("Description", self.fourth)
-        layout.addWidget(buttonBox)
-
-        buttonBox.accepted.connect(self.accept)
-        buttonBox.rejected.connect(self.reject)
-
-    def getInputs(self):
-        if self.exec_() == QDialog.Accepted:
-            return (self.first.text(), self.second.text(), self.third.text(), self.fourth.text())
-
-
 
 # Form, Window=uic.loadUiType()
 class UI(QMainWindow):
@@ -65,14 +31,14 @@ class UI(QMainWindow):
         super(UI, self).__init__()
         uic.loadUi("Graphics/SagaGui.ui", self)
 
+
         self.fileobjtypes = ['inputObjs', 'requiredObjs', 'outputObjs']
         self.openContainerBttn.setText('Open Container')
         self.openContainerBttn.clicked.connect(self.readcontainer)
         # self.refreshBttn.setText('Check Button')
         self.refreshBttn.clicked.connect(self.checkdelta)
         self.returncontlist.clicked.connect(self.getContainerInfo)
-
-
+        self.returncontlist_2.clicked.connect(self.getContainerInfo2)
         self.generateContainerBttn.clicked.connect(self.generateContainerMap)
 
         # Section to set up adding new file button and file type selection - Jimmy
@@ -84,11 +50,14 @@ class UI(QMainWindow):
         # self.containerName = [self.inputCheck,self.requiredCheck,self.outputCheck]
         # print(self.containerName)
 
-        # if self.containerName == [False,False,False]:
-        #     self.pushButton_2.clicked.connect(ErrorMessage)
-        # else:
-        self.newContainerInputs = []
-        self.pushButton_2.clicked.connect(self.newFileInfo)
+        # Add File Button Connections:
+        self.inputFileButton.setEnabled(False)
+        self.tempContainer = Container()
+        self.inputFileButton.clicked.connect(self.newFileInfoInputs)
+        self.requiredFileButton.clicked.connect(partial(self.newFileInfo, 'Required'))
+        self.outputFileButton.clicked.connect(partial(self.newFileInfo, 'Output'))
+
+        self.commitNewButton.clicked.connect(self.createNewContainer)
 
         self.navButton.clicked.connect(self.navigateTotab)
 
@@ -118,18 +87,9 @@ class UI(QMainWindow):
 
         self.checkUserStatus()
 
-    def print(self):
-        print('sign in ')
-
-
-    def btnstate(self,b):
-        if b.text() == 'Input':
-            print('Checked')
-        if b.text() == 'Required':
-            print('Checked')
-        if b.text() == 'Output':
-            print('Checked')
-
+    # def selectFileType(self):
+    #     buttonName = self.sender()
+    #     self.newContainerInputs = [buttonName.text()]
 
     def resetrequest(self):
         response = requests.get(BASE + 'RESET')
@@ -152,11 +112,55 @@ class UI(QMainWindow):
         # self.containerlisttable.setHorizontalHeaderLabels(['asd','asd','asd','df'])
 
 
-    def newFileInfo(self):
-        inputwindow = InputDialog()
-        inputs = inputwindow.getInputs()
-        self.newContainerInputs = inputs
-        self.containerAddition(inputs[1])
+    def getContainerInfo2(self):
+        response = requests.get(BASE + 'CONTAINERS/List')
+        # print(response.headers['containerinfolist'])
+        self.infodump.append(response.headers['response'])
+        containerinfolist = json.loads(response.headers['containerinfolist'])
+        self.containerlisttable_2.setModel(ContainerListModel(containerinfolist))
+        self.containerlisttable_2.clicked.connect(partial(refContainer, self))
+
+    def newFileInfoInputs(self):
+        dialogWindow = inputFileDialog(self.containerName,self.containerObjName)
+        fileInfo = dialogWindow.getInputs()
+        if fileInfo:
+            self.tempContainer.addFileObject(fileInfo, self.fileType)
+        newContainerGraphics(self.tempContainer,self)
+
+    def newFileInfo(self, fileType:str, containerName="", containerObjName=""):
+        self.fileType = fileType
+        if fileType in ['refOutput','Input']:
+            self.inputFileButton.setEnabled(True)
+            self.containerObjName = containerObjName
+            self.containerName = containerName
+            # inputWindow = InputDialog(fileType)
+            # inputs = inputWindow.getInputs()
+            # if inputs:
+            #     self.newContainerInputs.extend(inputs)
+            #     self.containerAddition(inputs[0])
+            # if output file selected:
+            # self.newContainerInputs.extend(inputs)
+            # self.containerAddition(inputs[0])
+        else:
+            self.inputFileButton.setEnabled(False)
+            fileInfoDialog = selectFileDialog(self.fileType)
+            fileInfo = fileInfoDialog.getInputs()
+            if fileInfo:
+                self.tempContainer.addFileObject(fileInfo, self.fileType)
+                newContainerGraphics(self.tempContainer,self)
+
+    def createNewContainer(self):
+        print(self.descriptionText.toPlainText())
+        if '' not in [self.containerName_lineEdit.text(), self.descriptionText.toPlainText(), self.messageText.toPlainText()]:
+            print('working?')
+            self.tempContainer.containerName = self.containerName_lineEdit.text()
+            self.tempContainer.containerId = self.containerName_lineEdit.text()
+            self.tempContainer.save(self.tempContainer.containerName)
+        else:
+            self.errorMessage = ErrorMessage()
+            self.errorMessage.showError()
+
+
 
     def generateContainerMap(self):
         response = requests.get(BASE + 'CONTAINERS/List')
@@ -187,7 +191,9 @@ class UI(QMainWindow):
                     self.authtoken = None
                     self.userstatuslbl.setText('Please sign in')
                     self.userdata = None
+
                     self.tabWidget.setEnabled(False)
+
         except Exception as e:
             print('No User Signed in yet')
 
@@ -197,13 +203,6 @@ class UI(QMainWindow):
     #     text = filemap.addText(title)
     #     text.setPos(-100, -200)
     #     self.graphicsView_3.setScene(filemap)
-
-    def containerAddition(self, title):
-        filemap = QGraphicsScene()
-        filemap.addRect(-100, -200, 40, 40, QPen(Qt.black), QBrush(Qt.yellow))
-        text = filemap.addText(title)
-        text.setPos(-100, -200)
-        self.graphicsView_3.setScene(filemap)
 
 
 
@@ -259,8 +258,10 @@ class UI(QMainWindow):
         # path = QFileDialog.getOpenFileName(self, "Open")[0]
         # if path:
         #     print(path)
+
         path='C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
         self.Container = Container(path, 'Main', '3')
+
         # refframe = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/Main/Rev3.yaml'
         try:
             with open(self.Container.refframe) as file:
@@ -304,6 +305,6 @@ class UI(QMainWindow):
 
 app=QApplication([])
 window = UI()
-app.exec_()
+sys.exit(app.exec_())
 
 

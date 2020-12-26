@@ -40,7 +40,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="Map">
      <attribute name="title">
@@ -356,8 +356,8 @@
      <widget class="QGraphicsView" name="graphicsView">
       <property name="geometry">
        <rect>
-        <x>620</x>
-        <y>110</y>
+        <x>10</x>
+        <y>70</y>
         <width>371</width>
         <height>291</height>
        </rect>
@@ -366,8 +366,8 @@
      <widget class="QGraphicsView" name="graphicsView_3">
       <property name="geometry">
        <rect>
-        <x>40</x>
-        <y>30</y>
+        <x>610</x>
+        <y>70</y>
         <width>371</width>
         <height>291</height>
        </rect>
@@ -376,8 +376,8 @@
      <widget class="QLabel" name="label_6">
       <property name="geometry">
        <rect>
-        <x>40</x>
-        <y>0</y>
+        <x>620</x>
+        <y>40</y>
         <width>121</width>
         <height>31</height>
        </rect>
@@ -389,8 +389,8 @@
      <widget class="QLabel" name="label_7">
       <property name="geometry">
        <rect>
-        <x>620</x>
-        <y>80</y>
+        <x>10</x>
+        <y>30</y>
         <width>131</width>
         <height>31</height>
        </rect>
@@ -402,8 +402,8 @@
      <widget class="QTableView" name="containerlisttable_2">
       <property name="geometry">
        <rect>
-        <x>620</x>
-        <y>410</y>
+        <x>10</x>
+        <y>370</y>
         <width>371</width>
         <height>131</height>
        </rect>
@@ -421,8 +421,8 @@
      <widget class="QPushButton" name="returncontlist_2">
       <property name="geometry">
        <rect>
-        <x>620</x>
-        <y>540</y>
+        <x>10</x>
+        <y>510</y>
         <width>271</width>
         <height>31</height>
        </rect>
@@ -431,11 +431,11 @@
        <string>Return List of Available Containers</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="commitNewButton">
       <property name="geometry">
        <rect>
-        <x>40</x>
-        <y>520</y>
+        <x>610</x>
+        <y>560</y>
         <width>131</width>
         <height>28</height>
        </rect>
@@ -444,11 +444,11 @@
        <string>Commit New Container</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="lineEdit">
+     <widget class="QLineEdit" name="containerName_lineEdit">
       <property name="geometry">
        <rect>
-        <x>120</x>
-        <y>330</y>
+        <x>720</x>
+        <y>370</y>
         <width>113</width>
         <height>22</height>
        </rect>
@@ -457,8 +457,8 @@
      <widget class="QLabel" name="label_8">
       <property name="geometry">
        <rect>
-        <x>40</x>
-        <y>330</y>
+        <x>610</x>
+        <y>370</y>
         <width>91</width>
         <height>16</height>
        </rect>
@@ -470,8 +470,8 @@
      <widget class="QLabel" name="label_9">
       <property name="geometry">
        <rect>
-        <x>40</x>
-        <y>360</y>
+        <x>610</x>
+        <y>400</y>
         <width>111</width>
         <height>16</height>
        </rect>
@@ -480,21 +480,21 @@
        <string>Container Description</string>
       </property>
      </widget>
-     <widget class="QPlainTextEdit" name="plainTextEdit">
+     <widget class="QPlainTextEdit" name="messageText">
       <property name="geometry">
        <rect>
-        <x>150</x>
-        <y>436</y>
+        <x>720</x>
+        <y>476</y>
         <width>391</width>
         <height>71</height>
        </rect>
       </property>
      </widget>
-     <widget class="QPlainTextEdit" name="plainTextEdit_2">
+     <widget class="QPlainTextEdit" name="descriptionText">
       <property name="geometry">
        <rect>
-        <x>150</x>
-        <y>360</y>
+        <x>720</x>
+        <y>400</y>
         <width>391</width>
         <height>71</height>
        </rect>
@@ -503,8 +503,8 @@
      <widget class="QLabel" name="label_10">
       <property name="geometry">
        <rect>
-        <x>40</x>
-        <y>440</y>
+        <x>610</x>
+        <y>480</y>
         <width>101</width>
         <height>16</height>
        </rect>
@@ -526,47 +526,34 @@
        <string>Select Type of File</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_2">
-      <property name="geometry">
-       <rect>
-        <x>430</x>
-        <y>130</y>
-        <width>93</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Add File Object</string>
-      </property>
-     </widget>
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>430</x>
-        <y>50</y>
-        <width>84</width>
-        <height>76</height>
+        <y>70</y>
+        <width>161</width>
+        <height>83</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QRadioButton" name="radioButton">
+        <widget class="QPushButton" name="inputFileButton">
          <property name="text">
-          <string>Input</string>
+          <string>Add Input File from Reference</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="radioButton_2">
+        <widget class="QPushButton" name="requiredFileButton">
          <property name="text">
-          <string>Required</string>
+          <string>Add Required File</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="radioButton_3">
+        <widget class="QPushButton" name="outputFileButton">
          <property name="text">
-          <string>Output</string>
+          <string>Add Output File</string>
          </property>
         </widget>
        </item>
@@ -594,7 +581,7 @@
      <x>0</x>
      <y>0</y>
      <width>1306</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProfile">

@@ -17,12 +17,17 @@ from datetime import datetime
 fileobjtypes = ['inputObjs', 'requiredObjs', 'outputObjs']
 Rev = 'Rev'
 
+blankcontainer = {'containerName':"" ,'containerId':"",'inputObjs':[] , 'outputObjs':[] , 'requiredObjs':[] ,'references':[] ,'allowedUser':[] }
 
 class Container:
-    def __init__(self, containerfn,currentbranch='Main',revnum='1'):
-        self.containerworkingfolder = os.path.dirname(containerfn)
-        with open(containerfn) as file:
-            containeryaml = yaml.load(file, Loader=yaml.FullLoader)
+    def __init__(self, containerfn = 'Default',currentbranch='Main',revnum='1'):
+        if containerfn == 'Default':
+            containeryaml = blankcontainer
+            self.containerworkingfolder = 'C:/Users/happy/Documents/GitHub/saga/newContainers'
+        else:
+            self.containerworkingfolder = os.path.dirname(containerfn)
+            with open(containerfn) as file:
+                containeryaml = yaml.load(file, Loader=yaml.FullLoader)
         self.containerfn = containerfn
         self.containerName = containeryaml['containerName']
         self.containerId = containeryaml['containerId']
@@ -150,12 +155,25 @@ class Container:
             framestr = framestr + change['ContainerObjName'] + '     ' + change['reason'] + '\n'
         return framestr
 
-    def save(self):
+    def save(self,containerName):
+        if self.containerfn == 'Default':
+            self.containerfn = containerName
         dictout = {}
-        outyaml = open(os.path.join(self.containerworkingfolder, self.containerfn), 'w')
+        outyaml = open(os.path.join(self.containerworkingfolder, self.containerfn + '.yaml'), 'w')
         keytosave = ['containerName', 'containerId', 'outputObjs', 'inputObjs', 'requiredObjs', 'references']
         for key, value in vars(self).items():
             if key in keytosave:
                 dictout[key] = value
         yaml.dump(dictout, outyaml)
         outyaml.close()
+
+    def addFileObject(self, fileInfo, fileType:str):
+        print(fileType)
+        if fileType in ['Input', 'refOutput']:
+            self.inputObjs.append(fileInfo)
+            print(self.inputObjs)
+        elif fileType == 'Required':
+            self.requiredObjs.append(fileInfo)
+            print(self.requiredObjs)
+        elif fileType == 'Output':
+            self.outputObjs.append(fileInfo)
