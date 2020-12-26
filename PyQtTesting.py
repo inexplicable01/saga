@@ -6,6 +6,7 @@ from Graphics.QAbstract.ContainerListModel import ContainerListModel
 from Graphics.CGuiControls import ContainerMap
 from Graphics.DetailedMap import DetailedMap
 from Graphics.TrayActions import SignIn, SignOut
+from Graphics.Dialogs import ErrorMessage, inputFileDialog, selectFileDialog
 import yaml
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
@@ -17,103 +18,16 @@ import requests
 import json
 from functools import partial
 from Config import BASE
-
+from ContainerDetails import refContainer
+from NewContainerGraphics import newContainerGraphics
 
 if os.path.exists("token.txt"):
   os.remove("token.txt")
 
 
-class ErrorMessage(QMessageBox):
-    def __init__(self, parent=None):
-        super().__init__()
-        self.setWindowTitle('ErrorMessage')
-        self.setIcon(QMessageBox.Warning)
-        self.setText('Please Select File Type')
-        self.setStandardButtons(QMessageBox.Ok)
-    def showError(self):
-        self.exec_()
-
-class InputDialog(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        uic.loadUi("Graphics/file_info.ui", self)
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
-        self.openDirButton.clicked.connect(self.openDirectory)
-
-
-    def openDirectory(self):
-        self.openDirectoryDialog = QFileDialog.getOpenFileName(self, "Get Dir Path")
-        self.lineEdit_2.setText(self.openDirectoryDialog[0])
-
-    def getInputs(self):
-        if self.exec_() == QDialog.Accepted:
-            return (self.lineEdit.text(), self.lineEdit_2.text(), self.lineEdit_3.text(), self.lineEdit_4.text())
-        else:
-            return None
 
 
 
-class TableModel(QAbstractTableModel):
-    def __init__(self, data):
-        super(TableModel, self).__init__()
-        self._data = data
-
-    def data(self, index, role):
-        if role == Qt.DisplayRole:
-            # See below for the nested-list data structure.
-            # .row() indexes into the outer list,
-            # .column() indexes into the sub-list
-            return self._data[index.row()][index.column()]
-
-    # def headerData(self, section, Qt_Orientation,role):
-    #     return headers[section]
-
-    def rowCount(self, index):
-        # The length of the outer list.
-        return len(self._data)
-
-    def columnCount(self, index):
-        # The following takes the first sub-list, and returns
-        # the length (only works if all rows are an equal length)
-        return len(self._data[0])
-
-class ContainerListModel(QAbstractTableModel):
-    def __init__(self, containerinfolist):
-        super(ContainerListModel, self).__init__()
-        containdata=[]
-        for containerid, containvalue in containerinfolist.items():
-            for branch in containvalue['branches']:
-                row = [containerid, containvalue['ContainerDescription'] ,
-                       branch['name'],
-                       branch['revcount']]
-                containdata.append(row)
-        self.containdata = containdata
-
-    def data(self, index, role):
-        if role == Qt.DisplayRole:
-            # See below for the nested-list data structure.
-            # .row() indexes into the outer list,
-            # .column() indexes into the sub-list
-            return self.containdata[index.row()][index.column()]
-
-
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return headers[section]
-            # return 'Column {}'.format(section + 1)
-        # if orientation == Qt.Vertical and role == Qt.DisplayRole:
-        #     return 'Row {}'.format(section + 1)
-        # return super().headerData(section, orientation, role)
-
-    def rowCount(self, index):
-        # The length of the outer list.
-        return len(self.containdata)
-
-    def columnCount(self, index):
-        # The following takes the first sub-list, and returns
-        # the length (only works if all rows are an equal length)
-        return len(self.containdata[0])
 
 # Form, Window=uic.loadUiType()
 class UI(QMainWindow):
@@ -129,6 +43,7 @@ class UI(QMainWindow):
         # self.refreshBttn.setText('Check Button')
         self.refreshBttn.clicked.connect(self.checkdelta)
         self.returncontlist.clicked.connect(self.getContainerInfo)
+        self.returncontlist_2.clicked.connect(self.getContainerInfo2)
         self.generateContainerBttn.clicked.connect(self.generateContainerMap)
 
         # Section to set up adding new file button and file type selection - Jimmy
@@ -140,11 +55,14 @@ class UI(QMainWindow):
         # self.containerName = [self.inputCheck,self.requiredCheck,self.outputCheck]
         # print(self.containerName)
 
-        self.radioButton.pressed.connect(self.selectFileType)
-        self.radioButton_2.pressed.connect(self.selectFileType)
-        self.radioButton_3.pressed.connect(self.selectFileType)
-        self.newContainerInputs = []
-        self.pushButton_2.clicked.connect(self.newFileInfo)
+        # Add File Button Connections:
+        self.inputFileButton.setEnabled(False)
+        self.tempContainer = Container()
+        self.inputFileButton.clicked.connect(self.newFileInfoInputs)
+        self.requiredFileButton.clicked.connect(partial(self.newFileInfo, 'Required'))
+        self.outputFileButton.clicked.connect(partial(self.newFileInfo, 'Output'))
+
+        self.commitNewButton.clicked.connect(self.createNewContainer)
 
         self.navButton.clicked.connect(self.navigateTotab)
 
@@ -172,9 +90,9 @@ class UI(QMainWindow):
 
         self.checkUserStatus()
 
-    def selectFileType(self):
-        buttonName = self.sender()
-        self.newContainerInputs = [buttonName.text()]
+    # def selectFileType(self):
+    #     buttonName = self.sender()
+    #     self.newContainerInputs = [buttonName.text()]
 
     def resetrequest(self):
         response = requests.get(BASE + 'RESET')
@@ -197,16 +115,55 @@ class UI(QMainWindow):
         # self.containerlisttable.setHorizontalHeaderLabels(['asd','asd','asd','df'])
 
 
-    def newFileInfo(self):
-        if not self.newContainerInputs:
-            error = ErrorMessage()
-            error.showError()
+    def getContainerInfo2(self):
+        response = requests.get(BASE + 'CONTAINERS/List')
+        # print(response.headers['containerinfolist'])
+        self.infodump.append(response.headers['response'])
+        containerinfolist = json.loads(response.headers['containerinfolist'])
+        self.containerlisttable_2.setModel(ContainerListModel(containerinfolist))
+        self.containerlisttable_2.clicked.connect(partial(refContainer, self))
+
+    def newFileInfoInputs(self):
+        dialogWindow = inputFileDialog(self.containerName,self.containerObjName)
+        fileInfo = dialogWindow.getInputs()
+        if fileInfo:
+            self.tempContainer.addFileObject(fileInfo, self.fileType)
+        newContainerGraphics(self.tempContainer,self)
+
+    def newFileInfo(self, fileType:str, containerName="", containerObjName=""):
+        self.fileType = fileType
+        if fileType in ['refOutput','Input']:
+            self.inputFileButton.setEnabled(True)
+            self.containerObjName = containerObjName
+            self.containerName = containerName
+            # inputWindow = InputDialog(fileType)
+            # inputs = inputWindow.getInputs()
+            # if inputs:
+            #     self.newContainerInputs.extend(inputs)
+            #     self.containerAddition(inputs[0])
+            # if output file selected:
+            # self.newContainerInputs.extend(inputs)
+            # self.containerAddition(inputs[0])
         else:
-            inputwindow = InputDialog()
-            inputs = inputwindow.getInputs()
-            if inputs:
-                self.newContainerInputs.extend(inputs)
-                self.containerAddition(inputs[0])
+            self.inputFileButton.setEnabled(False)
+            fileInfoDialog = selectFileDialog(self.fileType)
+            fileInfo = fileInfoDialog.getInputs()
+            if fileInfo:
+                self.tempContainer.addFileObject(fileInfo, self.fileType)
+                newContainerGraphics(self.tempContainer,self)
+
+    def createNewContainer(self):
+        print(self.descriptionText.toPlainText())
+        if '' not in [self.containerName_lineEdit.text(), self.descriptionText.toPlainText(), self.messageText.toPlainText()]:
+            print('working?')
+            self.tempContainer.containerName = self.containerName_lineEdit.text()
+            self.tempContainer.containerId = self.containerName_lineEdit.text()
+            self.tempContainer.save(self.tempContainer.containerName)
+        else:
+            self.errorMessage = ErrorMessage()
+            self.errorMessage.showError()
+
+
 
     def generateContainerMap(self):
         response = requests.get(BASE + 'CONTAINERS/List')
@@ -233,6 +190,7 @@ class UI(QMainWindow):
                     self.userdata = usertoken['data']
                 else:
                     self.userstatuslbl.setText('Please sign in')
+                    self.userdata = None
 
         except Exception as e:
             print('No User Signed in yet')
@@ -243,14 +201,6 @@ class UI(QMainWindow):
     #     text = filemap.addText(title)
     #     text.setPos(-100, -200)
     #     self.graphicsView_3.setScene(filemap)
-
-
-    def containerAddition(self, title):
-        filemap = QGraphicsScene()
-        filemap.addRect(-100, -200, 40, 40, QPen(Qt.black), QBrush(Qt.yellow))
-        text = filemap.addText(title)
-        text.setPos(-100, -200)
-        self.graphicsView_3.setScene(filemap)
 
 
 
