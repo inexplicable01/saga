@@ -1,11 +1,17 @@
 import hashlib
 import os
+import json
+from datetime import datetime
+from Frame.Connection import FileConnection
 
-class FileTrackObj:
-    def __init__(self, ContainerObjName, localfilepath, file_name,style=None,lastEdited=None, committedby='waichak', md5=None,file_id=None,commitUTCdatetime=None):
-        self.ContainerObjName = ContainerObjName
+class FileTrack:
+    def __init__(self, FileHeader, localfilepath, \
+                 file_name, connection:FileConnection=None, style=None, lastEdited=None, committedby='waichak', \
+                 md5=None, file_id=None, commitUTCdatetime=None,
+                 ):
+        self.FileHeader = FileHeader
         self.file_name = file_name
-        if  md5 is None:
+        if md5 is None:
             fullpath = os.path.join(localfilepath, file_name)
             fileb = open(fullpath , 'rb')
             md5hash = hashlib.md5(fileb.read())
@@ -16,22 +22,37 @@ class FileTrackObj:
         self.style = style
         self.file_id = file_id
         self.commitUTCdatetime = commitUTCdatetime
+        self.connection=connection
 
-    def yamlify(self):
+    def dictify(self):
+        ###Should__dict__be used instead?
         dictout = {}
         for key, value in vars(self).items():
-            dictout[key] = value
+            if key=='connection':
+                if value:
+                    dictout[key] = value.dictify()
+                else:
+                    dictout[key] = None
+            else:
+                dictout[key] = value
         return dictout
 
     def printdetails(self):
         print(self.md5)
 
-class InputFileObj(FileTrackObj):
-    def __init__(self, ContainerObjName, file_name,localFilePath,style,fromContainerId,md5=None,file_id=None,commitUTCdatetime=None):
-        super().__init__(self, ContainerObjName, file_name,localFilePath,style,md5,file_id,commitUTCdatetime)
-        self.fromContainerId=fromContainerId
-
-class OutFileObj(FileTrackObj):
-    def __init__(self, ContainerObjName, file_name,localFilePath,style,toContainerID,md5=None,file_id=None,commitUTCdatetime=None):
-        super().__init__(self, ContainerObjName, file_name,localFilePath,style,md5,file_id,commitUTCdatetime)
-        self.toContainerID=toContainerID
+    def __repr__(self):
+        str=''
+        # print('FileHeader:   '+ self.FileHeader)
+        str +='\nFileHeader:   '+ self.FileHeader + '\n'
+        str += 'file_name:   ' + self.file_name + '\n'
+        str += 'md5:   ' + self.md5 + '\n'
+        if self.lastEdited:
+            str += 'lastEdited:   ' + datetime.fromtimestamp(self.commitUTCdatetime).isoformat()+ '\n'
+        str += 'committedby:   ' + self.committedby+ '\n'
+        if self.style:
+            str += 'style:   ' + self.style+ '\n'
+        str += 'file_id:   ' + self.file_id+ '\n'
+        if self.commitUTCdatetime:
+            str += 'commitUTCdatetime:   ' + datetime.fromtimestamp(self.commitUTCdatetime).isoformat()+ '\n'
+        str += 'connection:     ' + self.connection.__repr__() + '\n'
+        return str

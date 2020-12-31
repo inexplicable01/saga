@@ -1,8 +1,0 @@
-containerId: specialsauce
-containerName: specialsauce
-inputObjs:
-outputObjs:
-references:
-requiredObjs:
-- ContainerObjName: special1
-- ContainerObjName: special2

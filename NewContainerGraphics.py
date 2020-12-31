@@ -6,7 +6,7 @@ from Graphics.QAbstract.ContainerListModel import ContainerListModel
 import yaml
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
-from Frame.FileObjects import FileTrackObj
+from Frame.FileObjects import FileTrack
 from Frame.commit import commit
 import os
 import sys
@@ -34,6 +34,9 @@ class newContainerGraphics():
 
         self.inputRect = self.createInputRect()
 
+
+        #### waichak notes:  Something doesn't feel right about how there are 6 for loops.....now that the container layout makes more sense
+        #### you should be able to compress into one loop.
         for key, rectBox in self.inputRectBox.items():
             self.scene.addItem(rectBox)
 

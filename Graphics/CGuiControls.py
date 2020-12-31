@@ -6,7 +6,7 @@ from Graphics.QAbstract.ContainerListModel import ContainerListModel
 import yaml
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
-from Frame.FileObjects import FileTrackObj
+from Frame.FileObjects import FileTrack
 from Frame.commit import commit
 import os
 import sys
@@ -52,23 +52,26 @@ class ContainerMap():
 
     def editcontainerConnections(self):
         for container in self.activeContainers.values():
-            # print(container.containerId)
-            if container.inputObjs:
-                for input in container.inputObjs:
-                    # print('in' + input['Container'] + ' to '  + container.containerId + 'for file' + input['ContainerObjName'])
-                    if input['Container'] in self.containerConnections.keys():
-                        if container.containerId not in self.containerConnections[input['Container']]:
-                            self.containerConnections[input['Container']].append(container.containerId)
-                    else:
-                        self.containerConnections[input['Container']]=[container.containerId]
-            if container.outputObjs:
-                if container.containerId not in self.containerConnections.keys():
-                    self.containerConnections[container.containerId]=[]
-                for output in container.outputObjs:
-                    # print('out' + container.containerId + ' to '  + output['Container'] + 'for file' + output['ContainerObjName'])
-                    if output['Container'] not in self.containerConnections[container.containerId]:
-                        self.containerConnections[container.containerId].append(output['Container'])
-        print(self.containerConnections)
+            ##Loops through all containers and build connection by looping through each FileHeaders to build map.
+            ## Doesn't care so much about individual FileHeader, just cares about Container to Container
+            for FileHeader, FileInfo in container.FileHeaders.items():
+                ##Identify upstream and downstream containerId
+                upstreamContainerId=None
+                downstreamContainerId=None
+                if FileInfo['type']=='input':
+                    upstreamContainerId = FileInfo['Container']
+                    downstreamContainerId = container.containerId
+                elif FileInfo['type'] in ['output', 'reference']:
+                    upstreamContainerId = container.containerId
+                    downstreamContainerId = FileInfo['Container']
+                if FileInfo['Container'] not in self.activeContainers.keys() or upstreamContainerId is None:
+                    continue # if containerID not in current map or if type isn't input or output
+                if upstreamContainerId in self.containerConnections.keys():
+                    if downstreamContainerId not in self.containerConnections[upstreamContainerId]:
+                        self.containerConnections[upstreamContainerId].append(downstreamContainerId)
+                else:
+                    self.containerConnections[upstreamContainerId] = [downstreamContainerId]
+
 
     def addActiveContainers(self, container:Container):
         self.activeContainers[container.containerId]=container
@@ -78,8 +81,8 @@ class ContainerMap():
         for container in self.activeContainers.values():
             # print(container.containerName)
             text = self.containerscene.addText(container.containerName)
-            self.activeContainersObj[container.containerName]=containerRect(idx, text, self.drawline, self.detailedmap,self.selecteddetail)
-            self.containerscene.addItem(self.activeContainersObj[container.containerName])
+            self.activeContainersObj[container.containerId]=containerRect(idx, text, self.drawline, self.detailedmap,self.selecteddetail)
+            self.containerscene.addItem(self.activeContainersObj[container.containerId])
             idx +=1
         self.drawline()
 

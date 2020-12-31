@@ -41,3 +41,13 @@ sagatest.py
 *.pyc
 *.pyc
 
+printoutyamls.py
+hackpatch.py
+ContainerMapWorkDir/specialsauce_containerstate.yaml
+ContainerMapWorkDir/ContainerD_containerstate.yaml
+ContainerMapWorkDir/ContainerC_containerstate.yaml
+ContainerMapWorkDir/ContainerB_containerstate.yaml
+specialsauce2/SS2ExcelSheet.xlsx
+specialsauce2/Main/Rev1.yaml
+specialsauce2/containerstate.yaml
+specialsauce2/containerstate.yaml
