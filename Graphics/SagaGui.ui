@@ -40,7 +40,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="Map">
      <attribute name="title">
@@ -335,19 +335,6 @@
        <string>RebaseButton</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="navButton">
-      <property name="geometry">
-       <rect>
-        <x>220</x>
-        <y>380</y>
-        <width>93</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>nav</string>
-      </property>
-     </widget>
     </widget>
     <widget class="QWidget" name="New">
      <attribute name="title">
@@ -528,10 +515,10 @@
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>420</x>
-        <y>60</y>
-        <width>161</width>
-        <height>161</height>
+        <x>430</x>
+        <y>70</y>
+        <width>183</width>
+        <height>100</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -587,7 +574,7 @@
      <x>0</x>
      <y>0</y>
      <width>1306</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProfile">

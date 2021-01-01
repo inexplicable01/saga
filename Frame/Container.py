@@ -11,19 +11,22 @@ import time
 import requests
 import json
 
-
+from hackpatch import workingdir
+from Frame.SagaUtil import FrameNumInBranch
 from datetime import datetime
 
 fileobjtypes = ['inputObjs', 'requiredObjs', 'outputObjs']
 Rev = 'Rev'
 
-blankcontainer = {'containerName':"" ,'containerId':"",'inputObjs':[] , 'outputObjs':[] , 'requiredObjs':[] ,'references':[] }
+blankcontainer = {'containerName':"" ,'containerId':"",'FileHeaders': {} ,'allowedUser':[] }
 
 class Container:
     def __init__(self, containerfn = 'Default',currentbranch='Main',revnum='1'):
         if containerfn == 'Default':
             containeryaml = blankcontainer
-            self.containerworkingfolder = 'newContainers/'
+
+            self.containerworkingfolder = workingdir##something we need to figure out in the future
+
         else:
             self.containerworkingfolder = os.path.dirname(containerfn)
             with open(containerfn) as file:
@@ -31,30 +34,27 @@ class Container:
         self.containerfn = containerfn
         self.containerName = containeryaml['containerName']
         self.containerId = containeryaml['containerId']
-        self.inputObjs = containeryaml['inputObjs']
-        self.outputObjs = containeryaml['outputObjs']
-        self.requiredObjs = containeryaml['requiredObjs']
-        self.references = containeryaml['references']
+        self.FileHeaders = containeryaml['FileHeaders']
+        self.allowUsers = containeryaml['allowedUser']
         # self.yamlTracking = containeryaml['yamlTracking']
         self.currentbranch = currentbranch
-        self.revnum = revnum
-        self.filestomonitor = []
-        for typeindex, fileobjtype in enumerate(fileobjtypes):
-            # print(typeindex, fileobjtype)
-            if getattr(self, fileobjtype):
-                for fileindex, fileObj in enumerate(getattr(self, fileobjtype)):
-                    self.filestomonitor.append(fileObj['ContainerObjName'])
-        # print(self.yamlTracking['currentbranch'] + Rev  + str(self.yamlTracking['rev']) +".yaml")
-        self.refframe = os.path.join(self.containerworkingfolder,
-                                     currentbranch +'/'+ Rev + revnum + ".yaml")
+        self.filestomonitor = {}
+        for FileHeader, file in self.FileHeaders.items():
+            self.filestomonitor[FileHeader]= file['type']
+        if containerfn == 'Default':
+            self.revnum = 1
+            self.refframe ='dont have one yet'
+        else:
+            self.refframe, self.revnum = FrameNumInBranch( \
+                os.path.join(self.containerworkingfolder,  currentbranch), \
+                revnum)
 
-    def commit(self, cframe: Frame, commitmsg, BASE):
+    def commit(self, cframe: Frame, commitmsg, authtoken, BASE):
         committed = False
-
         # # frameYamlfileb = framefs.get(file_id=ObjectId(curframe.FrameInstanceId))
         with open(self.refframe) as file:
             frameRefYaml = yaml.load(file, Loader=yaml.FullLoader)
-        frameRef = Frame(frameRefYaml, self.containerworkingfolder)
+        frameRef = Frame(frameRefYaml, self.filestomonitor, self.containerworkingfolder)
 
         # allowCommit, changes = self.Container.checkFrame(cframe)
         print(frameRef.FrameName)
@@ -77,11 +77,15 @@ class Container:
                 }
 
         updateinfojson = json.dumps(updateinfo)
-        print (updateinfo)
-        # response = requests.post(BASE + 'FRAMES',files=filesToUpload)
+        # print (updateinfo)
+
+
         response = requests.post(BASE + 'FRAMES',
+                                 headers={"Authorization": 'Bearer ' + authtoken['auth_token']},
                                  data={'containerID': self.containerId, 'branch': self.currentbranch,
                                        'updateinfo': updateinfojson, 'commitmsg':commitmsg},  files=filesToUpload)
+
+
         print(response)
         if response.headers['commitsuccess']:
             # Updating new frame information
@@ -90,7 +94,7 @@ class Container:
             # Frame(frameyaml,None)
             with open(frameyamlfn) as file:
                 frameyaml = yaml.load(file, Loader=yaml.FullLoader)
-            newframe = Frame(frameyaml, self.containerworkingfolder)
+            newframe = Frame(frameyaml, self.filestomonitor, self.containerworkingfolder)
             # Write out new frame information
 
             # The frame file is saved to the frame FS
@@ -117,13 +121,9 @@ class Container:
 
     def checkFrame(self, cframe):
         allowCommit = False
-        cframe.updateFrame(self.filestomonitor)
-
-        with open(self.refframe) as file:
-            fyaml = yaml.load(file, Loader=yaml.FullLoader)
-        ref = Frame(fyaml, self.containerworkingfolder)
-        print('ref', ref.FrameName)
-        changes = cframe.compareToAnotherFrame(ref, self.filestomonitor)
+        cframe.updateFrame()
+        ref = Frame(self.refframe, self.filestomonitor, self.containerworkingfolder)
+        changes = cframe.compareToAnotherFrame(ref)
         # print(len(changes))
         if len(changes) > 0:
             allowCommit = True
@@ -138,7 +138,7 @@ class Container:
             with open(yamlfn) as file:
                 pastYaml = yaml.load(file, Loader=yaml.FullLoader)
             # print(pastYaml)
-            pastframe = Frame(pastYaml, self.containerworkingfolder)
+            pastframe = Frame(pastYaml, self.filestomonitor, self.containerworkingfolder)
             # print(pastframe.commitMessage)
             historyStr = historyStr + pastframe.FrameName + '\t' + pastframe.commitMessage + '\t\t\t\t' + \
                          time.ctime(pastframe.commitUTCdatetime) + '\t\n'
@@ -155,7 +155,7 @@ class Container:
             self.containerfn = containerName
         dictout = {}
         outyaml = open(os.path.join(self.containerworkingfolder, self.containerfn + '.yaml'), 'w')
-        keytosave = ['containerName', 'containerId', 'outputObjs', 'inputObjs', 'requiredObjs', 'references']
+        keytosave = ['containerName', 'containerId', 'FileHeaders','allowedUser']
         for key, value in vars(self).items():
             if key in keytosave:
                 dictout[key] = value

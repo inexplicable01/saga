@@ -1,13 +1,14 @@
 containerId: ContainerA
 containerName: ContainerA
-inputObjs:
-references:
-outputObjs:
-- Container: ContainerC
-  ContainerObjName: Dogs
-- Container: ContainerC
-  ContainerObjName: MUD
-requiredObjs:
-- ContainerObjName: AModel1
+FileHeaders:
+  Dogs:
+    Container: ContainerC
+    type: output
+  MUD:
+    Container: ContainerC
+    type: output
+  AModel1:
+    Container: here
+    type: required
 allowedUser:
 - useraemail@gmail.com

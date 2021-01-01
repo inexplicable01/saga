@@ -6,7 +6,7 @@ from Graphics.QAbstract.ContainerListModel import ContainerListModel
 import yaml
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
-from Frame.FileObjects import FileTrackObj
+from Frame.FileObjects import FileTrack
 from Frame.commit import commit
 import os
 import sys

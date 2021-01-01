@@ -10,7 +10,7 @@ from Graphics.Dialogs import ErrorMessage, inputFileDialog, selectFileDialog
 import yaml
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
-from Frame.FileObjects import FileTrackObj
+from Frame.FileObjects import FileTrack
 from Frame.commit import commit
 import os
 import sys
@@ -21,13 +21,11 @@ from Config import BASE
 from ContainerDetails import refContainer
 from NewContainerGraphics import newContainerGraphics
 
+boxwidth = 40
+boxheight = 40
+
 if os.path.exists("token.txt"):
   os.remove("token.txt")
-
-
-
-
-
 
 # Form, Window=uic.loadUiType()
 class UI(QMainWindow):
@@ -36,8 +34,6 @@ class UI(QMainWindow):
         super(UI, self).__init__()
         uic.loadUi("Graphics/SagaGui.ui", self)
 
-
-        self.fileobjtypes = ['inputObjs', 'requiredObjs', 'outputObjs']
         self.openContainerBttn.setText('Open Container')
         self.openContainerBttn.clicked.connect(self.readcontainer)
         # self.refreshBttn.setText('Check Button')
@@ -48,13 +44,6 @@ class UI(QMainWindow):
 
         # Section to set up adding new file button and file type selection - Jimmy
         #Need to read and learn more about slots/events/signals, toggling of radio button won't send info to btnstate
-        # without lambda function, potential memory leak?
-        # self.radioButton.toggled.connect(lambda:self.btnstate(self.radioButton))
-        # self.radioButton_2.toggled.connect(lambda:self.btnstate(self.radioButton_2))
-        # self.radioButton_3.toggled.connect(lambda:self.btnstate(self.radioButton_3))
-        # self.containerName = [self.inputCheck,self.requiredCheck,self.outputCheck]
-        # print(self.containerName)
-
         # Add File Button Connections:
         self.inputFileButton.setEnabled(False)
         self.removeFileButton.setEnabled(False)
@@ -66,8 +55,6 @@ class UI(QMainWindow):
         self.outputFileButton.clicked.connect(partial(self.newFileInfo, 'Output'))
 
         self.commitNewButton.clicked.connect(self.createNewContainer)
-
-        self.navButton.clicked.connect(self.navigateTotab)
 
         self.counter= True
         self.resetbutton.clicked.connect(self.resetrequest)
@@ -82,6 +69,8 @@ class UI(QMainWindow):
         self.show()
 
         self.userdata=None
+        self.authtoken = None
+        self.tabWidget.setEnabled(False)
 
         ###########Gui Variables##############
         self.detailedmap = DetailedMap(self.detailsMapView, self.selecteddetail)
@@ -93,10 +82,6 @@ class UI(QMainWindow):
 
         self.checkUserStatus()
 
-    # def selectFileType(self):
-    #     buttonName = self.sender()
-    #     self.newContainerInputs = [buttonName.text()]
-
     def resetrequest(self):
         response = requests.get(BASE + 'RESET')
         print(response.content)
@@ -105,8 +90,8 @@ class UI(QMainWindow):
         response = requests.post(BASE + 'RESET')
         print(response.content)
 
-    def navigateTotab(self):
-        self.tabWidget.setCurrentIndex(2)
+    # def navigateTotab(self):
+    #     self.tabWidget.setCurrentIndex(2)
 
     def getContainerInfo(self):
         response = requests.get(BASE + 'CONTAINERS/List')
@@ -114,8 +99,6 @@ class UI(QMainWindow):
         self.infodump.append(response.headers['response'])
         containerinfolist = json.loads(response.headers['containerinfolist'])
         self.containerlisttable.setModel(ContainerListModel(containerinfolist))
-
-        # self.containerlisttable.setHorizontalHeaderLabels(['asd','asd','asd','df'])
 
 
     def getContainerInfo2(self):
@@ -157,18 +140,10 @@ class UI(QMainWindow):
 
     def newFileInfo(self, fileType:str, containerName="", containerObjName=""):
         self.fileType = fileType
-        if fileType in ['refOutput','Input']:
+        if fileType in ['output','input']:
             self.inputFileButton.setEnabled(True)
             self.containerObjName = containerObjName
             self.containerName = containerName
-            # inputWindow = InputDialog(fileType)
-            # inputs = inputWindow.getInputs()
-            # if inputs:
-            #     self.newContainerInputs.extend(inputs)
-            #     self.containerAddition(inputs[0])
-            # if output file selected:
-            # self.newContainerInputs.extend(inputs)
-            # self.containerAddition(inputs[0])
         else:
             self.inputFileButton.setEnabled(False)
             fileInfoDialog = selectFileDialog(self.fileType)
@@ -186,7 +161,6 @@ class UI(QMainWindow):
         else:
             self.errorMessage = ErrorMessage()
             self.errorMessage.showError()
-
 
 
     def generateContainerMap(self):
@@ -212,20 +186,17 @@ class UI(QMainWindow):
                 if usertoken['status'] == 'success':
                     self.userstatuslbl.setText('User ' + usertoken['data']['email'] + ' Signed in')
                     self.userdata = usertoken['data']
+                    self.authtoken = authtoken
+                    self.tabWidget.setEnabled(True)
                 else:
+                    self.authtoken = None
                     self.userstatuslbl.setText('Please sign in')
                     self.userdata = None
 
+                    self.tabWidget.setEnabled(False)
+
         except Exception as e:
             print('No User Signed in yet')
-
-    # def containerMapView(self, title):
-    #     filemap = QGraphicsScene()
-    #     filemap.addRect(-100, -200, 40, 40, QPen(Qt.black), QBrush(Qt.yellow))
-    #     text = filemap.addText(title)
-    #     text.setPos(-100, -200)
-    #     self.graphicsView_3.setScene(filemap)
-
 
 
     def checkdelta(self):
@@ -236,12 +207,12 @@ class UI(QMainWindow):
             # print('c',changes)
             changesarr=[]
             for change in changes:
-                changesarr.append(change['ContainerObjName'])
-            for ContainerObjName in self.Container.filestomonitor:
-                if ContainerObjName in changesarr:
-                    self.sceneObj[ContainerObjName].setPen(QPen(Qt.red, 3))
+                changesarr.append(change['fileheader'])
+            for fileheader in self.Container.FileHeaders.keys():
+                if fileheader in changesarr:
+                    self.sceneObj[fileheader].setPen(QPen(Qt.red, 3))
                 else:
-                    self.sceneObj[ContainerObjName].setPen(QPen(Qt.black, 1))
+                    self.sceneObj[fileheader].setPen(QPen(Qt.black, 1))
 
             self.printToFrameText(changes)
                 # self.sceneObj[change].update()
@@ -257,7 +228,12 @@ class UI(QMainWindow):
             error_dialog.exec_()
             return
             # return
-        self.cframe, committed = self.Container.commit(self.cframe,self.commitmsgEdit.toPlainText(), BASE)
+        if self.userdata['email'] not in self.Container.allowUsers:
+            error_dialog.showMessage('You do not have the privilege to commit to this container')
+            error_dialog.exec_()
+            return
+            #
+        self.cframe, committed = self.Container.commit(self.cframe,self.commitmsgEdit.toPlainText(), self.authtoken, BASE)
         if committed:
             self.Container.save()
             self.framelabel.setText(self.cframe.FrameName)
@@ -271,51 +247,34 @@ class UI(QMainWindow):
         # frameText
 
     def readcontainer(self):
-
-        # path = QFileDialog.getOpenFileName(self, "Open")[0]
-        # if path:
-        #     print(path)
-        path='C:/Users/happy/Documents/GitHub/ContainerC/containerstate.yaml'
-        self.Container = Container(path, 'Main', '4')
-        # refframe = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/Main/Rev3.yaml'
-        try:
-            with open(self.Container.refframe) as file:
-                fyaml = yaml.load(file, Loader=yaml.FullLoader)
-        except:
-            print(sys.exc_info()[0])
-        print(self.Container.containerworkingfolder)
-        self.cframe = Frame(fyaml, self.Container.containerworkingfolder)
+        path='C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
+        self.Container = Container(path, 'Main', '1')
+        self.cframe = Frame(self.Container.refframe, self.Container.filestomonitor, self.Container.containerworkingfolder)
         print('self.cframe.FrameName')
         self.framelabel.setText(self.cframe.FrameName)
-
-        # self.commithist.setText(self.Container.commitMessage)
-        # self.Container.commithistory()
         self.commithist.append(self.Container.commithistory())
-        # print()
-
         scene = QGraphicsScene()
-        boxwidth= 40
-        boxheight = 40
         self.sceneObj={}
         # print(self.cframe.filestrack.keys())
-        colorscheme = {'inputObjs':Qt.yellow, 'outputObjs':Qt.green, 'requiredObjs':Qt.blue}
+        colorscheme = {'input':Qt.yellow, 'output':Qt.green, 'required':Qt.blue}
+        typeindex = {'input': 0, 'output': 1, 'required': 2}
+        typecounter = {'input': 0, 'output': 0, 'required': 0}
 
-        for typeindex, fileobjtype in enumerate(self.fileobjtypes):
-            # print(typeindex,fileobjtype)
-            for fileindex, fileObj in enumerate(getattr(self.Container,fileobjtype)):
-                # ellipse = scene.addEllipse(20, 20, 200, 70, QPen(Qt.red), QBrush(Qt.green))
-                self.sceneObj[fileObj['ContainerObjName']] = scene.addRect(-100 + 100*typeindex, -200 + 100*fileindex, boxwidth, boxheight, QPen(Qt.black), QBrush(colorscheme[fileobjtype]))
-                # print(inputObj['FileObjName'])
-                text = scene.addText(fileObj['ContainerObjName'])
-                text.setPos(-100+ 100*typeindex, -200 + 100*fileindex)
-                # print(fileObj['ContainerObjName'])
-                if fileObj['ContainerObjName'] in self.cframe.filestrack.keys():
-                    text = scene.addText(self.cframe.filestrack[fileObj['ContainerObjName']].file_name)
-                    text.setPos(-100+ 100*typeindex, -200 + 100 * fileindex +20)
-                else:
-                    text = scene.addText('Missing')
-                    text.setPos(-100+ 100*typeindex, -200 + 100 * fileindex +20)
-
+        for fileheader, fileinfo in self.Container.FileHeaders.items():
+            type = fileinfo['type']
+            if type=='references':
+                continue
+            self.sceneObj[fileheader] = scene.addRect(-100 + 100*typeindex[type], -200 + 100*typecounter[type],\
+                                                      boxwidth, boxheight, QPen(Qt.black), QBrush(colorscheme[type]))
+            text = scene.addText(fileheader)
+            text.setPos(-100+ 100*typeindex[type], -200 + 100*typecounter[type])
+            if fileheader in self.cframe.filestrack.keys():
+                text = scene.addText(self.cframe.filestrack[fileheader].file_name)
+                text.setPos(-100+ 100*typeindex[type], -200 + 100 * typecounter[type] +20)
+            else:
+                text = scene.addText('Missing')
+                text.setPos(-100+ 100*typeindex[type], -200 + 100 * typecounter[type] +20)
+            typecounter[type]+=1
         self.frameView.setScene(scene)
 
 app=QApplication([])

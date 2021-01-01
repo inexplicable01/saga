@@ -6,7 +6,7 @@ from Graphics.QAbstract.ContainerListModel import ContainerListModel
 import yaml
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
-from Frame.FileObjects import FileTrackObj
+from Frame.FileObjects import FileTrack
 from Frame.commit import commit
 import os
 import sys
@@ -62,17 +62,13 @@ class containerBox(QGraphicsRectItem):
         self.titletext.setPos(QPointF(10,10))
         self.inputbox={}
         self.outputbox = {}
-        if container.inputObjs:
+        if container.FileHeaders:
             idx =0
-            for fileobj in container.inputObjs:
-                print(fileobj['ContainerObjName'])
-                self.inputbox[fileobj['ContainerObjName']]=FileRect(parent=self, locF= -containerBoxWidth/2-25, idx= idx,fileobj=fileobj,type='Input')
-                idx+=1
-        if container.outputObjs:
-            idx = 0
-            for fileobj in container.outputObjs:
-                self.outputbox[fileobj['ContainerObjName']]=FileRect(parent=self, locF= containerBoxWidth/2+25, idx= idx,fileobj=fileobj, type='Output')
-                idx += 1
+            for fileheader, fileinfo in container.FileHeaders.items():
+                if fileinfo['type'] in ['input', 'output']:
+                    print(fileheader)
+                    self.inputbox[fileheader]=FileRect(parent=self, locF= -containerBoxWidth/2-25, idx= idx,fileinfo=fileinfo,fileheader=fileheader,type=fileinfo['type'])
+                    idx+=1
         # self.subrect = FileRect(self)
 
 class ConnectionBox():
@@ -89,25 +85,17 @@ class ConnectionBox():
 
         self.fileObj = []
 
-        if containerIn.outputObjs and containerOut.inputObjs:
-            idx=0
-            for infileobj in containerIn.outputObjs:
-                # print(infileobj['ContainerObjName'])
-                for outfileobj in containerOut.inputObjs:
-                    if infileobj['ContainerObjName']==outfileobj['ContainerObjName']:
-                        # self.fileObj.append(QGraphicsRectItem(containerBoxWidth*-0.5, 100 +idx*100,  containerBoxWidth*1.1,60))
-                        # containerscene.addItem(self.fileObj[-1])
-                        self.fileObj.append(FileRect(None, containerBoxWidth*-0.5, idx, fileobj=infileobj, type='Connection'))
-                        containerscene.addItem(self.fileObj[-1])
-                        idx +=1
-
-
-        # self.containoutBox = QGraphicsRectItem(containerBoxWidth * 0.1, 0, containerBoxWidth, containerBoxHeight)
-
+        idx=0
+        for upfileheader, upfileinfo in containerIn.FileHeaders.items():
+            for downfileheader, downfileinfo in containerOut.FileHeaders.items():
+                if upfileheader==downfileheader:
+                    self.fileObj.append(FileRect(None, containerBoxWidth*-0.5, idx, fileinfo=upfileinfo, fileheader=upfileheader, type='Connection'))
+                    containerscene.addItem(self.fileObj[-1])
+                    idx +=1
 
 
 class FileRect(QGraphicsRectItem):
-    def __init__(self, parent, locF,idx,fileobj, type):
+    def __init__(self, parent, locF,idx,fileinfo,fileheader, type):
 
         if type=='Connection':
             boxgap = 0.1
@@ -116,22 +104,22 @@ class FileRect(QGraphicsRectItem):
         super().__init__(locF,50 + idx*100,containerBoxWidth * (1 + boxgap),60,parent)
         self.setBrush(QBrush(Qt.green))
         self.setPen(QPen(Qt.black))
-        if type=='Input':
-            self.containertext = QGraphicsTextItem(fileobj['Container'], parent=self)
+        if type=='input':
+            self.containertext = QGraphicsTextItem(fileinfo['Container'], parent=self)
             self.containertext.setPos(self.rect().topLeft()+QPoint(0,-20))
-        elif type=='Output':
-            self.containertext = QGraphicsTextItem(fileobj['Container'], parent=self)
+        elif type=='output':
+            self.containertext = QGraphicsTextItem(fileinfo['Container'], parent=self)
             self.containertext.setPos(self.rect().topRight()+QPoint(-50, -20))
         elif type=='Connection':
             offset = 0.25 #print('')#nothing yet
         self.upbox = QGraphicsRectItem(containerBoxWidth*0.1,10 ,containerBoxWidth*0.25,40,self)
         self.upbox.setPos(self.rect().topLeft())
-        self.upboxtext =QGraphicsTextItem(fileobj['ContainerObjName'], parent=self.upbox)
+        self.upboxtext =QGraphicsTextItem(fileheader, parent=self.upbox)
         self.upboxtext.setPos(self.upbox.rect().topLeft())
 
         self.downbox = QGraphicsRectItem(containerBoxWidth*(1-0.1-0.25+boxgap),10 ,containerBoxWidth*0.25,40,self)
         self.downbox.setPos(self.rect().topLeft())
-        self.downboxtext = QGraphicsTextItem(fileobj['ContainerObjName'], parent=self.downbox)
+        self.downboxtext = QGraphicsTextItem(fileheader, parent=self.downbox)
         self.downboxtext.setPos(self.downbox.rect().topLeft())
 
         Q1 = self.upbox.rect().center()
