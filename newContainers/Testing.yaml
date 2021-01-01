@@ -1,0 +1,15 @@
+containerId: Testing
+containerName: Testing
+inputObjs:
+- Container: ContainerB
+  ContainerObjName: MAN
+- Container: ContainerC
+  ContainerObjName: Res_2_A
+outputObjs:
+- Container: ''
+  ContainerObjName: '12345'
+- Container: '44'
+  ContainerObjName: '222'
+references: []
+requiredObjs:
+- ContainerObjName: '12345'

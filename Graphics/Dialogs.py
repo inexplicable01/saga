@@ -20,7 +20,7 @@ class ErrorMessage(QMessageBox):
         super().__init__()
         self.setWindowTitle('ErrorMessage')
         self.setIcon(QMessageBox.Warning)
-        self.setText('Please Fill in Container Information First')
+        self.setText('Please Fill In All Container Information First')
         self.setStandardButtons(QMessageBox.Ok)
     def showError(self):
         self.exec_()

@@ -1,5 +1,7 @@
 import hashlib
 import os
+import requests
+from Config import BASE
 import yaml
 from Frame.FileObjects import FileTrackObj
 import time
@@ -9,11 +11,13 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
 
-
+blankFrame = {'parentContainerId':"",'FrameName': "",'FrameInstanceId': "",'commitMessage': "",'inlinks': "",'outlinks': "",'AttachedFiles': "", 'commitUTCdatetime': "",'filestrack': ""}
 
 class Frame:
-    def __init__(self, FrameYaml, localfilepath):
-
+    def __init__(self, FrameYaml = None, localfilepath = None):
+        if FrameYaml == None:
+            FrameYaml = blankFrame
+            localfilepath = 'newFrames/'
         self.parentContainerId = FrameYaml['parentContainerId']
         self.FrameName = FrameYaml['FrameName']
         self.FrameInstanceId = FrameYaml['FrameInstanceId']
@@ -157,4 +161,25 @@ class Frame:
             # if file has been updated, update last edited
             if os.path.getmtime(path) != self.filestrack[ContainerObjName].lastEdited:
                 self.filestrack[ContainerObjName].lastEdited = os.path.getmtime(path)
+
+
+    def downloadFrame(self, containerId):
+        response = requests.get(BASE + 'FRAMES', data={'containerID': containerId, 'branch': 'Main'})
+        # request to FRAMES to get the latest frame from the branch as specified in currentbranch
+        branch = response.headers['branch']
+        print(branch)
+        # response also returned the name of the branch
+        if not os.path.exists(os.path.join(containerId, branch)):
+            if not os.path.exists(containerId):
+                os.mkdir(containerId)
+            os.mkdir(os.path.join(containerId, branch))  ## make folder if folder doesn't exist
+        frameyamlDL = os.path.join(containerId, branch, response.headers['file_name'])
+        open(frameyamlDL, 'wb').write(response.content)
+        with open(frameyamlDL, 'r') as file:
+            FrameYaml = yaml.load(file, Loader=yaml.FullLoader)
+        print(FrameYaml['FrameName'])
+        return FrameYaml
+        ## write return binary file as the frame yaml file
+
+
 # C:\Users\waich\LocalGitProjects\SagaServer\Files\MAN.txt

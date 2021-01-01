@@ -376,24 +376,36 @@
      <widget class="QLabel" name="label_6">
       <property name="geometry">
        <rect>
-        <x>620</x>
+        <x>610</x>
         <y>40</y>
-        <width>121</width>
+        <width>281</width>
         <height>31</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
       <property name="text">
-       <string>New Container</string>
+       <string>Current Container</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_7">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>30</y>
-        <width>131</width>
+        <y>40</y>
+        <width>311</width>
         <height>31</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+       </font>
       </property>
       <property name="text">
        <string>Reference Container</string>
@@ -513,26 +525,13 @@
        <string>Commit Message</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_11">
-      <property name="geometry">
-       <rect>
-        <x>430</x>
-        <y>30</y>
-        <width>91</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Select Type of File</string>
-      </property>
-     </widget>
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>430</x>
-        <y>70</y>
+        <x>420</x>
+        <y>60</y>
         <width>161</width>
-        <height>83</height>
+        <height>161</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -554,6 +553,13 @@
         <widget class="QPushButton" name="outputFileButton">
          <property name="text">
           <string>Add Output File</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="removeFileButton">
+         <property name="text">
+          <string>Remove File</string>
          </property>
         </widget>
        </item>

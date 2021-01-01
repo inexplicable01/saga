@@ -24,7 +24,8 @@ class refContainer():
         rownumber = containerlist.row()
         self.index = containerlist.model().index(rownumber, 0)
         self.containername = containerlist.model().data(self.index, 0)
-        self.path = 'C:/Users/happy/Documents/GitHub/saga/ContainerMapWorkDir/' + str(self.containername) + '_containerstate.yaml'
+
+        self.path = 'ContainerMapWorkDir/' + str(self.containername) + '_containerstate.yaml'
         self.scene = QGraphicsScene()
         self.mainGuiHandle = mainGuiHandle
         self.view = mainGuiHandle.graphicsView

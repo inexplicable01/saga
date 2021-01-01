@@ -11,3 +11,6 @@ references:
   ContainerObjName: ToolCode
 requiredObjs:
 - ContainerObjName: B1
+allowedUser:
+- userbemail@gmail.com
+- admin@example.com

@@ -7,3 +7,6 @@ outputObjs:
 references:
 requiredObjs:
 - ContainerObjName: DSomething
+allowedUser:
+- userdemail@gmail.com
+- admin@example.com

@@ -9,3 +9,5 @@ outputObjs:
   ContainerObjName: MUD
 requiredObjs:
 - ContainerObjName: AModel1
+allowedUser:
+- useraemail@gmail.com

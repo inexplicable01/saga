@@ -57,7 +57,10 @@ class UI(QMainWindow):
 
         # Add File Button Connections:
         self.inputFileButton.setEnabled(False)
+        self.removeFileButton.setEnabled(False)
         self.tempContainer = Container()
+        self.tempFrame = Frame()
+        self.outputFrame = Frame()      #frame from Output container where input file is taken
         self.inputFileButton.clicked.connect(self.newFileInfoInputs)
         self.requiredFileButton.clicked.connect(partial(self.newFileInfo, 'Required'))
         self.outputFileButton.clicked.connect(partial(self.newFileInfo, 'Output'))
@@ -128,7 +131,29 @@ class UI(QMainWindow):
         fileInfo = dialogWindow.getInputs()
         if fileInfo:
             self.tempContainer.addFileObject(fileInfo, self.fileType)
+            outputYaml = self.outputFrame.downloadFrame('ContainerC')
+            self.outputFrame = Frame(outputYaml)
+            self.downloadInputFile(self.outputFrame, self.outputFrame.parentContainerId, self.containerObjName)
+            # self.tempFrame.addFileTotrack('',self.containerObjName,'')
+            # print(self.tempFrame.filestrack['ContainerObjName'])
         newContainerGraphics(self.tempContainer,self)
+        self.inputFileButton.setEnabled(False)
+
+    def downloadInputFile(self, outputFrame: Frame, outputContainerID, containerObjName):
+        # with open(FrameYaml, 'r') as file:
+        #     fnyaml = yaml.load(file, Loader=yaml.FullLoader)
+        ## load the yaml file as a yaml object.
+        # curframe = Frame(fnyaml, outputContainerID)
+        ## frame uses the yaml object to make a frame object.
+
+        response = requests.get(BASE + 'FILES',
+                                data={'file_id': outputFrame.filestrack[containerObjName].file_id, 'file_name': outputFrame.filestrack[containerObjName].file_name})
+        # Loops through the filestrack in curframe and request files listed in the frame
+        fn = os.path.join('testingDownloads', response.headers['file_name'])
+        # fn = os.path.join(containerID, response.headers['file_name'])
+        open(fn, 'wb').write(response.content)
+        # saves the content into file.
+        os.utime(fn, (outputFrame.filestrack[containerObjName].lastEdited, outputFrame.filestrack[containerObjName].lastEdited))
 
     def newFileInfo(self, fileType:str, containerName="", containerObjName=""):
         self.fileType = fileType
@@ -155,7 +180,6 @@ class UI(QMainWindow):
     def createNewContainer(self):
         print(self.descriptionText.toPlainText())
         if '' not in [self.containerName_lineEdit.text(), self.descriptionText.toPlainText(), self.messageText.toPlainText()]:
-            print('working?')
             self.tempContainer.containerName = self.containerName_lineEdit.text()
             self.tempContainer.containerId = self.containerName_lineEdit.text()
             self.tempContainer.save(self.tempContainer.containerName)

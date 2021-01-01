@@ -6,3 +6,7 @@ references:
 requiredObjs:
 - ContainerObjName: special1
 - ContainerObjName: special2
+allowedUser:
+- usercemail@gmail.com
+- admin@example.com
+- member@example.com

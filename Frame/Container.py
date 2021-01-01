@@ -23,7 +23,7 @@ class Container:
     def __init__(self, containerfn = 'Default',currentbranch='Main',revnum='1'):
         if containerfn == 'Default':
             containeryaml = blankcontainer
-            self.containerworkingfolder = 'C:/Users/happy/Documents/GitHub/saga/newContainers'
+            self.containerworkingfolder = 'newContainers/'
         else:
             self.containerworkingfolder = os.path.dirname(containerfn)
             with open(containerfn) as file:
