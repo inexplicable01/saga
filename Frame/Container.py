@@ -35,7 +35,7 @@ class Container:
         self.containerName = containeryaml['containerName']
         self.containerId = containeryaml['containerId']
         self.FileHeaders = containeryaml['FileHeaders']
-        self.allowUsers = containeryaml['allowedUser']
+        self.allowedUser = containeryaml['allowedUser']
         # self.yamlTracking = containeryaml['yamlTracking']
         self.currentbranch = currentbranch
         self.filestomonitor = {}
@@ -162,13 +162,22 @@ class Container:
         yaml.dump(dictout, outyaml)
         outyaml.close()
 
-    def addFileObject(self, fileInfo, fileType:str):
+    def addFileObject(self, fileObjHeader, fileInfo, fileType:str):
         print(fileType)
         if fileType in ['Input', 'refOutput']:
-            self.inputObjs.append(fileInfo)
-            print(self.inputObjs)
+            self.FileHeaders[fileObjHeader] = fileInfo
+            print(self.FileHeaders)
         elif fileType == 'Required':
-            self.requiredObjs.append(fileInfo)
-            print(self.requiredObjs)
+            self.FileHeaders[fileObjHeader] = fileInfo
+            print(self.FileHeaders)
         elif fileType == 'Output':
-            self.outputObjs.append(fileInfo)
+            self.FileHeaders[fileObjHeader] = fileInfo
+            print(self.FileHeaders)
+
+    def dictify(self):
+        dictout = {}
+        keytosave = ['containerName', 'containerId', 'FileHeaders','allowedUser']
+        for key, value in vars(self).items():
+            if key in keytosave:
+                dictout[key] = value
+        return dictout

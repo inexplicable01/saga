@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1306</width>
-    <height>788</height>
+    <width>1255</width>
+    <height>727</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,7 +40,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="Map">
      <attribute name="title">
@@ -335,12 +335,25 @@
        <string>RebaseButton</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="navButton">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>380</y>
+        <width>93</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>nav</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="New">
      <attribute name="title">
       <string>New</string>
      </attribute>
-     <widget class="QGraphicsView" name="graphicsView">
+     <widget class="QGraphicsView" name="refContainerView">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -350,7 +363,7 @@
        </rect>
       </property>
      </widget>
-     <widget class="QGraphicsView" name="graphicsView_3">
+     <widget class="QGraphicsView" name="curContainerView">
       <property name="geometry">
        <rect>
         <x>610</x>
@@ -515,10 +528,10 @@
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>430</x>
-        <y>70</y>
-        <width>183</width>
-        <height>100</height>
+        <x>420</x>
+        <y>60</y>
+        <width>161</width>
+        <height>221</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -540,6 +553,13 @@
         <widget class="QPushButton" name="outputFileButton">
          <property name="text">
           <string>Add Output File</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="editFileButton">
+         <property name="text">
+          <string>Edit File</string>
          </property>
         </widget>
        </item>
@@ -573,7 +593,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1306</width>
+     <width>1255</width>
      <height>26</height>
     </rect>
    </property>

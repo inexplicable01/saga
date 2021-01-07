@@ -73,7 +73,7 @@ class newContainerGraphics():
         # rectItem.mousePressEvent = addFileMousePressA
 
     def createInputRect(self):
-        if self.tempContainer.inputObjs:
+        if self.tempContainer.FileHeaders.items():
             position = 0
             for inputs in self.tempContainer.inputObjs:
                 self.inputRectBox[inputs['ContainerObjName']] = coolerRectangle(-100, 200 + 75*position,  containerBoxWidth, containerBoxHeight,'refInput',self.tempContainer.containerName , inputs['ContainerObjName'], self.mainGuiHandle)
