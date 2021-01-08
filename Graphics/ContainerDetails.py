@@ -1,19 +1,8 @@
 from PyQt5.QtWidgets import *
-# from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from Graphics.QAbstract.ContainerListModel import ContainerListModel
-import yaml
 from Frame.FrameStruct import Frame
-from Frame.Container import Container
-from Frame.FileObjects import FileTrack
-from Frame.commit import commit
-import os
-import sys
-import requests
-import json
-import copy
-from Frame.Container import Container
+
 
 containerBoxHeight = 50
 containerBoxWidth = 50
@@ -93,10 +82,7 @@ class containerPlot():
         self.inputTitle[headerNew] = QGraphicsTextItem(headerNew)
         self.inputTitle[headerNew].setPos(pos)
 
-
-
     def createInputRect(self):
-
         typeindex = {'Input': 0, 'Output': 2, 'Required': 1}
         typecounter = {'Input': 0, 'Output': 0, 'Required': 0}
         colorscheme = {'Input': Qt.yellow, 'Output': Qt.green, 'Required': Qt.blue}
@@ -111,23 +97,7 @@ class containerPlot():
             self.inputTitle[header] = QGraphicsTextItem(header)
             self.inputTitle[header].setPos(QPoint(100*typeindex[type] , 200 + 75*typecounter[type]))
             typecounter[type] += 1
-        # if self.curcontainer.requiredObjs:
-        #     position = 0
-        #     for inputs in self.curcontainer.requiredObjs:
-        #         self.reqRectBox[inputs['ContainerObjName']] = coolerRectangle(0, 200 + 75*position,  containerBoxWidth, containerBoxHeight, 'refRequired',self.containername ,inputs['ContainerObjName'], self.mainGuiHandle)
-        #         self.reqRectBox[inputs['ContainerObjName']].setPen(QPen(Qt.blue))
-        #         self.reqTitle[inputs['ContainerObjName']] = QGraphicsTextItem(inputs['ContainerObjName'])
-        #         self.reqTitle[inputs['ContainerObjName']].setPos(QPoint(0, 200 + 75*position))
-        #         position += 1
-        # if self.curcontainer.outputObjs:
-        #     position = 0
-        #     for inputs in self.curcontainer.outputObjs:
-        #         self.outputRectBox[inputs['ContainerObjName']] = coolerRectangle(100, 200 + 75 * position,  containerBoxWidth, containerBoxHeight,'refOutput', self.containername ,inputs['ContainerObjName'], self.mainGuiHandle)
-        #         self.outputRectBox[inputs['ContainerObjName']].setPen(QPen(Qt.green))
-        #
-        #         self.outputTitle[inputs['ContainerObjName']] = QGraphicsTextItem(inputs['ContainerObjName'])
-        #         self.outputTitle[inputs['ContainerObjName']].setPos(QPoint(100, 200 + 75*position))
-        #         position += 1
+
 
 class coolerRectangle(QGraphicsRectItem):
     def __init__(self, xpos, ypos, xwidth, ywidth, type, containerName, containerObjName, mainGuiHandle, view):

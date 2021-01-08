@@ -542,7 +542,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="requiredFileButton">
+        <widget class="QPushButton" name="RequiredButton">
          <property name="text">
           <string>Add Required File</string>
          </property>

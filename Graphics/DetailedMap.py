@@ -91,7 +91,7 @@ class ConnectionBox():
 
         idx=0
         for upfileheader, upfileinfo in containerIn.FileHeaders.items():
-            if upfileinfo['type']=='output' and upfileinfo['Container']==containerOut.containerId:
+            if upfileinfo['type']=='output' and set([containerOut.containerId]).issubset(set(upfileinfo['Container'])):
                 if containerOut.FileHeaders[upfileheader] and containerOut.FileHeaders[upfileheader]['type']=='input':
                     self.fileObj.append(FileRect(None, containerBoxWidth*-0.5, idx, fileinfo=upfileinfo, fileheader=upfileheader, type='Connection'))
                     containerscene.addItem(self.fileObj[-1])
@@ -112,8 +112,9 @@ class FileRect(QGraphicsRectItem):
             self.containertext = QGraphicsTextItem(fileinfo['Container'], parent=self)
             self.containertext.setPos(self.rect().topLeft()+QPoint(0,-20))
         elif type=='output':
-            self.containertext = QGraphicsTextItem(fileinfo['Container'], parent=self)
-            self.containertext.setPos(self.rect().topRight()+QPoint(-50, -20))
+            for idx,outputcontainer in enumerate(fileinfo['Container']):
+                self.containertext = QGraphicsTextItem(outputcontainer, parent=self)
+                self.containertext.setPos(self.rect().topRight()+QPoint(-50, -20 -idx*15))
         elif type=='Connection':
             offset = 0.25 #print('')#nothing yet
         self.upbox = QGraphicsRectItem(containerBoxWidth*0.1,10 ,containerBoxWidth*0.25,40,self)

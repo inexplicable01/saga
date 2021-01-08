@@ -35,7 +35,12 @@ class Container:
         self.containerfn = containerfn
         self.containerName = containeryaml['containerName']
         self.containerId = containeryaml['containerId']
-        self.FileHeaders = containeryaml['FileHeaders']
+        self.FileHeaders={}
+        for fileheader, fileinfo in containeryaml['FileHeaders'].items():
+            if fileinfo['type'] =='output':
+                if type(fileinfo['Container']) != list:
+                    fileinfo['Container']=[fileinfo['Container']]
+            self.FileHeaders[fileheader] = fileinfo
         self.allowedUser = containeryaml['allowedUser']
         # self.yamlTracking = containeryaml['yamlTracking']
         self.currentbranch = currentbranch

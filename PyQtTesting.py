@@ -7,13 +7,9 @@ from Graphics.QAbstract.HistoryListModel import HistoryListModel
 from Graphics.CGuiControls import ContainerMap
 from Graphics.DetailedMap import DetailedMap
 from Graphics.TrayActions import SignIn, SignOut
-from Graphics.FixInput import fixInput
 from Graphics.Dialogs import ErrorMessage, inputFileDialog, removeFileDialog, selectFileDialog, commitDialog,alteredinputFileDialog
-import yaml
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
-from Frame.FileObjects import FileTrack
-from Frame.commit import commit
 import os
 import sys
 import requests
@@ -21,8 +17,8 @@ import json
 import copy
 from functools import partial
 from Config import BASE
-from ContainerDetails import containerPlot
-from NewContainerGraphics import newContainerGraphics
+from Graphics.ContainerDetails import containerPlot
+# from NewContainerGraphics import newContainerGraphics
 # from hackpatch import downloadedFrames
 
 boxwidth = 40
@@ -57,7 +53,7 @@ class UI(QMainWindow):
         self.tempFrame = Frame()
         self.outputFrame = Frame()  # frame from Output container where input file is taken
         self.inputFileButton.clicked.connect(self.newFileInfoInputs)
-        self.requiredFileButton.clicked.connect(partial(self.newFileInfo, 'Required'))
+        self.RequiredButton.clicked.connect(partial(self.newFileInfo, 'Required'))
         self.outputFileButton.clicked.connect(partial(self.newFileInfo, 'Output'))
         self.containerObjName = ''
         self.removeFileButton.clicked.connect(self.removeFileInfo)
@@ -135,14 +131,14 @@ class UI(QMainWindow):
     def getContainerInfo(self):
         response = requests.get(BASE + 'CONTAINERS/List')
         # print(response.headers['containerinfolist'])
-        self.infodump.append(response.headers['response'])
+        # self.infodump.append(response.headers['response'])
         containerinfolist = json.loads(response.headers['containerinfolist'])
         self.containerlisttable.setModel(ContainerListModel(containerinfolist))
 
     def getContainerInfo2(self):
         response = requests.get(BASE + 'CONTAINERS/List')
         # print(response.headers['containerinfolist'])
-        self.infodump.append(response.headers['response'])
+        # self.infodump.append(response.headers['response'])
         containerinfolist = json.loads(response.headers['containerinfolist'])
         self.containerlisttable_2.setModel(ContainerListModel(containerinfolist))
         # self.containerlisttable_2.clicked.connect(partial(refContainer, self))
@@ -183,11 +179,11 @@ class UI(QMainWindow):
 
 
     def newFileInfoInputs(self):
-        dialogWindow = inputFileDialog(self.containerName, self.containerObjName)
+        dialogWindow = inputFileDialog(self.selectedContainerId, self.containerObjName)
         fileInfo = dialogWindow.getInputs()
         if fileInfo:
             self.tempContainer.addFileObject(self.containerObjName, fileInfo, self.fileType)
-            outputFrameYaml = self.outputFrame.downloadFrame(self.authtoken,'ContainerC')
+            outputFrameYaml = self.outputFrame.downloadFrame(self.authtoken,self.selectedContainerId)
             self.outputFrame = Frame(outputFrameYaml)
             inputFilePath = self.downloadInputFile(self.outputFrame, self.outputFrame.parentContainerId, self.containerObjName)
             self.tempFrame.addFileTotrack(inputFilePath, self.containerObjName, self.fileType)
@@ -224,7 +220,7 @@ class UI(QMainWindow):
             self.removeFileButton.setEnabled(False)
             self.editFileButton.setEnabled(False)
             self.containerObjName = containerObjName
-            self.containerName = containerName
+            self.selectedContainerId = containerName
         else:
             self.inputFileButton.setEnabled(False)
             fileInfoDialog = selectFileDialog(self.fileType)
@@ -240,7 +236,7 @@ class UI(QMainWindow):
 #
 #     def createNewContainer(self):
 #         print(self.descriptionText.toPlainText())
-#         if '' not in [self.containerName_lineEdit.text(), self.descriptionText.toPlainText(), self.messageText.toPlainText()]:
+#         if '' not in [self.selectedContainerId_lineEdit.text(), self.descriptionText.toPlainText(), self.messageText.toPlainText()]:
 #             # print('working?')
 #             self.tempContainer.containerName = self.containerName_lineEdit.text()
 #             self.tempContainer.containerId = self.containerName_lineEdit.text()
@@ -248,7 +244,7 @@ class UI(QMainWindow):
 # =======
     def editDeleteButtons(self,fileType: str, containerName ='', containerObjName=''):
         self.fileType = fileType
-        self.containerName = containerName
+        self.selectedContainerId = containerName
         self.containerObjName = containerObjName
         self.removeFileButton.setEnabled(True)
         if self.fileType != 'Input':
@@ -300,7 +296,7 @@ class UI(QMainWindow):
             if commited:
                 self.tempContainer.containerName = self.containerName_lineEdit.text()
                 self.tempContainer.containerId = self.containerName_lineEdit.text()
-                self.tempContainer.save(self.tempContainer.containerName)
+                self.tempContainer.save()
                 self.tempFrame.parentContainerId = self.containerName_lineEdit.text()
                 self.tempFrame.FrameName = 'Rev0'
                 # self.tempFrame.description = self.descriptionText.toPlainText()

@@ -2,7 +2,9 @@ containerId: ContainerA
 containerName: ContainerA
 FileHeaders:
   Dogs:
-    Container: ContainerC
+    Container:
+    - ContainerC
+    - ContainerB
     type: output
   MUD:
     Container: ContainerB

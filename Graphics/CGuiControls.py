@@ -56,16 +56,28 @@ class ContainerMap():
                 if FileInfo['type']=='input':
                     upstreamContainerId = FileInfo['Container']
                     downstreamContainerId = container.containerId
-                elif FileInfo['type'] in ['output', 'reference']:
+                elif FileInfo['type'] in ['output']:
                     upstreamContainerId = container.containerId
                     downstreamContainerId = FileInfo['Container']
-                if FileInfo['Container'] not in self.activeContainers.keys() or upstreamContainerId is None:
-                    continue # if containerID not in current map or if type isn't input or output
-                if upstreamContainerId in self.containerConnections.keys():
-                    if downstreamContainerId not in self.containerConnections[upstreamContainerId]:
-                        self.containerConnections[upstreamContainerId].append(downstreamContainerId)
+
+                if type(downstreamContainerId) is list:
+                    downstreamContaineridList = downstreamContainerId
+                    for downstreamContainerId in downstreamContaineridList:
+                        if downstreamContainerId not in self.activeContainers.keys() or upstreamContainerId is None:
+                            continue  # if containerID not in current map or if type isn't input or output
+                        if upstreamContainerId in self.containerConnections.keys():
+                            if downstreamContainerId not in self.containerConnections[upstreamContainerId]:
+                                self.containerConnections[upstreamContainerId].append(downstreamContainerId)
+                        else:
+                            self.containerConnections[upstreamContainerId] = [downstreamContainerId]
                 else:
-                    self.containerConnections[upstreamContainerId] = [downstreamContainerId]
+                    if FileInfo['Container'] not in self.activeContainers.keys() or upstreamContainerId is None:
+                        continue # if containerID not in current map or if type isn't input or output
+                    if upstreamContainerId in self.containerConnections.keys():
+                        if downstreamContainerId not in self.containerConnections[upstreamContainerId]:
+                            self.containerConnections[upstreamContainerId].append(downstreamContainerId)
+                    else:
+                        self.containerConnections[upstreamContainerId] = [downstreamContainerId]
 
 
     def addActiveContainers(self, container:Container):
