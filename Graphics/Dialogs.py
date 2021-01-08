@@ -20,7 +20,7 @@ class ErrorMessage(QMessageBox):
         super().__init__()
         self.setWindowTitle('ErrorMessage')
         self.setIcon(QMessageBox.Warning)
-        self.setText('Please Fill in Container Information First')
+        self.setText('Please Fill In All Container Information First')
         self.setStandardButtons(QMessageBox.Ok)
     def showError(self):
         self.exec_()
@@ -33,13 +33,35 @@ class inputFileDialog(QDialog):
         self.containerName = containerName
         self.containerObjName = containerObjName
         self.containerName_label.setText(self.containerName)
-        self.fileName_label.setText(containerObjName)
+        self.fileNameLabel.setText(containerObjName)
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:
-            return {'Container': self.containerName, 'ContainerObjName': self.containerObjName}
+            return {'Container': self.containerName, 'type': 'Input'}
         else:
             return None
 
+class removeFileDialog(QDialog):
+    def __init__(self, containerObjName):
+        super().__init__()
+        uic.loadUi("Graphics/removeFileDialog.ui", self)
+        self.containerObjName = containerObjName
+        self.fileNameLabel.setText(self.containerObjName)
+    def removeFile(self):
+        if self.exec_() == QDialog.Accepted:
+            return self.containerObjName
+        else:
+            return None
+class commitDialog(QDialog):
+    def __init__(self, containerName, description, commitMessage):
+        super().__init__()
+        uic.loadUi("Graphics/commitContainerDialog.ui", self)
+        self.containerName = containerName
+        self.containerNameLabel.setText(self.containerName)
+    def commit(self):
+        if self.exec_() == QDialog.Accepted:
+            return True
+        else:
+            return False
 
 class selectFileDialog(QDialog):
     def __init__(self, fileType:str):
@@ -55,15 +77,20 @@ class selectFileDialog(QDialog):
 
     def openDirectory(self):
         self.openDirectoryDialog = QFileDialog.getOpenFileName(self, "Get Dir Path")
-        self.lineEdit_2.setText(self.openDirectoryDialog[0])
+        self.filePathEdit.setText(self.openDirectoryDialog[0])
 
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:
             if self.fileType == 'Required':
-                return {'ContainerObjName': self.lineEdit.text()}
+                containerFileInfo = {'Container': 'here', 'type':'Required'}
+                return {'FileObjHeader': self.fileObjHeaderEdit.text(), 'FilePath':self.filePathEdit.text(),
+                        'Owner': self.ownerEdit.text(), 'Description': self.descriptionEdit.text(),
+                        'ContainerFileInfo': containerFileInfo}
             elif self.fileType == 'Output':
-                return{'Container': self.lineEdit_5.text(), 'ContainerObjName': self.lineEdit.text()}
-            # Need to add space for path, owner, directory, etc.
+                containerFileInfo = {'Container': 'here', 'type': 'Required'}
+                return {'FileObjHeader': self.fileObjHeaderEdit.text(), 'FilePath': self.filePathEdit.text(),
+                        'Owner': self.ownerEdit.text(), 'Description': self.descriptionEdit.text(),
+                        'ContainerFileInfo': containerFileInfo, 'ContainerDestination':self.destinationEdit}
         else:
             return None
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1306</width>
-    <height>788</height>
+    <width>1255</width>
+    <height>727</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,7 +40,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="Map">
      <attribute name="title">
@@ -334,12 +334,25 @@
        <number>12</number>
       </attribute>
      </widget>
+     <widget class="QPushButton" name="navButton">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>380</y>
+        <width>93</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>nav</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="New">
      <attribute name="title">
       <string>New</string>
      </attribute>
-     <widget class="QGraphicsView" name="graphicsView">
+     <widget class="QGraphicsView" name="refContainerView">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -349,7 +362,7 @@
        </rect>
       </property>
      </widget>
-     <widget class="QGraphicsView" name="graphicsView_3">
+     <widget class="QGraphicsView" name="curContainerView">
       <property name="geometry">
        <rect>
         <x>610</x>
@@ -362,24 +375,36 @@
      <widget class="QLabel" name="label_6">
       <property name="geometry">
        <rect>
-        <x>620</x>
+        <x>610</x>
         <y>40</y>
-        <width>121</width>
+        <width>281</width>
         <height>31</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
       <property name="text">
-       <string>New Container</string>
+       <string>Current Container</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_7">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>30</y>
-        <width>131</width>
+        <y>40</y>
+        <width>311</width>
         <height>31</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+       </font>
       </property>
       <property name="text">
        <string>Reference Container</string>
@@ -499,26 +524,13 @@
        <string>Commit Message</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_11">
-      <property name="geometry">
-       <rect>
-        <x>430</x>
-        <y>30</y>
-        <width>91</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Select Type of File</string>
-      </property>
-     </widget>
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>430</x>
-        <y>70</y>
-        <width>183</width>
-        <height>100</height>
+        <x>420</x>
+        <y>60</y>
+        <width>161</width>
+        <height>221</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -540,6 +552,20 @@
         <widget class="QPushButton" name="outputFileButton">
          <property name="text">
           <string>Add Output File</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="editFileButton">
+         <property name="text">
+          <string>Edit File</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="removeFileButton">
+         <property name="text">
+          <string>Remove File</string>
          </property>
         </widget>
        </item>
@@ -566,7 +592,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1306</width>
+     <width>1255</width>
      <height>26</height>
     </rect>
    </property>

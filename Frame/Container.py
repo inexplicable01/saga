@@ -25,7 +25,9 @@ class Container:
     def __init__(self, containerfn = 'Default',currentbranch='Main',revnum='1'):
         if containerfn == 'Default':
             containeryaml = blankcontainer
+
             self.containerworkingfolder = workingdir##something we need to figure out in the future
+
         else:
             self.containerworkingfolder = os.path.dirname(containerfn)
             with open(containerfn) as file:
@@ -146,14 +148,23 @@ class Container:
     def __repr__(self):
         return json.dumps(self.dictify())
 
-    def addFileObject(self, fileInfo, fileType:str):
+    def addFileObject(self, fileObjHeader, fileInfo, fileType:str):
         print(fileType)
         if fileType in ['Input', 'refOutput']:
-            self.inputObjs.append(fileInfo)
-            print(self.inputObjs)
+            self.FileHeaders[fileObjHeader] = fileInfo
+            print(self.FileHeaders)
         elif fileType == 'Required':
-            self.requiredObjs.append(fileInfo)
-            print(self.requiredObjs)
+            self.FileHeaders[fileObjHeader] = fileInfo
+            print(self.FileHeaders)
         elif fileType == 'Output':
-            self.outputObjs.append(fileInfo)
+            self.FileHeaders[fileObjHeader] = fileInfo
+            print(self.FileHeaders)
+
+    def dictify(self):
+        dictout = {}
+        keytosave = ['containerName', 'containerId', 'FileHeaders','allowedUser']
+        for key, value in vars(self).items():
+            if key in keytosave:
+                dictout[key] = value
+        return dictout
 

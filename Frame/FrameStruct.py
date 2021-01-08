@@ -1,5 +1,7 @@
 import hashlib
 import os
+import requests
+from Config import BASE
 import yaml
 from Frame.FileObjects import FileTrack
 from Frame.Connection import FileConnection, ConnectionTypes
@@ -12,16 +14,22 @@ from PyQt5.QtCore import *
 import requests
 from Config import BASE
 
+blankFrame = {'parentContainerId':"",'FrameName': "", 'FrameInstanceId': "",'commitMessage': "",'inlinks': "",'outlinks': "",'AttachedFiles': "", 'commitUTCdatetime': "",'filestrack': ""}
+
 
 class Frame:
-    def __init__(self, framefn, filestomonitor,localfilepath):
-
-        with open(framefn,'r') as file:
-            FrameYaml = yaml.load(file, Loader=yaml.FullLoader)
+    def __init__(self, framefn = None, filestomonitor = None,localfilepath = 'Default'):
+        if framefn == None:
+            FrameYaml = blankFrame
+            localfilepath = 'newFrames/' #generalize this file path
+        else:
+            with open(framefn,'r') as file:
+                FrameYaml = yaml.load(file, Loader=yaml.FullLoader)
         # self.containerworkingfolder = os.path.dirname(containerfn)
         self.refframefn = framefn
         self.parentContainerId = FrameYaml['parentContainerId']
         self.FrameName = FrameYaml['FrameName']
+        # self.description = FrameYaml['Description']
         self.FrameInstanceId = FrameYaml['FrameInstanceId']
         self.commitMessage = FrameYaml['commitMessage']
         self.filestomonitor = filestomonitor
@@ -127,8 +135,11 @@ class Frame:
         if os.path.exists(fullpath):
             newfiletrackobj = FileTrack(file_name=file_name,
                                         FileHeader=FileHeader,
-                                        localfilepath=self.localfilepath,
-                                        style=style)
+                                        # localfilepath=self.localfilepath,
+                                        localfilepath=path,
+                                        style=style,
+                                        lastEdited=os.path.getmtime(fullpath))
+
 
             self.filestrack[FileHeader] = newfiletrackobj
         else:
@@ -202,6 +213,29 @@ class Frame:
                 self.filestrack[fileheader].lastEdited = os.path.getmtime(path)
                 print('Date changed without Md5 changin')
                 continue
-
-
         return changes, alterfiletracks
+
+
+
+    def downloadFrame(self,authToken, containerId, branch='Main' ):
+        payload = {'containerID': containerId,
+                   'branch': branch}
+        files = [
+        ]
+        headers = {
+            'Authorization': 'Bearer ' + authToken['auth_token']
+        }
+        response = requests.get(BASE + 'FRAMES', headers=headers, data=payload, files=files)
+        # request to FRAMES to get the latest frame from the branch as specified in currentbranch
+        branch = response.headers['branch']
+        # response also returned the name of the branch
+        if not os.path.exists(os.path.join(containerId, branch)):
+            if not os.path.exists(containerId):
+                os.mkdir(containerId)
+            os.mkdir(os.path.join(containerId, branch))  ## make folder if folder doesn't exist
+        frameyamlDL = os.path.join(containerId, branch, response.headers['file_name'])
+        open(frameyamlDL, 'wb').write(response.content)
+        # with open(frameyamlDL, 'r') as file:
+        #     FrameYaml = yaml.load(file, Loader=yaml.FullLoader)
+        return frameyamlDL
+        ## write return binary file as the frame yaml file
