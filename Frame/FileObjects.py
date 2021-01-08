@@ -7,22 +7,21 @@ from Frame.Connection import FileConnection
 class FileTrack:
     def __init__(self, FileHeader, localfilepath, \
                  file_name, connection:FileConnection=None, style=None, lastEdited=None, committedby='waichak', \
-                 md5=None, file_id=None, commitUTCdatetime=None,
+                 md5=None, file_id=None, commitUTCdatetime=None,persist: bool = True
                  ):
         self.FileHeader = FileHeader
         self.file_name = file_name
         if md5 is None:
-            fullpath = os.path.join(localfilepath, file_name)
-            fileb = open(fullpath , 'rb')
-            md5hash = hashlib.md5(fileb.read())
-            md5=md5hash.hexdigest()
-        self.lastEdited= lastEdited#
-        self.committedby = committedby  #
+            fileb = open(os.path.join(localfilepath, file_name) , 'rb')
+            md5=hashlib.md5(fileb.read()).hexdigest()
+        self.lastEdited= os.path.getmtime(os.path.join(localfilepath, file_name)) if lastEdited is None else lastEdited
+        self.committedby = committedby
         self.md5 = md5
         self.style = style
         self.file_id = file_id
         self.commitUTCdatetime = commitUTCdatetime
         self.connection=connection
+        self.persist=persist
 
     def dictify(self):
         ###Should__dict__be used instead?

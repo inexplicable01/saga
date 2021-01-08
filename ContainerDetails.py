@@ -81,7 +81,7 @@ class refContainer():
         colorscheme = {'input': Qt.yellow, 'output': Qt.green, 'required': Qt.blue}
         for fileheader, fileinfo in self.curcontainer.FileHeaders.items():
             type=fileinfo['type']
-            if type=='reference' or type=='references' :
+            if type=='reference' or type == 'references':
                 continue
             self.inputRectBox[fileheader] = coolerRectangle(100*typeindex[type] , 200 + 75*typecounter[type],  containerBoxWidth, containerBoxHeight,\
                                                             type,self.containername , fileheader, self.mainGuiHandle)

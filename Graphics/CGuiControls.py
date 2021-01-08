@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import uic
+import math
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
@@ -34,19 +35,13 @@ class ContainerMap():
             for containerId_out in containerId_outlist:
                 lineid = containerId_in + '_' + containerId_out
                 if lineid not in self.containerConnectLines:
-                    Q1 = copy.deepcopy(self.activeContainersObj[containerId_in].QPos)
-                    Q2 = copy.deepcopy(self.activeContainersObj[containerId_out].QPos)
-                    Q1 += QPointF(rectheight/2, rectwidth/2)
-                    Q2 += QPointF(rectheight/2, rectwidth/2)
-
+                    Q1 = self.activeContainersObj[containerId_in].QPos + QPointF(rectheight/2, rectwidth/2)
+                    Q2 = self.activeContainersObj[containerId_out].QPos + QPointF(rectheight/2, rectwidth/2)
                     self.containerConnectLines[lineid] = containerLine(Q1,Q2,lineid, self.detailedmap)
                     self.containerscene.addItem(self.containerConnectLines[lineid])
-                    # self.containerConnectLines[lineid] = self.containerscene.addLine(QLineF(Q1, Q2), QPen(Qt.green))
                 else:
-                    Q1 = copy.deepcopy(self.activeContainersObj[containerId_in].QPos)
-                    Q2 = copy.deepcopy(self.activeContainersObj[containerId_out].QPos)
-                    Q1 += QPointF(rectheight/2, rectwidth/2)
-                    Q2 += QPointF(rectheight/2, rectwidth/2)
+                    Q1 = self.activeContainersObj[containerId_in].QPos + QPointF(rectheight/2, rectwidth/2)
+                    Q2 = self.activeContainersObj[containerId_out].QPos + QPointF(rectheight/2, rectwidth/2)
                     self.containerConnectLines[lineid].setLine(QLineF(Q1, Q2))
 
 
@@ -77,23 +72,26 @@ class ContainerMap():
         self.activeContainers[container.containerId]=container
 
     def plot(self):
-        idx=0
+        idx,idy=1,1
+        gridsize = math.ceil(math.sqrt(len(self.activeContainers.values())))
         for container in self.activeContainers.values():
             # print(container.containerName)
             text = self.containerscene.addText(container.containerName)
-            self.activeContainersObj[container.containerId]=containerRect(idx, text, self.drawline, self.detailedmap,self.selecteddetail)
+            self.activeContainersObj[container.containerId]=containerRect(idx,idy, text, self.drawline, self.detailedmap,self.selecteddetail)
             self.containerscene.addItem(self.activeContainersObj[container.containerId])
             idx +=1
+            if idx>gridsize:
+                idx, idy = 1, idy + 1
         self.drawline()
 
 
 
 class containerRect(QGraphicsRectItem):
-    def __init__(self, idx,text,drawline, detailedmap,selecteddetail,rectheight=rectheight, rectwidth=rectwidth):
+    def __init__(self, idx,idy,text,drawline, detailedmap,selecteddetail,rectheight=rectheight, rectwidth=rectwidth):
         super().__init__(0, 0, rectheight, rectwidth)
         self.rectheight = rectheight
         self.rectwidth = rectwidth
-        self.QPos = QPointF(-100+idx*100,-200)
+        self.QPos = QPointF(idx*100,idy*100)
         self.setPos(self.QPos)
         self.setBrush(QBrush(Qt.transparent))
         self.setPen(QPen(Qt.black))
@@ -137,6 +135,7 @@ class containerLine(QGraphicsLineItem):
     def mousePressEvent(self,event):
         print(self.lineid)
         self.detailedmap.selectedobj(self.lineid)
+
 
     # def mouseReleaseEvent(self,event):
     #     # self.drawline()

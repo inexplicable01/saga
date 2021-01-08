@@ -60,16 +60,20 @@ class containerBox(QGraphicsRectItem):
         self.containerscene = containerscene
         self.titletext = self.containerscene.addText(container.containerId)
         self.titletext.setPos(QPointF(10,10))
-        self.inputbox={}
-        self.outputbox = {}
+        self.crossbox={}
+        # self.outputbox = {}
+        typecounter = {'input': 0, 'output': 0}
+        loc = {'input': -1, 'output': 1}
         if container.FileHeaders:
-            idx =0
+
             for fileheader, fileinfo in container.FileHeaders.items():
-                if fileinfo['type'] in ['input', 'output']:
-                    print(fileheader)
-                    self.inputbox[fileheader]=FileRect(parent=self, locF= -containerBoxWidth/2-25, idx= idx,fileinfo=fileinfo,fileheader=fileheader,type=fileinfo['type'])
-                    idx+=1
-        # self.subrect = FileRect(self)
+                type = fileinfo['type']
+                if type in ['input', 'output']:
+                    # print(fileheader)
+                    self.crossbox[fileheader]=FileRect(parent=self, locF= (containerBoxWidth+40)*loc[type]/2, idx= typecounter[type],\
+                                                       fileinfo=fileinfo,fileheader=fileheader,type=type)
+                    typecounter[type]+=1
+
 
 class ConnectionBox():
     def __init__(self, containerscene,containerIn:Container, containerOut:Container,containerBoxHeight=containerBoxHeight, containerBoxWidth=containerBoxWidth):
@@ -87,8 +91,8 @@ class ConnectionBox():
 
         idx=0
         for upfileheader, upfileinfo in containerIn.FileHeaders.items():
-            for downfileheader, downfileinfo in containerOut.FileHeaders.items():
-                if upfileheader==downfileheader:
+            if upfileinfo['type']=='output' and upfileinfo['Container']==containerOut.containerId:
+                if containerOut.FileHeaders[upfileheader] and containerOut.FileHeaders[upfileheader]['type']=='input':
                     self.fileObj.append(FileRect(None, containerBoxWidth*-0.5, idx, fileinfo=upfileinfo, fileheader=upfileheader, type='Connection'))
                     containerscene.addItem(self.fileObj[-1])
                     idx +=1

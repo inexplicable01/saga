@@ -34,7 +34,7 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>0</y>
+      <y>10</y>
       <width>1351</width>
       <height>721</height>
      </rect>
@@ -171,9 +171,9 @@
      <widget class="QTextBrowser" name="frametextBrowser">
       <property name="geometry">
        <rect>
-        <x>480</x>
+        <x>490</x>
         <y>30</y>
-        <width>301</width>
+        <width>791</width>
         <height>51</height>
        </rect>
       </property>
@@ -189,16 +189,6 @@
       </property>
       <property name="text">
        <string>Container Commit History</string>
-      </property>
-     </widget>
-     <widget class="QTextBrowser" name="commithist">
-      <property name="geometry">
-       <rect>
-        <x>490</x>
-        <y>120</y>
-        <width>441</width>
-        <height>111</height>
-       </rect>
       </property>
      </widget>
      <widget class="QGraphicsView" name="frameView">
@@ -260,24 +250,24 @@
        </rect>
       </property>
       <property name="text">
-       <string>Refresh</string>
+       <string>checkDelta</string>
       </property>
      </widget>
      <widget class="QTextEdit" name="commitmsgEdit">
       <property name="geometry">
        <rect>
-        <x>490</x>
-        <y>286</y>
-        <width>381</width>
-        <height>61</height>
+        <x>20</x>
+        <y>446</y>
+        <width>431</width>
+        <height>51</height>
        </rect>
       </property>
      </widget>
      <widget class="QLabel" name="label_4">
       <property name="geometry">
        <rect>
-        <x>490</x>
-        <y>260</y>
+        <x>20</x>
+        <y>430</y>
         <width>421</width>
         <height>16</height>
        </rect>
@@ -289,37 +279,14 @@
      <widget class="QPushButton" name="commitBttn">
       <property name="geometry">
        <rect>
-        <x>490</x>
-        <y>350</y>
+        <x>20</x>
+        <y>500</y>
         <width>171</width>
         <height>61</height>
        </rect>
       </property>
       <property name="text">
        <string>Commit</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_5">
-      <property name="geometry">
-       <rect>
-        <x>400</x>
-        <y>370</y>
-        <width>111</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>InfoDump</string>
-      </property>
-     </widget>
-     <widget class="QTextBrowser" name="infodump">
-      <property name="geometry">
-       <rect>
-        <x>400</x>
-        <y>390</y>
-        <width>51</width>
-        <height>21</height>
-       </rect>
       </property>
      </widget>
      <widget class="QPushButton" name="rebasebutton">
@@ -334,6 +301,38 @@
       <property name="text">
        <string>RebaseButton</string>
       </property>
+     </widget>
+     <widget class="QPushButton" name="revertbttn">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>530</y>
+        <width>231</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Revert</string>
+      </property>
+     </widget>
+     <widget class="QTableView" name="commithisttable">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>120</y>
+        <width>791</width>
+        <height>401</height>
+       </rect>
+      </property>
+      <attribute name="horizontalHeaderDefaultSectionSize">
+       <number>80</number>
+      </attribute>
+      <attribute name="verticalHeaderDefaultSectionSize">
+       <number>24</number>
+      </attribute>
+      <attribute name="verticalHeaderMinimumSectionSize">
+       <number>12</number>
+      </attribute>
      </widget>
     </widget>
     <widget class="QWidget" name="New">

@@ -3,10 +3,12 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
+from Graphics.QAbstract.HistoryListModel import HistoryListModel
 from Graphics.CGuiControls import ContainerMap
 from Graphics.DetailedMap import DetailedMap
 from Graphics.TrayActions import SignIn, SignOut
-from Graphics.Dialogs import ErrorMessage, inputFileDialog, selectFileDialog
+from Graphics.FixInput import fixInput
+from Graphics.Dialogs import ErrorMessage, inputFileDialog, selectFileDialog,alteredinputFileDialog
 import yaml
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
@@ -41,7 +43,7 @@ class UI(QMainWindow):
         self.returncontlist.clicked.connect(self.getContainerInfo)
         self.returncontlist_2.clicked.connect(self.getContainerInfo2)
         self.generateContainerBttn.clicked.connect(self.generateContainerMap)
-
+        self.enterEvent=self.blah
         # Section to set up adding new file button and file type selection - Jimmy
         #Need to read and learn more about slots/events/signals, toggling of radio button won't send info to btnstate
         # Add File Button Connections:
@@ -56,6 +58,11 @@ class UI(QMainWindow):
         self.counter= True
         self.resetbutton.clicked.connect(self.resetrequest)
         self.rebasebutton.clicked.connect(self.rebaserequest)
+        # self.fixInputBttn.clicked.connect(self.addressAlteredInput)
+        # self.fixInputBttn.setEnabled(False)
+        self.sceneObj = {}
+        self.revertbttn.clicked.connect(self.revert)
+        self.revertbttn.setEnabled(False)
 
         self.commitBttn.setEnabled(False)
         self.commitBttn.clicked.connect(self.commit)
@@ -65,19 +72,45 @@ class UI(QMainWindow):
         # self.frametextBrowser.append('here I am')
         self.show()
 
+
+
         self.userdata=None
         self.authtoken = None
         self.tabWidget.setEnabled(False)
+        self.alterfiletracks=[]
 
         ###########Gui Variables##############
         self.detailedmap = DetailedMap(self.detailsMapView, self.selecteddetail)
         self.containermap =ContainerMap({}, self.containerMapView, self.selecteddetail,self.detailedmap)
+
+        ###########History Info####
+        self.commithisttable.clicked.connect(self.alterRevertButton)
 
         ###########Tray Actions #############
         self.actionSign_In.triggered.connect(partial(SignIn,self))
         self.actionSign_Out.triggered.connect(partial(SignOut,self))
 
         self.checkUserStatus()
+        self.startingcheck = False
+
+    def blah(self, event):
+        if self.startingcheck:
+            self.checkdelta()
+        # print(event)
+
+    def alterRevertButton(self,histtable):
+        rownumber = histtable.row()
+        index = histtable.model().index(rownumber, 0)
+        self.reverttorev = histtable.model().data(index, 0)
+        self.revertbttn.setText('Revert back to ' + self.reverttorev)
+        self.revertbttn.setEnabled(True)
+
+    def revert(self):
+        self.cframe.revertTo(self.reverttorev)
+        self.commitmsgEdit.setText('Revert back to ' + self.reverttorev)
+        self.commit()
+        self.checkdelta()
+        self.commithisttable.setModel(HistoryListModel(self.Container.commithistory()))
 
     def resetrequest(self):
         response = requests.get(BASE + 'RESET')
@@ -106,6 +139,7 @@ class UI(QMainWindow):
         self.containerlisttable_2.setModel(ContainerListModel(containerinfolist))
         self.containerlisttable_2.clicked.connect(partial(refContainer, self))
 
+
     def newFileInfoInputs(self):
         dialogWindow = inputFileDialog(self.containerName,self.containerObjName)
         fileInfo = dialogWindow.getInputs()
@@ -127,10 +161,11 @@ class UI(QMainWindow):
                 self.tempContainer.addFileObject(fileInfo, self.fileType)
                 newContainerGraphics(self.tempContainer,self)
 
+
     def createNewContainer(self):
         print(self.descriptionText.toPlainText())
         if '' not in [self.containerName_lineEdit.text(), self.descriptionText.toPlainText(), self.messageText.toPlainText()]:
-            print('working?')
+            # print('working?')
             self.tempContainer.containerName = self.containerName_lineEdit.text()
             self.tempContainer.containerId = self.containerName_lineEdit.text()
             self.tempContainer.save(self.tempContainer.containerName)
@@ -176,24 +211,36 @@ class UI(QMainWindow):
 
 
     def checkdelta(self):
-        try:
-            allowCommit, changes = self.Container.checkFrame(self.cframe)
-            self.commitBttn.setEnabled(allowCommit)
-            self.commitmsgEdit.setDisabled(not allowCommit)
-            # print('c',changes)
-            changesarr=[]
-            for change in changes:
-                changesarr.append(change['fileheader'])
-            for fileheader in self.Container.FileHeaders.keys():
-                if fileheader in changesarr:
-                    self.sceneObj[fileheader].setPen(QPen(Qt.red, 3))
-                else:
-                    self.sceneObj[fileheader].setPen(QPen(Qt.black, 1))
+        allowCommit = False
+        fixInput = False
+        # allowCommit, changes, fixInput , self.alterfiletracks= self.Container.checkFrame(self.cframe)
+        changes, self.alterfiletracks = self.cframe.compareToRefFrame()
+        if len(changes) > 0:
+            allowCommit = True
 
-            self.printToFrameText(changes)
-                # self.sceneObj[change].update()
-        except Exception as err:
-            print(err)
+        self.commitBttn.setEnabled(allowCommit)
+        self.commitmsgEdit.setDisabled(not allowCommit)
+        # self.fixInputBttn.setEnabled(fixInput)
+
+        changesarr=[change['fileheader'] for change in changes]
+        for fileheader in self.Container.FileHeaders.keys():
+            if fileheader in changesarr:
+                self.sceneObj[fileheader].setPen(QPen(Qt.red, 3))
+            else:
+                self.sceneObj[fileheader].setPen(QPen(Qt.black, 1))
+        chgstr = ''
+        for change in changes:
+            chgstr = chgstr + change['fileheader'] + '\t' + change['reason'] + '\n'
+        self.frametextBrowser.setText(chgstr)
+
+    def addressAlteredInput(self):
+        for alterfiletrack in self.alterfiletracks:
+            dialogWindow = alteredinputFileDialog(alterfiletrack)
+            alterinputfileinfo = dialogWindow.getInputs()
+            if alterinputfileinfo:
+                self.cframe.dealwithalteredInput(alterinputfileinfo)
+        self.readcontainer()
+        self.checkdelta()
 
     def commit(self):
         # print(self.commitmsgEdit.toPlainText() + str())
@@ -204,33 +251,37 @@ class UI(QMainWindow):
             error_dialog.exec_()
             return
             # return
-        if self.userdata['email'] not in self.Container.allowUsers:
+        if self.userdata['email'] not in self.Container.allowedUser:
             error_dialog.showMessage('You do not have the privilege to commit to this container')
             error_dialog.exec_()
             return
-            #
+        self.addressAlteredInput()
+
         self.cframe, committed = self.Container.commit(self.cframe,self.commitmsgEdit.toPlainText(), self.authtoken, BASE)
         if committed:
             self.Container.save()
             self.framelabel.setText(self.cframe.FrameName)
             self.checkdelta()
-            self.frametextBrowser.clear()
-            self.commithist.clear()
-            self.commithist.append(self.Container.commithistory())
-
-    def printToFrameText(self,changes):
-        self.frametextBrowser.append(self.Container.printDelta(changes))
-        # frameText
+            # self.frametextBrowser.clear()
+            # self.commithist.clear()
+            self.commithisttable.setModel(HistoryListModel(self.Container.commithistory()))
 
     def readcontainer(self):
         path='C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
-        self.Container = Container(path, 'Main', '1')
+        self.Container = Container(path, revnum=None)
         self.cframe = Frame(self.Container.refframe, self.Container.filestomonitor, self.Container.containerworkingfolder)
         print('self.cframe.FrameName')
+        self.startingcheck=True
         self.framelabel.setText(self.cframe.FrameName)
-        self.commithist.append(self.Container.commithistory())
+        self.commithisttable.setModel(HistoryListModel(self.Container.commithistory()))
+        self.commithisttable.setColumnWidth(0, self.commithisttable.width()*0.1)
+        self.commithisttable.setColumnWidth(1, self.commithisttable.width() * 0.6)
+        self.commithisttable.setColumnWidth(2, self.commithisttable.width() * 0.29)
+        self.plotcontainer()
+
+    def plotcontainer(self):
         scene = QGraphicsScene()
-        self.sceneObj={}
+
         # print(self.cframe.filestrack.keys())
         colorscheme = {'input':Qt.yellow, 'output':Qt.green, 'required':Qt.blue}
         typeindex = {'input': 0, 'output': 1, 'required': 2}

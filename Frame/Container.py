@@ -10,6 +10,7 @@ import glob
 import time
 import requests
 import json
+import warnings
 
 from hackpatch import workingdir
 from Frame.SagaUtil import FrameNumInBranch
@@ -33,7 +34,7 @@ class Container:
         self.containerName = containeryaml['containerName']
         self.containerId = containeryaml['containerId']
         self.FileHeaders = containeryaml['FileHeaders']
-        self.allowUsers = containeryaml['allowedUser']
+        self.allowedUser = containeryaml['allowedUser']
         # self.yamlTracking = containeryaml['yamlTracking']
         self.currentbranch = currentbranch
         self.filestomonitor = {}
@@ -48,53 +49,53 @@ class Container:
                 revnum)
 
     def commit(self, cframe: Frame, commitmsg, authtoken, BASE):
-        committed = False
-        # # frameYamlfileb = framefs.get(file_id=ObjectId(curframe.FrameInstanceId))
-        with open(self.refframe) as file:
-            frameRefYaml = yaml.load(file, Loader=yaml.FullLoader)
-        frameRef = Frame(frameRefYaml, self.filestomonitor, self.containerworkingfolder)
 
-        # allowCommit, changes = self.Container.checkFrame(cframe)
-        print(frameRef.FrameName)
+        frameRef = Frame(self.refframe, self.filestomonitor, self.containerworkingfolder)
 
         filesToUpload = {}
         updateinfo = {}
-        for ContainerObjName, filetrackobj in cframe.filestrack.items():
-            filepath = os.path.join(self.containerworkingfolder, filetrackobj.file_name)
+        for fileheader, filetrack in cframe.filestrack.items():
+            filepath = os.path.join(self.containerworkingfolder, filetrack.file_name)
             # Should file be committed?
-            commit_file, md5 = self.CheckCommit(filetrackobj, filepath, frameRef)
-            committime = datetime.timestamp(datetime.utcnow())
+            commit_file, md5 = self.CheckCommit(filetrack, filepath, frameRef)
+            if fileheader not in self.FileHeaders.keys():
+                warnings.warn('We need to make sure all the tracked files are adequatedly traced', Warning)
+                return
+            # if self.FileHeaders[fileheader]['type']=='input':
+            #     warnings.warn( 'Saga app requires changes to input files to be to saved seperately' , Warning)
+            #     cframe.add_fileTrack(filepath,fileheader)
+            #     return
+
             if commit_file:
                 # new file needs to be committed as the new local file is not the same as previous md5
-                filesToUpload[ContainerObjName] = open(filepath,'rb')
-                updateinfo[ContainerObjName] = {
-                    'file_name': filetrackobj.file_name,
-                    'lastEdited': filetrackobj.lastEdited,
-                    'md5': filetrackobj.md5,
-                    'style': filetrackobj.style,
+                filesToUpload[fileheader] = open(filepath,'rb')
+                updateinfo[fileheader] = {
+                    'file_name': filetrack.file_name,
+                    'lastEdited': filetrack.lastEdited,
+                    'md5': filetrack.md5,
+                    'style': filetrack.style,
                 }
 
         updateinfojson = json.dumps(updateinfo)
-        # print (updateinfo)
+        containerdictjson = self.__repr__()
+        framedictjson = frameRef.__repr__()
 
 
-        response = requests.post(BASE + 'FRAMES',
+        response = requests.post(BASE + 'COMMIT',
                                  headers={"Authorization": 'Bearer ' + authtoken['auth_token']},
-                                 data={'containerID': self.containerId, 'branch': self.currentbranch,
-                                       'updateinfo': updateinfojson, 'commitmsg':commitmsg},  files=filesToUpload)
+                                 data={'containerID': self.containerId,
+                                       'containerdictjson': containerdictjson,
+                                       'framedictjson': framedictjson,
+                                       'branch': self.currentbranch,
+                                       'updateinfo': updateinfojson,
+                                       'commitmsg':commitmsg},  files=filesToUpload)
 
-
-        print(response)
-        if response.headers['commitsuccess']:
+        if 'commitsuccess' in response.headers.keys():
             # Updating new frame information
             frameyamlfn = os.path.join(self.containerId, self.currentbranch, response.headers['file_name'])
             open(frameyamlfn, 'wb').write(response.content)
-            # Frame(frameyaml,None)
-            with open(frameyamlfn) as file:
-                frameyaml = yaml.load(file, Loader=yaml.FullLoader)
-            newframe = Frame(frameyaml, self.filestomonitor, self.containerworkingfolder)
+            newframe = Frame(frameyamlfn, self.filestomonitor, self.containerworkingfolder)
             # Write out new frame information
-
             # The frame file is saved to the frame FS
             self.refframe = frameyamlfn
             return newframe, response.headers['commitsuccess']
@@ -105,60 +106,45 @@ class Container:
         fileb = open(filepath, 'rb')
         md5hash = hashlib.md5(fileb.read())
         md5 = md5hash.hexdigest()
-        if filetrackobj.ContainerObjName not in frameRef.filestrack.keys():
+        if filetrackobj.FileHeader not in frameRef.filestrack.keys():
             return True, md5
-        if (md5 != frameRef.filestrack[filetrackobj.ContainerObjName].md5):
+        if (md5 != frameRef.filestrack[filetrackobj.FileHeader].md5):
             return True, md5
-        if frameRef.filestrack[filetrackobj.ContainerObjName].lastEdited != os.path.getmtime(
+        if frameRef.filestrack[filetrackobj.FileHeader].lastEdited != os.path.getmtime(
                 os.path.join(self.containerworkingfolder, filetrackobj.file_name)):
-            frameRef.filestrack[filetrackobj.ContainerObjName].lastEdited = os.path.getmtime(
+            frameRef.filestrack[filetrackobj.FileHeader].lastEdited = os.path.getmtime(
                 os.path.join(self.containerworkingfolder, filetrackobj.file_name))
             return True, md5
         return False, md5
         # Make new Yaml file  some meta data sohould exit in Yaml file
 
-    def checkFrame(self, cframe):
-        allowCommit = False
-        cframe.updateFrame()
-        ref = Frame(self.refframe, self.filestomonitor, self.containerworkingfolder)
-        changes = cframe.compareToAnotherFrame(ref)
-        # print(len(changes))
-        if len(changes) > 0:
-            allowCommit = True
-        return allowCommit, changes
-
     def commithistory(self):
-        historyStr = ''
+        historydict = {}
         # glob.glob() +'/'+ Rev + revnum + ".yaml"
-        yamllist = glob.glob(self.containerworkingfolder + '/' + self.currentbranch + '*.yaml')
+        yamllist = glob.glob(os.path.join(self.containerworkingfolder, self.currentbranch , '*.yaml'))
         for yamlfn in yamllist:
-            # print(yamlfn)
-            with open(yamlfn) as file:
-                pastYaml = yaml.load(file, Loader=yaml.FullLoader)
-            # print(pastYaml)
-            pastframe = Frame(pastYaml, self.filestomonitor, self.containerworkingfolder)
-            # print(pastframe.commitMessage)
-            historyStr = historyStr + pastframe.FrameName + '\t' + pastframe.commitMessage + '\t\t\t\t' + \
-                         time.ctime(pastframe.commitUTCdatetime) + '\t\n'
-        return historyStr
+            pastframe = Frame(yamlfn, self.filestomonitor, self.containerworkingfolder)
+            historydict[pastframe.FrameName] = {'commitmessage':pastframe.commitMessage,
+                                               'timestamp':pastframe.commitUTCdatetime }
+        return historydict
 
-    def printDelta(self, changes):
-        framestr = ''
-        for change in changes:
-            framestr = framestr + change['ContainerObjName'] + '     ' + change['reason'] + '\n'
-        return framestr
+    def save(self):
+        # if self.containerfn == 'Default':
+        #     self.containerfn = containerName
+        outyaml = open(os.path.join(self.containerworkingfolder, 'containerstate.yaml'), 'w')
+        yaml.dump(self.dictify(), outyaml)
+        outyaml.close()
 
-    def save(self,containerName):
-        if self.containerfn == 'Default':
-            self.containerfn = containerName
+    def dictify(self):
         dictout = {}
-        outyaml = open(os.path.join(self.containerworkingfolder, self.containerfn + '.yaml'), 'w')
         keytosave = ['containerName', 'containerId', 'FileHeaders','allowedUser']
         for key, value in vars(self).items():
             if key in keytosave:
                 dictout[key] = value
-        yaml.dump(dictout, outyaml)
-        outyaml.close()
+        return dictout
+
+    def __repr__(self):
+        return json.dumps(self.dictify())
 
     def addFileObject(self, fileInfo, fileType:str):
         print(fileType)
@@ -170,3 +156,4 @@ class Container:
             print(self.requiredObjs)
         elif fileType == 'Output':
             self.outputObjs.append(fileInfo)
+

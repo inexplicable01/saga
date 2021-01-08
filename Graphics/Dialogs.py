@@ -67,3 +67,27 @@ class selectFileDialog(QDialog):
         else:
             return None
 
+class alteredinputFileDialog(QDialog):
+    def __init__(self, alterfiletrack:FileTrack):
+        super().__init__()
+        # self.fileName = fileName
+        uic.loadUi("Graphics/alteredinputFileDialog.ui", self)
+        self.alterfiletrack = alterfiletrack
+        self.old_filename_lbl.setText(alterfiletrack.file_name)
+        self.old_fileheader_lbl.setText(alterfiletrack.FileHeader)
+
+        linkstr= alterfiletrack.connection.refContainerId+'_'+alterfiletrack.connection.branch + '_'+ alterfiletrack.connection.Rev
+        self.nfilename_edit.setText(linkstr + '_' + alterfiletrack.file_name)
+        self.nfileheader_edit.setText(linkstr + '_' + alterfiletrack.FileHeader)
+        # self.containerName_label.setText(self.containerName)
+        # self.fileName_label.setText(containerObjName)
+    def getInputs(self):
+        if self.exec_() == QDialog.Accepted:
+
+            return { 'alterfiletrack':self.alterfiletrack,
+                    'nfileheader': self.nfileheader_edit.text(),
+                    'nfilename': self.nfilename_edit.text(),
+                    'persist': self.persist_cb.checkState()}
+        else:
+            return None
+

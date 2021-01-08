@@ -24,6 +24,7 @@ Archive/
 ContainerC\
 ContainerC/
 /SagaServerSetup/
+build/
 
 ContainerC/containerstate.yaml
 ContainerC/Doggy.txt
@@ -51,3 +52,12 @@ specialsauce2/SS2ExcelSheet.xlsx
 specialsauce2/Main/Rev1.yaml
 specialsauce2/containerstate.yaml
 specialsauce2/containerstate.yaml
+build/PyQtTesting/Analysis-00.toc
+dist/PyQtTesting.exe
+*.exe
+Graphics/FixInput.py
+quickarrangement.py
+PyQtTesting.spec
+PyQtTesting.exe
+Graphics/login.py
+Graphics/file_info.py

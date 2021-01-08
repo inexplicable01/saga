@@ -5,7 +5,7 @@ FileHeaders:
     Container: ContainerC
     type: output
   MUD:
-    Container: ContainerC
+    Container: ContainerB
     type: output
   AModel1:
     Container: here

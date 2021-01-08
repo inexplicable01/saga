@@ -5,10 +5,17 @@ class ConnectionTypes(Enum):
     Input=auto()
     Output=auto()
 
+
+
 class FileConnection:
     def __init__(self, ContainerId,connectionType,branch='Main',Rev = None):
         self.refContainerId=ContainerId
-        self.connectionType=connectionType
+        if connectionType=='Input':
+            self.connectionType = ConnectionTypes.Input
+        elif connectionType=='Output':
+            self.connectionType = ConnectionTypes.Output
+        else:
+            raise('connection type screwed up')
         self.branch=branch
         self.Rev=Rev
 
@@ -22,7 +29,13 @@ class FileConnection:
     def dictify(self):
         dictout = {}
         for key, value in vars(self).items():
-            dictout[key] = value
+            if key=='connectionType':
+                if value:
+                    dictout[key] = value.name
+                else:
+                    dictout[key] = None
+            else:
+                dictout[key] = value
         # print(json.dumps(dictout))
         return dictout
 
@@ -30,7 +43,7 @@ class FileConnection:
         str=''
         # print('FileHeader:   '+ self.FileHeader)
         str +='\n\t\tFileConnection:  ' + self.refContainerId + '\n'
-        str += '\t\tconnectionType:   ' + self.connectionType + '\n'
+        str += '\t\tconnectionType:   ' + self.connectionType.name + '\n'
         str += '\t\tbranch:   ' + self.branch + '\n'
         str += '\t\tRev:   ' + self.Rev + '\n'
         return str
