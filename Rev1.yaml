@@ -1,0 +1,41 @@
+AttachedFiles: ''
+FrameInstanceId: ''
+FrameName: Rev1
+commitMessage: hDWYxlKypkxxFVAbEoIxtAjIvOwklx
+commitUTCdatetime: ''
+filestrack:
+- FileHeader: R1
+  commitUTCdatetime: null
+  committedby: waichak
+  connection: null
+  file_id: null
+  file_name: R1.txt
+  lastEdited: 1610234297.7458625
+  md5: 65e7ffda058435434a4ab847aa24b1d1
+  persist: true
+  style: Output
+- FileHeader: asdfasdf
+  commitUTCdatetime: null
+  committedby: waichak
+  connection: null
+  file_id: null
+  file_name: error.txt
+  lastEdited: 1598926879.6760828
+  md5: d41d8cd98f00b204e9800998ecf8427e
+  persist: true
+  style: Required
+- FileHeader: pptt
+  commitUTCdatetime: null
+  committedby: waichak
+  connection: null
+  file_id: null
+  file_name: SagaFrontEndTesting.pptx
+  lastEdited: 1610073892.0185916
+  md5: d41d8cd98f00b204e9800998ecf8427e
+  persist: true
+  style: Output
+inlinks: ''
+localfilepath: newFrames/
+outlinks: ''
+parentContainerId: kPgAPdArRu
+refframefn: null

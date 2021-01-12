@@ -6,6 +6,7 @@ from Graphics.QAbstract.ContainerListModel import ContainerListModel
 import yaml
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
+from Config import typeInput,typeOutput,typeRequired
 from Frame.FileObjects import FileTrack
 from Frame.commit import commit
 import os
@@ -62,13 +63,13 @@ class containerBox(QGraphicsRectItem):
         self.titletext.setPos(QPointF(10,10))
         self.crossbox={}
         # self.outputbox = {}
-        typecounter = {'input': 0, 'output': 0}
-        loc = {'input': -1, 'output': 1}
+        typecounter = {typeInput: 0, typeOutput: 0}
+        loc = {typeInput: -1, typeOutput: 1}
         if container.FileHeaders:
 
             for fileheader, fileinfo in container.FileHeaders.items():
                 type = fileinfo['type']
-                if type in ['input', 'output']:
+                if type in [typeInput, typeOutput]:
                     # print(fileheader)
                     self.crossbox[fileheader]=FileRect(parent=self, locF= (containerBoxWidth+40)*loc[type]/2, idx= typecounter[type],\
                                                        fileinfo=fileinfo,fileheader=fileheader,type=type)
@@ -91,8 +92,8 @@ class ConnectionBox():
 
         idx=0
         for upfileheader, upfileinfo in containerIn.FileHeaders.items():
-            if upfileinfo['type']=='output' and set([containerOut.containerId]).issubset(set(upfileinfo['Container'])):
-                if containerOut.FileHeaders[upfileheader] and containerOut.FileHeaders[upfileheader]['type']=='input':
+            if upfileinfo['type']==typeOutput and set([containerOut.containerId]).issubset(set(upfileinfo['Container'])):
+                if containerOut.FileHeaders[upfileheader] and containerOut.FileHeaders[upfileheader]['type']==typeInput:
                     self.fileObj.append(FileRect(None, containerBoxWidth*-0.5, idx, fileinfo=upfileinfo, fileheader=upfileheader, type='Connection'))
                     containerscene.addItem(self.fileObj[-1])
                     idx +=1
@@ -108,10 +109,10 @@ class FileRect(QGraphicsRectItem):
         super().__init__(locF,50 + idx*100,containerBoxWidth * (1 + boxgap),60,parent)
         self.setBrush(QBrush(Qt.green))
         self.setPen(QPen(Qt.black))
-        if type=='input':
+        if type==typeInput:
             self.containertext = QGraphicsTextItem(fileinfo['Container'], parent=self)
             self.containertext.setPos(self.rect().topLeft()+QPoint(0,-20))
-        elif type=='output':
+        elif type==typeOutput:
             for idx,outputcontainer in enumerate(fileinfo['Container']):
                 self.containertext = QGraphicsTextItem(outputcontainer, parent=self)
                 self.containertext.setPos(self.rect().topRight()+QPoint(-50, -20 -idx*15))

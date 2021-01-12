@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1255</width>
-    <height>727</height>
+    <width>1145</width>
+    <height>705</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -125,23 +125,10 @@
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="Container">
+    <widget class="QWidget" name="ContainerTab">
      <attribute name="title">
       <string>Container</string>
      </attribute>
-     <widget class="QPushButton" name="openContainerBttn">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>10</y>
-        <width>191</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Open Container</string>
-      </property>
-     </widget>
      <widget class="QLabel" name="label">
       <property name="geometry">
        <rect>
@@ -334,21 +321,8 @@
        <number>12</number>
       </attribute>
      </widget>
-     <widget class="QPushButton" name="navButton">
-      <property name="geometry">
-       <rect>
-        <x>220</x>
-        <y>380</y>
-        <width>93</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>nav</string>
-      </property>
-     </widget>
     </widget>
-    <widget class="QWidget" name="New">
+    <widget class="QWidget" name="NewContainerTab">
      <attribute name="title">
       <string>New</string>
      </attribute>
@@ -529,7 +503,7 @@
        <rect>
         <x>420</x>
         <y>60</y>
-        <width>161</width>
+        <width>183</width>
         <height>221</height>
        </rect>
       </property>
@@ -592,8 +566,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1255</width>
-     <height>26</height>
+     <width>1145</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProfile">
@@ -603,7 +577,15 @@
     <addaction name="actionSign_In"/>
     <addaction name="actionSign_Out"/>
    </widget>
+   <widget class="QMenu" name="menuContainer">
+    <property name="title">
+     <string>Container</string>
+    </property>
+    <addaction name="actionNew_Container"/>
+    <addaction name="actionFind_Local_Container"/>
+   </widget>
    <addaction name="menuProfile"/>
+   <addaction name="menuContainer"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionSign_In">
@@ -614,6 +596,16 @@
   <action name="actionSign_Out">
    <property name="text">
     <string>Sign Out</string>
+   </property>
+  </action>
+  <action name="actionNew_Container">
+   <property name="text">
+    <string>New Container</string>
+   </property>
+  </action>
+  <action name="actionFind_Local_Container">
+   <property name="text">
+    <string>Find Local Container</string>
    </property>
   </action>
  </widget>

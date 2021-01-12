@@ -7,6 +7,7 @@ import yaml
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
 from Frame.FileObjects import FileTrack
+from Config import typeInput,typeRequired,typeOutput
 from Frame.commit import commit
 import os
 import sys
@@ -26,29 +27,30 @@ class ErrorMessage(QMessageBox):
         self.exec_()
 
 class inputFileDialog(QDialog):
-    def __init__(self, containerName, containerObjName):
+    def __init__(self, ContainerId, fileheader):
         super().__init__()
         # self.fileName = fileName
         uic.loadUi("Graphics/inputFileDialog.ui", self)
-        self.containerName = containerName
-        self.containerObjName = containerObjName
-        self.containerName_label.setText(self.containerName)
-        self.fileNameLabel.setText(containerObjName)
+        self.ContainerId, = ContainerId,
+        self.fileheader = fileheader
+        self.containerName_label.setText(self.ContainerId,)
+        self.fileNameLabel.setText(fileheader)
+
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:
-            return {'Container': self.containerName, 'type': 'Input'}
+            return {'Container': self.ContainerId, 'type': 'Input'}
         else:
             return None
 
 class removeFileDialog(QDialog):
-    def __init__(self, containerObjName):
+    def __init__(self, fileheader):
         super().__init__()
         uic.loadUi("Graphics/removeFileDialog.ui", self)
-        self.containerObjName = containerObjName
-        self.fileNameLabel.setText(self.containerObjName)
+        self.fileheader = fileheader
+        self.fileNameLabel.setText(self.fileheader)
     def removeFile(self):
         if self.exec_() == QDialog.Accepted:
-            return self.containerObjName
+            return self.fileheader
         else:
             return None
 class commitDialog(QDialog):
@@ -67,10 +69,14 @@ class selectFileDialog(QDialog):
     def __init__(self, fileType:str):
         super().__init__()
         self.fileType = fileType
-        if self.fileType == 'Required':
+        if self.fileType == typeRequired:
             uic.loadUi("Graphics/file_info.ui", self)
-        elif self.fileType == 'Output':
+            self.ownerEdit.setText('OwnerRequired')
+            self.descriptionEdit.setText('DescrtiptionRequired')
+        elif self.fileType == typeOutput:
             uic.loadUi("Graphics/file_info_outputs.ui", self)
+            self.ownerEdit.setText('Owneroutput')
+            self.descriptionEdit.setText('Descrtiptionoutpu')
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
         self.openDirButton.clicked.connect(self.openDirectory)
@@ -81,13 +87,13 @@ class selectFileDialog(QDialog):
 
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:
-            if self.fileType == 'Required':
-                containerFileInfo = {'Container': 'here', 'type':'Required'}
+            if self.fileType == typeRequired:
+                containerFileInfo = {'Container': 'here', 'type':typeRequired}
                 return {'FileObjHeader': self.fileObjHeaderEdit.text(), 'FilePath':self.filePathEdit.text(),
                         'Owner': self.ownerEdit.text(), 'Description': self.descriptionEdit.text(),
                         'ContainerFileInfo': containerFileInfo}
-            elif self.fileType == 'Output':
-                containerFileInfo = {'Container': 'here', 'type': 'Required'}
+            elif self.fileType == typeOutput:
+                containerFileInfo = {'Container': 'here', 'type': typeOutput}
                 return {'FileObjHeader': self.fileObjHeaderEdit.text(), 'FilePath': self.filePathEdit.text(),
                         'Owner': self.ownerEdit.text(), 'Description': self.descriptionEdit.text(),
                         'ContainerFileInfo': containerFileInfo, 'ContainerDestination':self.destinationEdit}
@@ -107,7 +113,7 @@ class alteredinputFileDialog(QDialog):
         self.nfilename_edit.setText(linkstr + '_' + alterfiletrack.file_name)
         self.nfileheader_edit.setText(linkstr + '_' + alterfiletrack.FileHeader)
         # self.containerName_label.setText(self.containerName)
-        # self.fileName_label.setText(containerObjName)
+        # self.fileName_label.setText(fileheader)
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:
 

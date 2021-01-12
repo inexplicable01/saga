@@ -178,24 +178,7 @@ class Frame:
         refframe = Frame(self.refframefn, self.filestomonitor, self.localfilepath)
         changes = []
         for fileheader in self.filestomonitor.keys():
-            ##  Is fileheader in Frame, , if yes
-            # if fileheader not in refframe.filestrack.keys():
-            #     # if no, go find file
-            #     print(self.filestrack.keys(),fileheader)
-            #     path = QFileDialog.getOpenFileName(self, "Open")[0]
-            #     if path:
-            #         self.cframe.add_fileTrack(path, fileheader, 'Style')
-            #         continue
-            ## Does the file exist?
-            # print('self.localfilepath', self.localfilepath)
             path = self.localfilepath + '/' + self.filestrack[fileheader].file_name
-            # if not os.path.exists(path):
-            #     # if not, go find a new file to track
-            #     path = QFileDialog.getOpenFileName(self, "Open")[0]
-            #     if path:
-            #         self.cframe.add_fileTrack(path, fileheader, 'Style')
-            #         # reassign key contrainobj with new fileobj
-            #         continue
             fileb = open(path, 'rb')
             self.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
             # calculate md5 of file, if md5 has changed, update md5
@@ -217,25 +200,11 @@ class Frame:
 
 
 
-    def downloadFrame(self,authToken, containerId, branch='Main' ):
-        payload = {'containerID': containerId,
-                   'branch': branch}
-        files = [
-        ]
-        headers = {
-            'Authorization': 'Bearer ' + authToken['auth_token']
-        }
-        response = requests.get(BASE + 'FRAMES', headers=headers, data=payload, files=files)
-        # request to FRAMES to get the latest frame from the branch as specified in currentbranch
-        branch = response.headers['branch']
-        # response also returned the name of the branch
-        if not os.path.exists(os.path.join(containerId, branch)):
-            if not os.path.exists(containerId):
-                os.mkdir(containerId)
-            os.mkdir(os.path.join(containerId, branch))  ## make folder if folder doesn't exist
-        frameyamlDL = os.path.join(containerId, branch, response.headers['file_name'])
-        open(frameyamlDL, 'wb').write(response.content)
-        # with open(frameyamlDL, 'r') as file:
-        #     FrameYaml = yaml.load(file, Loader=yaml.FullLoader)
-        return frameyamlDL
-        ## write return binary file as the frame yaml file
+
+    def downloadInputFile(self, fileheader):
+        response = requests.get(BASE + 'FILES',
+                                data={'file_id': self.filestrack[fileheader].file_id,
+                                      'file_name': self.filestrack[fileheader].file_name})
+        # Loops through the filestrack in curframe and request files listed in the frame
+
+        return response, self.filestrack[fileheader]

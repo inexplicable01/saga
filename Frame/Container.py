@@ -11,7 +11,7 @@ import time
 import requests
 import json
 import warnings
-
+from Config import typeInput,typeOutput,typeRequired
 from hackpatch import workingdir
 from Frame.SagaUtil import FrameNumInBranch
 from datetime import datetime
@@ -37,7 +37,7 @@ class Container:
         self.containerId = containeryaml['containerId']
         self.FileHeaders={}
         for fileheader, fileinfo in containeryaml['FileHeaders'].items():
-            if fileinfo['type'] =='output':
+            if fileinfo['type'] ==typeOutput:
                 if type(fileinfo['Container']) != list:
                     fileinfo['Container']=[fileinfo['Container']]
             self.FileHeaders[fileheader] = fileinfo
@@ -54,25 +54,26 @@ class Container:
             self.refframe, self.revnum = FrameNumInBranch( \
                 os.path.join(self.containerworkingfolder,  currentbranch), \
                 revnum)
+        try:
+            self.workingFrame = Frame(self.refframe, self.filestomonitor, self.containerworkingfolder)
+        except Exception as e:
+            self.workingFrame = Frame()
 
-    def commit(self, cframe: Frame, commitmsg, authtoken, BASE):
+
+
+    def commit(self, commitmsg, authtoken, BASE):
 
         frameRef = Frame(self.refframe, self.filestomonitor, self.containerworkingfolder)
 
         filesToUpload = {}
         updateinfo = {}
-        for fileheader, filetrack in cframe.filestrack.items():
+        for fileheader, filetrack in self.workingFrame.filestrack.items():
             filepath = os.path.join(self.containerworkingfolder, filetrack.file_name)
             # Should file be committed?
             commit_file, md5 = self.CheckCommit(filetrack, filepath, frameRef)
             if fileheader not in self.FileHeaders.keys():
                 warnings.warn('We need to make sure all the tracked files are adequatedly traced', Warning)
                 return
-            # if self.FileHeaders[fileheader]['type']=='input':
-            #     warnings.warn( 'Saga app requires changes to input files to be to saved seperately' , Warning)
-            #     cframe.add_fileTrack(filepath,fileheader)
-            #     return
-
             if commit_file:
                 # new file needs to be committed as the new local file is not the same as previous md5
                 filesToUpload[fileheader] = open(filepath,'rb')
@@ -107,7 +108,62 @@ class Container:
             self.refframe = frameyamlfn
             return newframe, response.headers['commitsuccess']
         else:
-            return cframe, response.headers['commitsuccess']
+            return self.workingFrame, response.headers['commitsuccess']
+
+    def CommitNewContainer(self, containerName,commitmessage,BASE):
+        self.containerName = containerName
+        self.containerId = containerName
+        self.save()
+        # self.tempFrame.description = self.descriptionText.toPlainText()
+        self.workingFrame.commitMessage = commitmessage
+        self.workingFrame.writeoutFrameYaml(self.workingFrame.FrameName + '.yaml')
+        commitContainer = self.dictify()
+        commitFrame = self.workingFrame.dictify()
+        url = BASE + 'CONTAINERS/newContainer'
+        payload = {'containerdictjson': json.dumps(commitContainer), 'framedictjson': json.dumps(commitFrame)}
+
+        filesToUpload={}
+        for fileheader, filetrack in self.workingFrame.filestrack.items():
+            if filetrack.style in [typeOutput,typeRequired]:
+                filepath = os.path.join(self.containerworkingfolder, filetrack.file_name)
+                filesToUpload[fileheader] = open(filepath, 'rb')
+
+        headers = {
+            'Authorization': 'Bearer ' + self.authtoken['auth_token']
+        }
+        response = requests.request("POST", url, headers=headers, data=payload, files=filesToUpload)
+        return response
+
+    @classmethod
+    def downloadContainerInfo(cls, refpath, authToken, BASE, containerId):
+        headers = {'Authorization': 'Bearer ' + authToken['auth_token']  }
+        response = requests.get(BASE + 'CONTAINERS/containerID', headers=headers, data={'containerID': containerId})
+        # response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
+        # requests is a python object/class, that sends a http request
+        # This returns a container Yaml File
+        if not os.path.exists(refpath):
+            os.mkdir(refpath)
+        if not os.path.exists(os.path.join(refpath, containerId)):
+            os.mkdir(os.path.join(refpath, containerId))
+        open(os.path.join(refpath, containerId, 'containerstate.yaml'), 'wb').write(response.content)
+        cls.downloadFrame(refpath, authToken,containerId,BASE)
+
+    @classmethod
+    def downloadFrame(cls,refpath,authToken, containerId, BASE, branch='Main'):
+        payload = {'containerID': containerId,
+                   'branch': branch}
+        headers = {
+            'Authorization': 'Bearer ' + authToken['auth_token']
+        }
+        response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
+        # request to FRAMES to get the latest frame from the branch as specified in currentbranch
+        branch = response.headers['branch']
+        # response also returned the name of the branch
+        if not os.path.exists(os.path.join(refpath, containerId, branch)):
+            os.mkdir(os.path.join(refpath, containerId,branch))
+        frameyamlDL = os.path.join(refpath,containerId, branch, response.headers['file_name'])
+        open(frameyamlDL, 'wb').write(response.content)
+        return frameyamlDL
 
     def CheckCommit(self, filetrackobj, filepath, frameRef):
         fileb = open(filepath, 'rb')

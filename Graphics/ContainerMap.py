@@ -53,10 +53,10 @@ class ContainerMap():
                 ##Identify upstream and downstream containerId
                 upstreamContainerId=None
                 downstreamContainerId=None
-                if FileInfo['type']=='input':
+                if FileInfo['type']=='Input':
                     upstreamContainerId = FileInfo['Container']
                     downstreamContainerId = container.containerId
-                elif FileInfo['type'] in ['output']:
+                elif FileInfo['type'] in ['Output']:
                     upstreamContainerId = container.containerId
                     downstreamContainerId = FileInfo['Container']
 
