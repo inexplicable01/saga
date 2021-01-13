@@ -125,7 +125,7 @@ class InputDialog(QDialog):
         self.close()
 
 def newContainer(MainGuiHandle,newcontainertab):
-    print('aldskjf')
+    # print('aldskjf')
     newcontainergui = newContainerDialog("Select a local location for building your container")
     inputs = newcontainergui.getInputs()
     newcontainertab.initiate(inputs)
@@ -138,7 +138,7 @@ def find_Local_Container(MainGuiHandle,maincontainertab):
     # inputwindow = InputDialog(MainGuiHandle=MainGuiHandle)
     (fname,fil) = QFileDialog.getOpenFileName(MainGuiHandle, 'Open container file','.', "Container (containerstate.yaml)")
     if fname:
-        print(fname)
+        # print(fname)
         maincontainertab.readcontainer(fname)
         MainGuiHandle.tabWidget.setCurrentIndex(maincontainertab.index)
 

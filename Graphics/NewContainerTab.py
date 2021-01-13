@@ -4,6 +4,7 @@ from Frame.FrameStruct import Frame
 from Frame.Container import Container
 from Graphics.ContainerPlot import ContainerPlot
 from Config import BASE
+from Config import typeInput,typeRequired,typeOutput
 import os
 import copy
 import random
@@ -84,7 +85,7 @@ class NewContainerTab():
 
     def AddToTempContainer(self, fileType: str):
         self.inputFileButton.setEnabled(False)
-        fileInfoDialog = selectFileDialog(fileType)
+        fileInfoDialog = selectFileDialog(fileType, self.tempContainer.containerworkingfolder)
         fileInfo = fileInfoDialog.getInputs()
         if fileInfo:
             self.tempContainer.addFileObject(fileInfo['FileObjHeader'], fileInfo['ContainerFileInfo'], fileType)
@@ -113,16 +114,15 @@ class NewContainerTab():
         dialogWindow = inputFileDialog(self.selectedContainer.containerId, self.curfileheader)
         fileInfo = dialogWindow.getInputs()
         if fileInfo:
-            self.tempContainer.addFileObject(self.curfileheader, fileInfo, self.curfiletype)
-            # outputFrameYaml = Container.downloadFrame(self.mainGuiHandle.authtoken,self.selectedContainer.containerId, BASE)
-            # outputFrame = Frame(outputFrameYaml)
-            response, fileinfo = self.selectedContainer.workingFrame.downloadInputFile(self.curfileheader)
-            # fn = os.path.join('testingDownloads', response.headers['file_name'])
-            fn = os.path.join(self.workingdir, response.headers['file_name'])
-            open(fn, 'wb').write(response.content)
-            # saves the content into file.
-            os.utime(fn, (fileinfo.lastEdited, fileinfo.lastEdited))
-            self.tempContainer.workingFrame.addFileTotrack(fn, self.curfileheader, self.curfiletype)
+            branch='Main'
+            fullpath, filetrack = self.selectedContainer.workingFrame.downloadInputFile(self.curfileheader,self.workingdir)
+            self.tempContainer.addInputFileObject(fileheader=self.curfileheader,
+                                                  reffiletrack = filetrack,
+                                                  fullpath=fullpath,
+                                                  refContainerId=self.selectedContainer.containerId,
+                                                  branch=branch,
+                                                  rev='Rev' + str(self.selectedContainer.revnum))
+
         # self.curContainerPlot.createInputRect()
         self.curContainerPlot.plot()
         self.inputFileButton.setEnabled(False)
@@ -136,7 +136,7 @@ class NewContainerTab():
             self.editFileButton.setEnabled(True)
 
     def editFileInfo(self):
-        editFileDialog = selectFileDialog(self.curfiletype)
+        editFileDialog = selectFileDialog(self.curfiletype,self.tempContainer.containerworkingfolder)
         editFileInfo = editFileDialog.getInputs()
         if editFileInfo:
             self.editFileButton.setEnabled(False)
@@ -178,7 +178,14 @@ class NewContainerTab():
             if commited:
                 containerName=self.containerName_lineEdit.text()
                 commitmessage= self.messageText.toPlainText()
-                self.tempContainer.CommitNewContainer(containerName,commitmessage,BASE)
+                success = self.tempContainer.CommitNewContainer(containerName,commitmessage,self.mainGuiHandle.authtoken,BASE)
+                if success:
+                    self.setTab(False)
+                    containeryaml = os.path.join(self.tempContainer.containerworkingfolder, 'containerstate.yaml')
+                    self.mainGuiHandle.maincontainertab.readcontainer(containeryaml)
+                    self.mainGuiHandle.tabWidget.setCurrentIndex(self.mainGuiHandle.maincontainertab.index)
+                else:
+                    print('Commit failed')
         else:
             self.errorMessage = ErrorMessage()
             self.errorMessage.showError()

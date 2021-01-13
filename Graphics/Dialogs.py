@@ -10,6 +10,8 @@ from Frame.FileObjects import FileTrack
 from Config import typeInput,typeRequired,typeOutput
 from Frame.commit import commit
 import os
+from shutil import copyfile
+
 import sys
 import requests
 import json
@@ -38,7 +40,7 @@ class inputFileDialog(QDialog):
 
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:
-            return {'Container': self.ContainerId, 'type': 'Input'}
+            return {'Container': self.ContainerId, 'type': typeInput}
         else:
             return None
 
@@ -66,7 +68,7 @@ class commitDialog(QDialog):
             return False
 
 class selectFileDialog(QDialog):
-    def __init__(self, fileType:str):
+    def __init__(self, fileType:str, containerworkdir):
         super().__init__()
         self.fileType = fileType
         if self.fileType == typeRequired:
@@ -80,10 +82,23 @@ class selectFileDialog(QDialog):
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
         self.openDirButton.clicked.connect(self.openDirectory)
+        self.containerworkdir=containerworkdir
 
     def openDirectory(self):
-        self.openDirectoryDialog = QFileDialog.getOpenFileName(self, "Get Dir Path")
-        self.filePathEdit.setText(self.openDirectoryDialog[0])
+
+        openDirectoryDialog = QFileDialog.getOpenFileName(self, "Get Dir Path", self.containerworkdir)
+        if openDirectoryDialog:
+            [path, file_name] = os.path.split(openDirectoryDialog[0])
+            if not path==self.containerworkdir:
+                choice = QMessageBox.question(self, 'File not in Container',
+                                                    "Copy file into Container folder?",
+                                                    QMessageBox.Ok | QMessageBox.No)
+                if choice==QMessageBox.Ok:
+                    newfilepath = os.path.join(self.containerworkdir,file_name)
+                    copyfile(os.path.join(path,file_name), newfilepath)
+                    lastedited = os.path.getmtime(os.path.join(path,file_name))
+                    os.utime(newfilepath, (lastedited, lastedited))
+                    self.filePathEdit.setText(os.path.join(self.containerworkdir,file_name))
 
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:

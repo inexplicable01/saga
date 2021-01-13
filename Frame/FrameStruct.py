@@ -145,6 +145,31 @@ class Frame:
         else:
             raise(fullpath + ' does not exist')
 
+
+
+    def addfromOutputtoInputFileTotrack(self, fullpath, fileheader, reffiletrack:FileTrack,style,refContainerId,branch,rev):
+        [path, file_name] = os.path.split(fullpath)
+        conn = FileConnection(refContainerId,
+                              connectionType=ConnectionTypes.Input,
+                              branch=branch,
+                              Rev=rev)
+
+        if os.path.exists(fullpath):
+            newfiletrackobj = FileTrack(file_name=file_name,
+                                        FileHeader=fileheader,
+                                        style=style,
+                                        committedby=reffiletrack.committedby,
+                                        file_id=reffiletrack.file_id,
+                                        commitUTCdatetime=reffiletrack.commitUTCdatetime,
+                                        connection=conn,
+                                        localfilepath=path,
+                                        lastEdited=os.path.getmtime(fullpath))
+
+
+            self.filestrack[fileheader] = newfiletrackobj
+        else:
+            raise(fullpath + ' does not exist')
+
     def dictify(self):
         dictout = {}
         for key, value in vars(self).items():
@@ -201,10 +226,13 @@ class Frame:
 
 
 
-    def downloadInputFile(self, fileheader):
+    def downloadInputFile(self, fileheader, workingdir):
         response = requests.get(BASE + 'FILES',
                                 data={'file_id': self.filestrack[fileheader].file_id,
                                       'file_name': self.filestrack[fileheader].file_name})
         # Loops through the filestrack in curframe and request files listed in the frame
-
-        return response, self.filestrack[fileheader]
+        fn = os.path.join(workingdir, response.headers['file_name'])
+        open(fn, 'wb').write(response.content)
+        # saves the content into file.
+        os.utime(fn, (self.filestrack[fileheader].lastEdited, self.filestrack[fileheader].lastEdited))
+        return fn,self.filestrack[fileheader]

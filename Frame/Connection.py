@@ -10,9 +10,9 @@ class ConnectionTypes(Enum):
 class FileConnection:
     def __init__(self, ContainerId,connectionType,branch='Main',Rev = None):
         self.refContainerId=ContainerId
-        if connectionType=='Input':
+        if connectionType=='Input' or connectionType == ConnectionTypes.Input:
             self.connectionType = ConnectionTypes.Input
-        elif connectionType=='Output':
+        elif connectionType=='Output' or connectionType == ConnectionTypes.Output:
             self.connectionType = ConnectionTypes.Output
         else:
             raise('connection type screwed up')

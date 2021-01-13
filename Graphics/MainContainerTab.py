@@ -5,6 +5,7 @@ from PyQt5.QtCore import *
 from Graphics.QAbstract.HistoryListModel import HistoryListModel
 from Graphics.Dialogs import alteredinputFileDialog
 import requests
+import os
 from Config import BASE
 from Config import typeInput,typeOutput,typeRequired, boxwidth, boxheight
 from Frame.FrameStruct import Frame
@@ -30,6 +31,7 @@ class MainContainerTab():
         self.GuiTab = mainGuiHandle.ContainerTab
         # self.openContainerBttn = mainGuiHandle.openContainerBttn
         self.commitBttn.setEnabled(False)
+        self.workingdir=''
 
 
 
@@ -124,7 +126,7 @@ class MainContainerTab():
     def readcontainer(self,path):
         # path = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
         self.mainContainer = Container(path, revnum=None)
-
+        [self.workingdir, file_name] = os.path.split(path)
         self.mainGuiHandle.startingcheck=True
         self.framelabel.setText(self.mainContainer.workingFrame.FrameName)
         self.commithisttable.setModel(HistoryListModel(self.mainContainer.commithistory()))
@@ -139,8 +141,6 @@ class MainContainerTab():
 
     def plotcontainer(self):
         scene = QGraphicsScene()
-
-
         typeindex = {typeInput: 0, typeOutput: 2, typeRequired: 1}
         typecounter = {typeInput: 0, typeOutput: 0, typeRequired: 0}
         colorscheme = {typeInput: Qt.yellow, typeOutput: Qt.green, typeRequired: Qt.blue}

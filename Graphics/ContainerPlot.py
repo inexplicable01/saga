@@ -88,7 +88,7 @@ class coolerRectangle(QGraphicsRectItem):
     def mousePressEvent(self,event):
         print('pressed ' + self.type)
         if self.view == self.guiHandle.refContainerView:
-            if self.type == typeOutput or self.type == typeRequired :
+            if self.type == typeOutput:
                 # self.definefiletype('Input', self.containerName, self.fileheader)
                 self.guiHandle.inputFileButton.setEnabled(True)
                 self.guiHandle.removeFileButton.setEnabled(False)

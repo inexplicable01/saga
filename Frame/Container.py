@@ -110,13 +110,13 @@ class Container:
         else:
             return self.workingFrame, response.headers['commitsuccess']
 
-    def CommitNewContainer(self, containerName,commitmessage,BASE):
+    def CommitNewContainer(self, containerName,commitmessage,authtoken,BASE):
         self.containerName = containerName
         self.containerId = containerName
-        self.save()
+
         # self.tempFrame.description = self.descriptionText.toPlainText()
         self.workingFrame.commitMessage = commitmessage
-        self.workingFrame.writeoutFrameYaml(self.workingFrame.FrameName + '.yaml')
+
         commitContainer = self.dictify()
         commitFrame = self.workingFrame.dictify()
         url = BASE + 'CONTAINERS/newContainer'
@@ -127,12 +127,36 @@ class Container:
             if filetrack.style in [typeOutput,typeRequired]:
                 filepath = os.path.join(self.containerworkingfolder, filetrack.file_name)
                 filesToUpload[fileheader] = open(filepath, 'rb')
+                fileb = open(filepath, 'rb')
+                filetrack.md5 = hashlib.md5(fileb.read()).hexdigest()
+
 
         headers = {
-            'Authorization': 'Bearer ' + self.authtoken['auth_token']
+            'Authorization': 'Bearer ' + authtoken['auth_token']
         }
         response = requests.request("POST", url, headers=headers, data=payload, files=filesToUpload)
-        return response
+        if 'Container Made' == response.headers['response']:
+            resp = response.json()
+            returncontdict = resp['containerdictjson']
+            returnframedict = resp['framedictjson']
+            self.allowedUser= returncontdict['allowedUser']
+            self.workingFrame.FrameInstanceId = returnframedict['FrameInstanceId']
+            self.workingFrame.commitMessage = returnframedict['commitMessage']
+            self.workingFrame.commitUTCdatetime = returnframedict['commitUTCdatetime']
+            for filetrack in returnframedict['filestrack']:
+                fileheader = filetrack['FileHeader']
+                self.workingFrame.filestrack[fileheader].commitUTCdatetime = filetrack['commitUTCdatetime']
+                if not self.workingFrame.filestrack[fileheader].md5 == filetrack['md5']:
+                    warnings('MD5 changed')
+                self.workingFrame.filestrack[fileheader].committedby = filetrack['committedby']
+                self.workingFrame.filestrack[fileheader].file_id = filetrack['file_id']
+
+            frameyamlfn = os.path.join(self.containerworkingfolder, self.currentbranch,self.workingFrame.FrameName + '.yaml')
+            self.workingFrame.writeoutFrameYaml(frameyamlfn)
+            self.save()
+            return True
+        else:
+            return False
 
     @classmethod
     def downloadContainerInfo(cls, refpath, authToken, BASE, containerId):
@@ -209,17 +233,25 @@ class Container:
     def __repr__(self):
         return json.dumps(self.dictify())
 
-    def addFileObject(self, fileObjHeader, fileInfo, fileType:str):
+    def addFileObject(self, fileheader, fileInfo, fileType:str):
         print(fileType)
-        if fileType in ['Input', 'refOutput']:
-            self.FileHeaders[fileObjHeader] = fileInfo
+        if fileType ==typeInput:
+            self.FileHeaders[fileheader] = fileInfo
             print(self.FileHeaders)
-        elif fileType == 'Required':
-            self.FileHeaders[fileObjHeader] = fileInfo
+            # self.workingFrame.addfromOutputtoInputFileTotrack(fileheader, fileInfo, fileType,refContainerId,branch,rev)
+        elif fileType == typeRequired:
+            self.FileHeaders[fileheader] = fileInfo
             print(self.FileHeaders)
-        elif fileType == 'Output':
-            self.FileHeaders[fileObjHeader] = fileInfo
+        elif fileType == typeOutput:
+            self.FileHeaders[fileheader] = fileInfo
             print(self.FileHeaders)
+
+    def addInputFileObject(self, fileheader,reffiletrack, fullpath,refContainerId,branch,rev):
+
+        self.FileHeaders[fileheader] = {'Container': refContainerId, 'type': typeInput}
+        self.workingFrame.addfromOutputtoInputFileTotrack(fileheader=fileheader,
+        style=typeInput, fullpath=fullpath, reffiletrack=reffiletrack,
+        refContainerId=refContainerId, branch=branch, rev=rev)
 
     def dictify(self):
         dictout = {}

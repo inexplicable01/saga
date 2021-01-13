@@ -69,3 +69,10 @@ specialsauce/Main/Rev1.yaml
 ContainerD/Main/Rev1.yaml
 ContainerA/Main/Rev1.yaml
 ~$SagaFrontEndTesting.pptx
+ContainerMapWorkDir/
+/ContainerMapWorkDir/
+/ContainerMapWorkDir/*
+ContainerMapWorkDir/*
+ContainerMapWorkDir/ContainerB/containerstate.yaml
+ContainerMapWorkDir/ContainerB/Main/Rev1.yaml
+token.txt
