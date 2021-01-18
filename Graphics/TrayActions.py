@@ -27,7 +27,7 @@ def random_char(y):
 def SignIn(MainGuiHandle):
     # print(BASE)
     inputwindow = InputDialog(MainGuiHandle=MainGuiHandle)
-    inputs = inputwindow.getInputs()
+    # inputs = inputwindow.getInputs()
     # self.newContainerInputs = inputs
     # self.containerAddition(inputs[1])
 
@@ -57,16 +57,16 @@ class InputDialog(QDialog):
         # self.signupBttn = QPushButton('Sign Up', self)
         # self.cancelBttn = QPushButton('Cancel',self)
         # self.cancelBttn.setText()
-        buttonBox = QDialogButtonBox(self)
-        signinbttn = buttonBox.addButton('Sign In', QDialogButtonBox.ActionRole)
-        genbttn = buttonBox.addButton('Generate new User', QDialogButtonBox.ActionRole)
-        signupbttn = buttonBox.addButton('Sign Up', QDialogButtonBox.ActionRole)
-        cancelbttn = buttonBox.addButton('Cancel', QDialogButtonBox.AcceptRole)
+        self.buttonBox = QDialogButtonBox(self)
+        self.signinbttn = self.buttonBox.addButton('Sign In', QDialogButtonBox.ActionRole)
+        self.genbttn = self.buttonBox.addButton('Generate new User', QDialogButtonBox.ActionRole)
+        self.signupbttn = self.buttonBox.addButton('Sign Up', QDialogButtonBox.ActionRole)
+        self.cancelbttn = self.buttonBox.addButton('Cancel', QDialogButtonBox.AcceptRole)
 
-        genbttn.clicked.connect(self.gen)
-        cancelbttn.clicked.connect(self.cancel)
-        signupbttn.clicked.connect(self.signup)
-        signinbttn.clicked.connect(self.signin)
+        self.genbttn.clicked.connect(self.gen)
+        self.cancelbttn.clicked.connect(self.cancel)
+        self.signupbttn.clicked.connect(self.signup)
+        self.signinbttn.clicked.connect(self.signin)
 
 
 
@@ -76,15 +76,17 @@ class InputDialog(QDialog):
         layout.addRow("Password", self.password)
         # layout.addRow("Owner", self.third)
         # layout.addRow("Description", self.fourth)
-        layout.addWidget(buttonBox)
+        layout.addWidget(self.buttonBox)
 
         # self.signupBttn.connect(self.signup)
         # self.signinBttn.connect(self.signin)
         # self.cancelBttn.connect(self.cancel)
 
-    def getInputs(self):
-        if self.exec_() == QDialog.Accepted:
-            return (self.first.text(), self.second.text(), self.third.text(), self.fourth.text())
+        self.exec()
+
+    # def getInputs(self):
+    #     if self.exec_() == QDialog.Accepted:
+    #         return (self.first.text(), self.second.text(), self.third.text(), self.fourth.text())
 
     def cancel(self):
         self.close()

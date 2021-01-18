@@ -102,4 +102,4 @@ class coolerRectangle(QGraphicsRectItem):
             self.guiHandle.curfiletype=self.type
             # self.guiHandle.tester.setText(self.guiHandle.filetype)
         elif self.view == self.guiHandle.curContainerView:
-            self.guiHandle.editDeleteButtons(self.type, self.curContainer.containername, self.fileheader)
+            self.guiHandle.editDeleteButtons(self.type, self.curContainer.containerName, self.fileheader)

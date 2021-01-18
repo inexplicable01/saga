@@ -92,7 +92,7 @@ class UI(QMainWindow):
         except Exception as e:
             print('No User Signed in yet')
 
-
-app = QApplication([])
-window = UI()
-sys.exit(app.exec_())
+if __name__ == '__main__':
+    app = QApplication([])
+    window = UI()
+    sys.exit(app.exec_())
