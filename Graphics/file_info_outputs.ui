@@ -147,16 +147,6 @@
     <string>Destination </string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="destinationEdit">
-   <property name="geometry">
-    <rect>
-     <x>100</x>
-     <y>130</y>
-     <width>431</width>
-     <height>22</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QLabel" name="label_6">
    <property name="geometry">
     <rect>
@@ -168,6 +158,16 @@
    </property>
    <property name="text">
     <string>Container</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="downcontainerbox">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>130</y>
+     <width>161</width>
+     <height>22</height>
+    </rect>
    </property>
   </widget>
  </widget>

@@ -46,7 +46,7 @@ class FileTrack:
         str += 'file_name:   ' + self.file_name + '\n'
         str += 'md5:   ' + self.md5 + '\n'
         if self.lastEdited:
-            str += 'lastEdited:   ' + datetime.fromtimestamp(self.commitUTCdatetime).isoformat()+ '\n'
+            str += 'lastEdited:   ' + datetime.fromtimestamp(self.lastEdited).isoformat()+ '\n'
         str += 'committedby:   ' + self.committedby+ '\n'
         if self.style:
             str += 'style:   ' + self.style+ '\n'

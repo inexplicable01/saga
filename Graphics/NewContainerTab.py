@@ -85,13 +85,14 @@ class NewContainerTab():
 
     def AddToTempContainer(self, fileType: str):
         self.inputFileButton.setEnabled(False)
-        fileInfoDialog = selectFileDialog(fileType, self.tempContainer.containerworkingfolder)
+        fileInfoDialog = selectFileDialog(fileType, self.tempContainer.containerworkingfolder, self.mainGuiHandle.worldlist)
         fileInfo = fileInfoDialog.getInputs()
         if fileInfo:
-            self.tempContainer.addFileObject(fileInfo['FileObjHeader'], fileInfo['ContainerFileInfo'], fileType)
-            self.tempContainer.workingFrame.addFileTotrack(fileInfo['FilePath'], fileInfo['FileObjHeader'], fileType)
-            # self.curContainerPlot = ContainerPlot(self, self.curContainerView, self.tempContainer.workingFrame)
-            # self.curContainerPlot.createInputRect()
+            self.tempContainer.addFileObject(fileInfo['fileheader'], fileInfo['ContainerFileInfo'], fileType)
+            if fileType =='Required':
+                self.tempContainer.workingFrame.addFileTotrack(fileInfo['FilePath'], fileInfo['fileheader'], fileType)
+            if fileType=='Output':
+                self.tempContainer.workingFrame.addOutputFileTotrack(fileInfo, fileType)
             self.curContainerPlot.plot()
 
     def showContainerFromList(self, containerList):

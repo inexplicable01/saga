@@ -40,7 +40,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="Map">
      <attribute name="title">
@@ -52,7 +52,7 @@
         <x>20</x>
         <y>20</y>
         <width>451</width>
-        <height>131</height>
+        <height>161</height>
        </rect>
       </property>
       <attribute name="horizontalHeaderDefaultSectionSize">
@@ -64,19 +64,6 @@
       <attribute name="verticalHeaderMinimumSectionSize">
        <number>12</number>
       </attribute>
-     </widget>
-     <widget class="QPushButton" name="returncontlist">
-      <property name="geometry">
-       <rect>
-        <x>50</x>
-        <y>160</y>
-        <width>271</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Return List of Available Containers</string>
-      </property>
      </widget>
      <widget class="QGraphicsView" name="containerMapView">
       <property name="geometry">
@@ -122,6 +109,22 @@
         <width>691</width>
         <height>331</height>
        </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="dlContainerBttn">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>510</x>
+        <y>60</y>
+        <width>361</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Click on Container to Select</string>
       </property>
      </widget>
     </widget>

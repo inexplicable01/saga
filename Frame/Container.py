@@ -234,17 +234,17 @@ class Container:
         return json.dumps(self.dictify())
 
     def addFileObject(self, fileheader, fileInfo, fileType:str):
-        print(fileType)
+        # print(fileType)
         if fileType ==typeInput:
             self.FileHeaders[fileheader] = fileInfo
-            print(self.FileHeaders)
+            # print(self.FileHeaders)
             # self.workingFrame.addfromOutputtoInputFileTotrack(fileheader, fileInfo, fileType,refContainerId,branch,rev)
         elif fileType == typeRequired:
             self.FileHeaders[fileheader] = fileInfo
-            print(self.FileHeaders)
+            # print(self.FileHeaders)
         elif fileType == typeOutput:
             self.FileHeaders[fileheader] = fileInfo
-            print(self.FileHeaders)
+            # print(self.FileHeaders)
 
     def addInputFileObject(self, fileheader,reffiletrack, fullpath,refContainerId,branch,rev):
 
@@ -260,4 +260,24 @@ class Container:
             if key in keytosave:
                 dictout[key] = value
         return dictout
+
+    def downloadbranch(self,branch,BASE,authtoken,refpath):
+        payload = {'containerID': self.containerId,
+                   'branch': branch}
+        headers = {
+            'Authorization': 'Bearer ' + authtoken['auth_token']
+        }
+        if not os.path.exists(os.path.join(refpath,branch)):
+            os.mkdir(os.path.join(refpath,branch))
+        response = requests.get(BASE + 'CONTAINERS/fullbranch', headers=headers, data=payload)
+        fullbranchlist = response.json()
+        for rev in fullbranchlist:
+            payload = {'containerID': self.containerId,
+                       'branch': branch,
+                       'rev':rev}
+            revyaml = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
+
+            open(os.path.join(refpath,branch, rev), 'wb').write(revyaml.content)
+
+
 

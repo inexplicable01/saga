@@ -139,9 +139,26 @@ class Frame:
                                         localfilepath=path,
                                         style=style,
                                         lastEdited=os.path.getmtime(fullpath))
-
-
             self.filestrack[FileHeader] = newfiletrackobj
+        else:
+            raise(fullpath + ' does not exist')
+
+    def addOutputFileTotrack(self, fileinfo, style):
+        branch = 'Main'
+        fullpath = fileinfo['FilePath']
+        [path, file_name] = os.path.split(fullpath)
+        conn = FileConnection(fileinfo['ContainerDestination'],
+                              connectionType=ConnectionTypes.Output,
+                              branch=branch)
+        if os.path.exists(fileinfo['FilePath']):
+            newfiletrackobj = FileTrack(file_name=file_name,
+                                        FileHeader=fileinfo['fileheader'],
+                                        # localfilepath=self.localfilepath,
+                                        localfilepath=path,
+                                        style=style,
+                                        connection=conn,
+                                        lastEdited=os.path.getmtime(fullpath))
+            self.filestrack[fileinfo['fileheader']] = newfiletrackobj
         else:
             raise(fullpath + ' does not exist')
 

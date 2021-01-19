@@ -29,7 +29,6 @@ ContainerC\
 ContainerC/
 /SagaServerSetup/
 build/
-
 ContainerC/containerstate.yaml
 ContainerC/Doggy.txt
 ContainerC/LongVideo.mp4
@@ -45,7 +44,6 @@ ContainerC/R1.txt
 sagatest.py
 *.pyc
 *.pyc
-
 printoutyamls.py
 hackpatch.py
 ContainerMapWorkDir/specialsauce_containerstate.yaml
@@ -76,3 +74,11 @@ ContainerMapWorkDir/*
 ContainerMapWorkDir/ContainerB/containerstate.yaml
 ContainerMapWorkDir/ContainerB/Main/Rev1.yaml
 token.txt
+dist/SagaGui.zip
+dist/SagaGui/VCRUNTIME140_1.dll
+dist/SagaGui/VCRUNTIME140.dll
+dist/*
+/dist/
+dist/
+SagaGui.spec
+PyQtTesting.zip

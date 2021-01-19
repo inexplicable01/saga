@@ -68,7 +68,7 @@ class commitDialog(QDialog):
             return False
 
 class selectFileDialog(QDialog):
-    def __init__(self, fileType:str, containerworkdir):
+    def __init__(self, fileType:str, containerworkdir, containerlist=None):
         super().__init__()
         self.fileType = fileType
         if self.fileType == typeRequired:
@@ -79,6 +79,8 @@ class selectFileDialog(QDialog):
             uic.loadUi("Graphics/file_info_outputs.ui", self)
             self.ownerEdit.setText('Owneroutput')
             self.descriptionEdit.setText('Descrtiptionoutpu')
+            for container in containerlist:
+                self.downcontainerbox.addItem(container)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
         self.openDirButton.clicked.connect(self.openDirectory)
@@ -104,14 +106,14 @@ class selectFileDialog(QDialog):
         if self.exec_() == QDialog.Accepted:
             if self.fileType == typeRequired:
                 containerFileInfo = {'Container': 'here', 'type':typeRequired}
-                return {'FileObjHeader': self.fileObjHeaderEdit.text(), 'FilePath':self.filePathEdit.text(),
+                return {'fileheader': self.fileObjHeaderEdit.text(), 'FilePath':self.filePathEdit.text(),
                         'Owner': self.ownerEdit.text(), 'Description': self.descriptionEdit.text(),
                         'ContainerFileInfo': containerFileInfo}
             elif self.fileType == typeOutput:
-                containerFileInfo = {'Container': 'here', 'type': typeOutput}
-                return {'FileObjHeader': self.fileObjHeaderEdit.text(), 'FilePath': self.filePathEdit.text(),
+                containerFileInfo = {'Container': self.downcontainerbox.currentText(), 'type': typeOutput}
+                return {'fileheader': self.fileObjHeaderEdit.text(), 'FilePath': self.filePathEdit.text(),
                         'Owner': self.ownerEdit.text(), 'Description': self.descriptionEdit.text(),
-                        'ContainerFileInfo': containerFileInfo, 'ContainerDestination':self.destinationEdit}
+                        'ContainerFileInfo': containerFileInfo, 'ContainerDestination':self.downcontainerbox.currentText()}
         else:
             return None
 

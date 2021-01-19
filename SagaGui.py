@@ -54,8 +54,26 @@ class UI(QMainWindow):
 
         self.checkUserStatus()
         self.startingcheck = False
+        self.guiworkingdir = os.getcwd()
+
 
         self.show()
+
+    def getWorldContainers(self):
+        response = requests.get(BASE + 'CONTAINERS/List')
+        containerinfolist = json.loads(response.headers['containerinfolist'])
+        if not os.path.exists(os.path.join(self.guiworkingdir,'ContainerMapWorkDir')):
+            os.mkdir(os.path.join(self.guiworkingdir,'ContainerMapWorkDir'))
+        for containerID in containerinfolist.keys():
+            response = requests.get(BASE + 'CONTAINERS/containerID', data={'containerID': containerID})
+            if not os.path.exists(os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID)):
+                os.mkdir(os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID))
+            open(os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']), 'wb').write(response.content)
+            cont = Container(os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']))
+            cont.downloadbranch('Main', BASE, self.authtoken,os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID))
+        self.worldlist = containerinfolist.keys()
+
+
 
     def getContainerInfo(self, listtable):
         response = requests.get(BASE + 'CONTAINERS/List')

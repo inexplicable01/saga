@@ -28,6 +28,7 @@ def SignIn(MainGuiHandle):
     # print(BASE)
     inputwindow = InputDialog(MainGuiHandle=MainGuiHandle)
     inputs = inputwindow.getInputs()
+    MainGuiHandle.getWorldContainers()
     # self.newContainerInputs = inputs
     # self.containerAddition(inputs[1])
 
@@ -149,7 +150,13 @@ class newContainerDialog(QDialog):
         self.containerpathlbl.setText(path)
         self.dir=''
         self.openDirButton.clicked.connect(self.openDirectory)
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        # self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+
+        res = ''.join(random.choices(string.ascii_uppercase +
+                                     string.digits, k=7))
+        self.containernameEdit.setText(res)
+        # self.containerpathlbl.setText(os.path.join(self.dir, res))
+        self.containernameEdit.textChanged[str].connect(self.textChanged)
         self.containernameEdit.textChanged[str].connect(self.textChanged)
 
     def openDirectory(self):
