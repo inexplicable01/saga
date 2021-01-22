@@ -120,6 +120,11 @@ class Frame:
         )
         # print('lots of work to be done.')
 
+    def downloadfullframefiles(self):
+        for fileheader, filetrack in self.filestrack.items():
+            # print(filetrack.file_name,self.localfilepath)
+            self.getfile(filetrack.file_id,filetrack.file_name,self.localfilepath,filetrack.lastEdited )
+
     def getfile(self, file_id, file_name, filepath, lastEdited):
         response = requests.get(BASE + 'FILES',
                                 data={'file_id': file_id, 'file_name': file_name})
@@ -227,9 +232,10 @@ class Frame:
             if refframe.filestrack[fileheader].md5 != self.filestrack[fileheader].md5:
                 self.filestrack[fileheader].lastEdited = os.path.getmtime(path)
                 changes.append({'fileheader': fileheader, 'reason': 'MD5 Changed'})
-                if self.filestrack[fileheader].connection.connectionType==ConnectionTypes.Input:
-                    alterfiletracks.append(self.filestrack[fileheader])
-                continue
+                if self.filestrack[fileheader].connection:
+                    if self.filestrack[fileheader].connection.connectionType==ConnectionTypes.Input:
+                        alterfiletracks.append(self.filestrack[fileheader])
+                    continue
             # if file has been updated, update last edited
             self.filestrack[fileheader].lastEdited = os.path.getmtime(path)
 

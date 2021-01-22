@@ -159,8 +159,8 @@ class Container:
             return False
 
     @classmethod
-    def downloadContainerInfo(cls, refpath, authToken, BASE, containerId):
-        headers = {'Authorization': 'Bearer ' + authToken['auth_token']  }
+    def downloadContainerInfo(cls, refpath, authtoken, BASE, containerId):
+        headers = {'Authorization': 'Bearer ' + authtoken['auth_token']  }
         response = requests.get(BASE + 'CONTAINERS/containerID', headers=headers, data={'containerID': containerId})
         # response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
         # requests is a python object/class, that sends a http request
@@ -170,14 +170,15 @@ class Container:
         if not os.path.exists(os.path.join(refpath, containerId)):
             os.mkdir(os.path.join(refpath, containerId))
         open(os.path.join(refpath, containerId, 'containerstate.yaml'), 'wb').write(response.content)
-        cls.downloadFrame(refpath, authToken,containerId,BASE)
+        cls.downloadFrame(refpath, authtoken,containerId,BASE)
+        return os.path.join(refpath, containerId, 'containerstate.yaml')
 
     @classmethod
-    def downloadFrame(cls,refpath,authToken, containerId, BASE, branch='Main'):
+    def downloadFrame(cls,refpath,authtoken, containerId, BASE, branch='Main'):
         payload = {'containerID': containerId,
                    'branch': branch}
         headers = {
-            'Authorization': 'Bearer ' + authToken['auth_token']
+            'Authorization': 'Bearer ' + authtoken['auth_token']
         }
         response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
         # request to FRAMES to get the latest frame from the branch as specified in currentbranch

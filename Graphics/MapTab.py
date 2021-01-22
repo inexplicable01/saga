@@ -58,16 +58,21 @@ class MapTab():
     def downloadcontainer(self):
         openDirectoryDialog =  QFileDialog().getExistingDirectory(self.mainguihandle, 'Select Folder Space to Place ' + self.dlcontainer
                                                                   + ' container folder.')
-        contdir = os.path.join(openDirectoryDialog, self.dlcontainer)
-        if not os.path.exists(contdir):
-            os.mkdir(contdir)
-        else:
-            print('Container exists already...removing')
-            shutil.rmtree(contdir)
-            return
-        Container.downloadContainerInfo(contdir, self.mainguihandle.authToken, BASE, self.dlcontainer)
-        # print(os.path.join(openDirectoryDialog, self.dlcontainer))
         if openDirectoryDialog:
-            print(os.path.split(openDirectoryDialog[0]))
+            contdir = os.path.join(openDirectoryDialog, self.dlcontainer)
+            if not os.path.exists(contdir):
+                os.mkdir(contdir)
+            else:
+                print('Container exists already...removing')
+                shutil.rmtree(contdir)
+            dlcontainyaml = Container.downloadContainerInfo(openDirectoryDialog, self.mainguihandle.authtoken, BASE, self.dlcontainer)
+            dlcontainer = Container(containerfn=dlcontainyaml)
+            dlcontainer.downloadbranch('Main', BASE, self.mainguihandle.authtoken,contdir)
+            dlcontainer.workingFrame.downloadfullframefiles()
+            self.mainguihandle.maincontainertab.readcontainer(dlcontainyaml)
+            self.mainguihandle.tabWidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
+            # print(os.path.join(openDirectoryDialog, self.dlcontainer))
+            if openDirectoryDialog:
+                print(os.path.split(openDirectoryDialog[0]))
 
 
