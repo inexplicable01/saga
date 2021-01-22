@@ -22,7 +22,7 @@ if not os.path.exists(containerID):
 
 open(os.path.join(containerID,response.headers['file_name']), 'wb').write(response.content)
 # takes the binary data from response.content and save as a file with file name also supplied from response
-curcont = Container(os.path.join(containerID,response.headers['file_name']), response.headers['branch'], response.headers['revnum'])
+curcont = Container.LoadContainerFromYaml(os.path.join(containerID,response.headers['file_name']), response.headers['branch'], response.headers['revnum'])
 # takes the contain.yaml file we just made and load it as a container object
 
 response = requests.get(BASE+'FRAMES', data={'containerID':containerID, 'branch':'Main'})

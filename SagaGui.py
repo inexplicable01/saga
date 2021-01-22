@@ -35,8 +35,10 @@ class UI(QMainWindow):
         uic.loadUi("Graphics/SagaGui.ui", self)
         self.enterEvent=self.action_enterEvent
 
+        ## newcontainertab handles all the QT features on the new container tab, Initiates to false
         self.newcontainertab = NewContainerTab(self)
         self.newcontainertab.setTab(False)
+        ## maincontainer tab is the active container the user is working on
         self.maincontainertab = MainContainerTab(self)
         self.maincontainertab.setTab(False)
         self.maptab = MapTab(self)
@@ -69,7 +71,7 @@ class UI(QMainWindow):
             if not os.path.exists(os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID)):
                 os.mkdir(os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID))
             open(os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']), 'wb').write(response.content)
-            cont = Container(os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']))
+            cont = Container.LoadContainerFromYaml(os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']))
             cont.downloadbranch('Main', BASE, self.authtoken,os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID))
         self.worldlist = containerinfolist.keys()
 

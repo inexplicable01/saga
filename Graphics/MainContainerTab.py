@@ -125,7 +125,7 @@ class MainContainerTab():
 
     def readcontainer(self,path):
         # path = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
-        self.mainContainer = Container(path, revnum=None)
+        self.mainContainer = Container.LoadContainerFromYaml(path, revnum=None)
         [self.workingdir, file_name] = os.path.split(path)
         self.mainGuiHandle.startingcheck=True
         self.framelabel.setText(self.mainContainer.workingFrame.FrameName)

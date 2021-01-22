@@ -47,7 +47,7 @@ class NewContainerTab():
         self.selectedContainerId=''
 
 
-        self.refContainerPlot = ContainerPlot(self, self.refContainerView, container=Container())
+        self.refContainerPlot = ContainerPlot(self, self.refContainerView, container=Container.InitiateContainer())
 
         self.returncontlist_2.clicked.connect(partial(mainGuiHandle.getContainerInfo, self.containerlisttable_2))
         self.containerlisttable_2.clicked.connect(self.showContainerFromList)
@@ -67,7 +67,7 @@ class NewContainerTab():
         os.mkdir(inputs['dir'])
         os.mkdir(os.path.join(inputs['dir'], 'Main'))
 
-        self.tempContainer = Container()
+        self.tempContainer = Container.InitiateContainer()
         self.tempContainer.containerName = inputs['containername']
         self.tempContainer.containerworkingfolder = inputs['dir']
         self.tempContainer.save()
@@ -101,11 +101,11 @@ class NewContainerTab():
         containerId = containerList.model().data(index, 0)
         refcontainerpath = os.path.join('ContainerMapWorkDir', containerId , 'containerstate.yaml')
         if os.path.exists(refcontainerpath):
-            self.selectedContainer = Container(refcontainerpath)
+            self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         else:
             refpath = os.path.join('ContainerMapWorkDir')
             Container.downloadContainerInfo(refpath,self.mainGuiHandle.authtoken, BASE, containerId)
-            self.selectedContainer = Container(refcontainerpath)
+            self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         # self.tester.setText(self.selectedContainer.containerName)
         self.refContainerPlot.changeContainer(self.selectedContainer)
         self.refContainerPlot.plot()

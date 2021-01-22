@@ -41,7 +41,8 @@ class MapTab():
         containeridlist = self.mainguihandle.worldlist
         for containerID in containeridlist:
             self.containermap.addActiveContainers(
-                Container(os.path.join('ContainerMapWorkDir', containerID , 'containerstate.yaml')))
+                Container.LoadContainerFromYaml(os.path.join('ContainerMapWorkDir', containerID , 'containerstate.yaml'))
+            )
         self.containermap.editcontainerConnections()
         self.containermap.plot()
         self.detailedmap.passobj(self.containermap)
@@ -66,7 +67,7 @@ class MapTab():
                 print('Container exists already...removing')
                 shutil.rmtree(contdir)
             dlcontainyaml = Container.downloadContainerInfo(openDirectoryDialog, self.mainguihandle.authtoken, BASE, self.dlcontainer)
-            dlcontainer = Container(containerfn=dlcontainyaml)
+            dlcontainer = Container.LoadContainerFromYaml(containerfn=dlcontainyaml)
             dlcontainer.downloadbranch('Main', BASE, self.mainguihandle.authtoken,contdir)
             dlcontainer.workingFrame.downloadfullframefiles()
             self.mainguihandle.maincontainertab.readcontainer(dlcontainyaml)

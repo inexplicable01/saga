@@ -22,44 +22,96 @@ Rev = 'Rev'
 blankcontainer = {'containerName':"" ,'containerId':"",'FileHeaders': {} ,'allowedUser':[] }
 
 class Container:
-    def __init__(self, containerfn = 'Default',currentbranch='Main',revnum='1'):
-        if containerfn == 'Default':
-            containeryaml = blankcontainer
+    def __init__(self, containerworkingfolder,containerName,containerId,
+                 FileHeaders,allowedUser,currentbranch,filestomonitor,revnum,refframe,
+                 workingFrame: Frame):
+        self.containerworkingfolder = containerworkingfolder
+        self.containerName = containerName
+        self.containerId = containerId
+        self.FileHeaders = FileHeaders
+        self.allowedUser = allowedUser
+        self.currentbranch = currentbranch
+        self.filestomonitor =filestomonitor
+        self.revnum =revnum
+        self.refframe =refframe
+        self.workingFrame= workingFrame
 
-            self.containerworkingfolder = workingdir##something we need to figure out in the future
+    # def __init__(self, containerfn = 'Default',currentbranch='Main',revnum='1'):
+    #     if containerfn == 'Default':
+    #         containeryaml = blankcontainer
+    #         self.containerworkingfolder = workingdir##something we need to figure out in the future
+    #     else:
+    #         self.containerworkingfolder = os.path.dirname(containerfn)
+    #         with open(containerfn) as file:
+    #             containeryaml = yaml.load(file, Loader=yaml.FullLoader)
+    #     # self.containerfn = containerfn
+    #     self.containerName = containeryaml['containerName']
+    #     self.containerId = containeryaml['containerId']
+    #     self.FileHeaders={}
+    #     for fileheader, fileinfo in containeryaml['FileHeaders'].items():
+    #         if fileinfo['type'] ==typeOutput:
+    #             if type(fileinfo['Container']) != list:
+    #                 fileinfo['Container']=[fileinfo['Container']]
+    #         self.FileHeaders[fileheader] = fileinfo
+    #     self.allowedUser = containeryaml['allowedUser']
+    #     # self.yamlTracking = containeryaml['yamlTracking']
+    #     self.currentbranch = currentbranch
+    #     self.filestomonitor = {}
+    #     for FileHeader, file in self.FileHeaders.items():
+    #         self.filestomonitor[FileHeader]= file['type']
+    #     if containerfn == 'Default':
+    #         self.revnum = 1
+    #         self.refframe ='dont have one yet'
+    #     else:
+    #         self.refframe, self.revnum = FrameNumInBranch( \
+    #             os.path.join(self.containerworkingfolder,  currentbranch), \
+    #             revnum)
+    #     try:
+    #         self.workingFrame = Frame(self.refframe, self.filestomonitor, self.containerworkingfolder)
+    #     except Exception as e:
+    #         self.workingFrame = Frame()
 
-        else:
-            self.containerworkingfolder = os.path.dirname(containerfn)
-            with open(containerfn) as file:
-                containeryaml = yaml.load(file, Loader=yaml.FullLoader)
-        self.containerfn = containerfn
-        self.containerName = containeryaml['containerName']
-        self.containerId = containeryaml['containerId']
-        self.FileHeaders={}
+    # containerworkingfolder, containerName, containerId,
+    # FileHeaders, allowedUser, currentbranch, filestomonitor, revnum, refframe,
+    # workingFrame: Frame):
+    @classmethod
+    def InitiateContainer(cls):
+        newcontainer = cls(containerworkingfolder=workingdir,
+                           containerName="",
+                           containerId="",
+                           FileHeaders={},
+                           allowedUser=[],
+                           currentbranch="Main",filestomonitor={},revnum='1',
+                           refframe='dont have one yet', workingFrame = Frame())
+        return newcontainer
+
+    @classmethod
+    def LoadContainerFromYaml(cls, containerfn, currentbranch='Main',revnum='1'):
+        containerworkingfolder = os.path.dirname(containerfn)
+        with open(containerfn) as file:
+            containeryaml = yaml.load(file, Loader=yaml.FullLoader)
+        FileHeaders={}
         for fileheader, fileinfo in containeryaml['FileHeaders'].items():
-            if fileinfo['type'] ==typeOutput:
+            if fileinfo['type'] == typeOutput:
                 if type(fileinfo['Container']) != list:
                     fileinfo['Container']=[fileinfo['Container']]
-            self.FileHeaders[fileheader] = fileinfo
-        self.allowedUser = containeryaml['allowedUser']
-        # self.yamlTracking = containeryaml['yamlTracking']
-        self.currentbranch = currentbranch
-        self.filestomonitor = {}
-        for FileHeader, file in self.FileHeaders.items():
-            self.filestomonitor[FileHeader]= file['type']
-        if containerfn == 'Default':
-            self.revnum = 1
-            self.refframe ='dont have one yet'
-        else:
-            self.refframe, self.revnum = FrameNumInBranch( \
-                os.path.join(self.containerworkingfolder,  currentbranch), \
-                revnum)
+            FileHeaders[fileheader] = fileinfo
+        filestomonitor = {}
+        for FileHeader, file in FileHeaders.items():
+            filestomonitor[FileHeader]= file['type']
+        refframe, revnum = FrameNumInBranch(os.path.join(containerworkingfolder, currentbranch), revnum)
         try:
-            self.workingFrame = Frame(self.refframe, self.filestomonitor, self.containerworkingfolder)
+            workingFrame = Frame(refframe, filestomonitor, containerworkingfolder)
         except Exception as e:
-            self.workingFrame = Frame()
-
-
+            workingFrame = Frame()
+        container = cls(containerworkingfolder=containerworkingfolder,
+                           containerName=containeryaml['containerName'],
+                           containerId=containeryaml['containerId'],
+                           FileHeaders=FileHeaders,
+                           allowedUser=containeryaml['allowedUser'],
+                           currentbranch=currentbranch,filestomonitor=filestomonitor, revnum=revnum,
+                           refframe=refframe, workingFrame=workingFrame)
+        return container
 
     def commit(self, commitmsg, authtoken, BASE):
 
