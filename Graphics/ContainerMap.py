@@ -30,6 +30,13 @@ class ContainerMap():
         self.containerConnections = {} # dictionary of Id: list of OD
         self.containerConnectLines={}  # dictionary of lineId:LineObject
 
+    def reset(self):
+        self.containerscene = QGraphicsScene()
+        self.qtview.setScene(self.containerscene)
+        self.containerConnections = {} # dictionary of Id: list of OD
+        self.containerConnectLines={}  # dictionary of lineId:LineObject
+        self.activeContainersObj = {}
+
     def drawline(self):
         for containerId_in, containerId_outlist in self.containerConnections.items():
             for containerId_out in containerId_outlist:

@@ -12,29 +12,27 @@ from Frame.FrameStruct import Frame
 from Frame.Container import Container
 
 class MainContainerTab():
-    def __init__(self,mainGuiHandle):
-        self.commitBttn = mainGuiHandle.commitBttn
-        self.resetbutton = mainGuiHandle.resetbutton
-        self.rebasebutton = mainGuiHandle.rebasebutton
-        self.revertbttn = mainGuiHandle.revertbttn
-        self.commitmsgEdit = mainGuiHandle.commitmsgEdit
-        self.commithisttable = mainGuiHandle.commithisttable
-        self.refreshBttn = mainGuiHandle.refreshBttn
-        self.framelabel = mainGuiHandle.framelabel
-        self.frameView = mainGuiHandle.frameView
-        self.menuContainer = mainGuiHandle.menuContainer
-        self.frametextBrowser = mainGuiHandle.frametextBrowser
+    def __init__(self,mainguihandle):
+        self.commitBttn = mainguihandle.commitBttn
+        self.resetbutton = mainguihandle.resetbutton
+        self.rebasebutton = mainguihandle.rebasebutton
+        self.revertbttn = mainguihandle.revertbttn
+        self.commitmsgEdit = mainguihandle.commitmsgEdit
+        self.commithisttable = mainguihandle.commithisttable
+        self.refreshBttn = mainguihandle.refreshBttn
+        self.framelabel = mainguihandle.framelabel
+        self.frameView = mainguihandle.frameView
+        self.menuContainer = mainguihandle.menuContainer
+        self.frametextBrowser = mainguihandle.frametextBrowser
+        self.containerlabel = mainguihandle.containerlabel
         self.index=1
 
-        self.mainGuiHandle =mainGuiHandle
+        self.mainguihandle =mainguihandle
 
-        self.GuiTab = mainGuiHandle.ContainerTab
-        # self.openContainerBttn = mainGuiHandle.openContainerBttn
+        self.GuiTab = mainguihandle.ContainerTab
+        # self.openContainerBttn = mainguihandle.openContainerBttn
         self.commitBttn.setEnabled(False)
         self.workingdir=''
-
-
-
         # self.openContainerBttn.setText('Open Container')
         # self.openContainerBttn.clicked.connect(self.readcontainer)
         self.refreshBttn.clicked.connect(self.checkdelta)
@@ -127,14 +125,15 @@ class MainContainerTab():
         # path = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
         self.mainContainer = Container.LoadContainerFromYaml(path, revnum=None)
         [self.workingdir, file_name] = os.path.split(path)
-        self.mainGuiHandle.startingcheck=True
+        self.containerlabel.setText('Container Name : ' + self.mainContainer.containerName)
+        self.mainguihandle.startingcheck=True
         self.framelabel.setText(self.mainContainer.workingFrame.FrameName)
         self.commithisttable.setModel(HistoryListModel(self.mainContainer.commithistory()))
         self.commithisttable.setColumnWidth(0, self.commithisttable.width()*0.1)
         self.commithisttable.setColumnWidth(1, self.commithisttable.width() * 0.6)
         self.commithisttable.setColumnWidth(2, self.commithisttable.width() * 0.29)
         self.plotcontainer()
-        # if self.menuContainer.isEnabled() and self.mainGuiHandle.authtoken:
+        # if self.menuContainer.isEnabled() and self.mainguihandle.authtoken:
         #     self.tabWidget.setEnabled(True)
         self.setTab(True)
 

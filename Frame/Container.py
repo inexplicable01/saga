@@ -36,44 +36,6 @@ class Container:
         self.refframe =refframe
         self.workingFrame= workingFrame
 
-    # def __init__(self, containerfn = 'Default',currentbranch='Main',revnum='1'):
-    #     if containerfn == 'Default':
-    #         containeryaml = blankcontainer
-    #         self.containerworkingfolder = workingdir##something we need to figure out in the future
-    #     else:
-    #         self.containerworkingfolder = os.path.dirname(containerfn)
-    #         with open(containerfn) as file:
-    #             containeryaml = yaml.load(file, Loader=yaml.FullLoader)
-    #     # self.containerfn = containerfn
-    #     self.containerName = containeryaml['containerName']
-    #     self.containerId = containeryaml['containerId']
-    #     self.FileHeaders={}
-    #     for fileheader, fileinfo in containeryaml['FileHeaders'].items():
-    #         if fileinfo['type'] ==typeOutput:
-    #             if type(fileinfo['Container']) != list:
-    #                 fileinfo['Container']=[fileinfo['Container']]
-    #         self.FileHeaders[fileheader] = fileinfo
-    #     self.allowedUser = containeryaml['allowedUser']
-    #     # self.yamlTracking = containeryaml['yamlTracking']
-    #     self.currentbranch = currentbranch
-    #     self.filestomonitor = {}
-    #     for FileHeader, file in self.FileHeaders.items():
-    #         self.filestomonitor[FileHeader]= file['type']
-    #     if containerfn == 'Default':
-    #         self.revnum = 1
-    #         self.refframe ='dont have one yet'
-    #     else:
-    #         self.refframe, self.revnum = FrameNumInBranch( \
-    #             os.path.join(self.containerworkingfolder,  currentbranch), \
-    #             revnum)
-    #     try:
-    #         self.workingFrame = Frame(self.refframe, self.filestomonitor, self.containerworkingfolder)
-    #     except Exception as e:
-    #         self.workingFrame = Frame()
-
-    # containerworkingfolder, containerName, containerId,
-    # FileHeaders, allowedUser, currentbranch, filestomonitor, revnum, refframe,
-    # workingFrame: Frame):
     @classmethod
     def InitiateContainer(cls):
         newcontainer = cls(containerworkingfolder=workingdir,

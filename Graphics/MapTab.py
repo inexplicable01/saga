@@ -43,6 +43,7 @@ class MapTab():
             self.containermap.addActiveContainers(
                 Container.LoadContainerFromYaml(os.path.join('ContainerMapWorkDir', containerID , 'containerstate.yaml'))
             )
+        self.containermap.reset()
         self.containermap.editcontainerConnections()
         self.containermap.plot()
         self.detailedmap.passobj(self.containermap)

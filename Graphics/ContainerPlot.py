@@ -79,7 +79,6 @@ class coolerRectangle(QGraphicsRectItem):
         self.qtext = QGraphicsTextItem(type)
         self.qtext.setPos(QPoint(xpos,ypos))
         self.guiHandle = guiHandle
-        # self.newFileInfo = mainGuiHandle.newFileInfo
         self.fileheader = fileheader
         self.curContainer = curContainer
         self.view = view

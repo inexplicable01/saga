@@ -129,8 +129,9 @@ def newContainer(MainGuiHandle,newcontainertab):
     # print('aldskjf')
     newcontainergui = newContainerDialog("Select a local location for building your container")
     inputs = newcontainergui.getInputs()
-    newcontainertab.initiate(inputs)
-    MainGuiHandle.tabWidget.setCurrentIndex(newcontainertab.index)
+    if inputs:
+        newcontainertab.initiate(inputs)
+        MainGuiHandle.tabWidget.setCurrentIndex(newcontainertab.index)
     # dialog = QFileDialog()
     # foo_dir = dialog.getExistingDirectory(MainGuiHandle, 'Select an awesome directory')
     # print(foo_dir)

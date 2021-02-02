@@ -40,7 +40,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="Map">
      <attribute name="title">
@@ -132,17 +132,17 @@
      <attribute name="title">
       <string>Container</string>
      </attribute>
-     <widget class="QLabel" name="label">
+     <widget class="QLabel" name="containerlabel">
       <property name="geometry">
        <rect>
-        <x>30</x>
-        <y>60</y>
+        <x>20</x>
+        <y>50</y>
         <width>211</width>
         <height>31</height>
        </rect>
       </property>
       <property name="text">
-       <string>Current Frame of Container</string>
+       <string>Container Name</string>
       </property>
      </widget>
      <widget class="QPushButton" name="resetbutton">
@@ -194,7 +194,7 @@
      <widget class="QLabel" name="framelabel">
       <property name="geometry">
        <rect>
-        <x>250</x>
+        <x>100</x>
         <y>80</y>
         <width>181</width>
         <height>31</height>
@@ -204,23 +204,10 @@
        <string>TextLabel</string>
       </property>
      </widget>
-     <widget class="QLabel" name="staticrev">
-      <property name="geometry">
-       <rect>
-        <x>220</x>
-        <y>90</y>
-        <width>55</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Rev</string>
-      </property>
-     </widget>
      <widget class="QLabel" name="frameName">
       <property name="geometry">
        <rect>
-        <x>30</x>
+        <x>20</x>
         <y>90</y>
         <width>81</width>
         <height>16</height>
