@@ -6,6 +6,7 @@ from Graphics.QAbstract.HistoryListModel import HistoryListModel
 from Graphics.Dialogs import alteredinputFileDialog
 import requests
 import os
+import hashlib
 from Config import BASE
 from Config import typeInput,typeOutput,typeRequired, boxwidth, boxheight
 from Frame.FrameStruct import Frame
@@ -20,6 +21,7 @@ class MainContainerTab():
         self.commitmsgEdit = mainguihandle.commitmsgEdit
         self.commithisttable = mainguihandle.commithisttable
         self.refreshBttn = mainguihandle.refreshBttn
+        self.refreshBttnUpstream = mainguihandle.refreshBttn_2
         self.framelabel = mainguihandle.framelabel
         self.frameView = mainguihandle.frameView
         self.menuContainer = mainguihandle.menuContainer
@@ -36,6 +38,7 @@ class MainContainerTab():
         # self.openContainerBttn.setText('Open Container')
         # self.openContainerBttn.clicked.connect(self.readcontainer)
         self.refreshBttn.clicked.connect(self.checkdelta)
+        self.refreshBttnUpstream.clicked.connect(self.checkUpstream)
         self.resetbutton.clicked.connect(self.resetrequest)
         self.rebasebutton.clicked.connect(self.rebaserequest)
         self.commitBttn.clicked.connect(self.commit)
@@ -64,6 +67,48 @@ class MainContainerTab():
         self.commit()
         self.checkdelta()
         self.commithisttable.setModel(HistoryListModel(self.mainContainer.commithistory()))
+
+    def checkUpstream(self):
+        changes = self.compareToUpstream(self.mainguihandle.authtoken)
+        if changes is not None:
+            changesarr = [change['fileheader'] for change in changes]
+            for fileheader in self.mainContainer.FileHeaders.keys():
+                if fileheader in changesarr:
+                    self.sceneObj[fileheader].setPen(QPen(Qt.red, 3))
+                else:
+                    self.sceneObj[fileheader].setPen(QPen(Qt.black, 1))
+            chgstr = ''
+            for change in changes:
+                chgstr = chgstr + change['fileheader'] + '\t' + change['reason'] + '\n'
+            self.frametextBrowser.setText(chgstr)
+        else:
+            print('No Upstream Updates')
+
+    def compareToUpstream(self, authToken):
+        workingFrame = self.mainContainer.workingFrame
+        refframe = Frame(workingFrame.refframefn, workingFrame.filestomonitor, workingFrame.localfilepath)
+        changes = []
+        for fileheader in workingFrame.filestomonitor.keys():
+            if workingFrame.filestrack[fileheader].connection is not None:
+                if workingFrame.filestrack[fileheader].connection.refContainerId is not workingFrame.parentContainerId:
+                    containerID = workingFrame.filestrack[fileheader].connection.refContainerId
+                    if not os.path.exists(workingFrame.localfilepath + '/inputContainers/'):
+                        os.mkdir(workingFrame.localfilepath + '/inputContainers/')
+                    inputContainerPath = workingFrame.localfilepath + '/inputContainers/' + containerID
+                    dlcontainyaml = Container.downloadContainerInfo(inputContainerPath, authToken, BASE,
+                                                                    containerID)
+                    print(dlcontainyaml)
+                    dlcontainer = Container.LoadContainerFromYaml(containerfn=dlcontainyaml)
+                    dlcontainer.downloadbranch('Main', BASE, authToken, inputContainerPath)
+                    framePath = os.path.join(inputContainerPath + '/Main/' + 'Rev' + str(dlcontainer.revnum) + '.yaml')
+                    inputFrame = Frame(framePath)
+                    fileCheckPath = os.path.join(workingFrame.localfilepath + '/' + workingFrame.filestrack[fileheader].file_name)
+                    fileb = open(fileCheckPath, 'rb')
+                    workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
+                    # calculate md5 of file, if md5 has changed, update md5
+                    if workingFrame.filestrack[fileheader].md5 != inputFrame.filestrack[fileheader].md5:
+                        changes.append({'fileheader': fileheader, 'reason': 'MD5 Updated Upstream'})
+        return changes
 
     def checkdelta(self):
         allowCommit = False

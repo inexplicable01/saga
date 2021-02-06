@@ -311,6 +311,19 @@
        <number>12</number>
       </attribute>
      </widget>
+     <widget class="QPushButton" name="refreshBttn_2">
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>360</y>
+        <width>171</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Check Upstream</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="NewContainerTab">
      <attribute name="title">
@@ -493,7 +506,7 @@
        <rect>
         <x>420</x>
         <y>60</y>
-        <width>183</width>
+        <width>191</width>
         <height>221</height>
        </rect>
       </property>
