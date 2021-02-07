@@ -61,9 +61,9 @@ class MainContainerTab():
     def revert(self):
         self.mainContainer.workingFrame.revertTo(self.reverttorev)
         self.commitmsgEdit.setText('Revert back to ' + self.reverttorev)
-        self.commit()
+        # self.commit()
         self.checkdelta()
-        self.commithisttable.setModel(HistoryListModel(self.mainContainer.commithistory()))
+        # self.commithisttable.setModel(HistoryListModel(self.mainContainer.commithistory()))
 
     def checkdelta(self):
         allowCommit = False
@@ -106,19 +106,19 @@ class MainContainerTab():
             error_dialog.exec_()
             return
             # return
-        if self.userdata['email'] not in self.mainContainer.allowedUser:
+        if self.mainguihandle.userdata['email'] not in self.mainContainer.allowedUser:
             error_dialog.showMessage('You do not have the privilege to commit to this container')
             error_dialog.exec_()
             return
 
-        self.addressAlteredInput()
-        self.mainContainer.workingFrame, committed = self.mainContainer.commit(self.mainContainer.workingFrame,self.commitmsgEdit.toPlainText(), self.authtoken, BASE)
+        # self.addressAlteredInput()
+        self.mainContainer.workingFrame, committed = self.mainContainer.commit(self.commitmsgEdit.toPlainText(), self.mainguihandle.authtoken, BASE)
 
         if committed:
-            self.curContainer.save()
-            self.framelabel.setText(self.curContainer.workingFrame.FrameName)
+            self.mainContainer.save()
+            self.framelabel.setText(self.mainContainer.workingFrame.FrameName)
             self.checkdelta()
-            self.commithisttable.setModel(HistoryListModel(self.curContainer.commithistory()))
+            self.commithisttable.setModel(HistoryListModel(self.mainContainer.commithistory()))
 
 
     def readcontainer(self,path):
