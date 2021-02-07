@@ -147,7 +147,7 @@ def find_Local_Container(MainGuiHandle,maincontainertab):
 class newContainerDialog(QDialog):
     def __init__(self, path):
         super().__init__()
-        uic.loadUi("Graphics/newContainer.ui", self)
+        uic.loadUi("saga/Graphics/newContainer.ui", self)
         self.containerpathlbl.setText(path)
         self.dir=''
         self.openDirButton.clicked.connect(self.openDirectory)
