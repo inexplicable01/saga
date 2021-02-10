@@ -220,7 +220,7 @@
      <widget class="QPushButton" name="refreshBttn">
       <property name="geometry">
        <rect>
-        <x>20</x>
+        <x>0</x>
         <y>360</y>
         <width>171</width>
         <height>61</height>
@@ -314,7 +314,7 @@
      <widget class="QPushButton" name="refreshBttn_2">
       <property name="geometry">
        <rect>
-        <x>290</x>
+        <x>170</x>
         <y>360</y>
         <width>171</width>
         <height>61</height>
@@ -322,6 +322,19 @@
       </property>
       <property name="text">
        <string>Check Upstream</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="refreshBttn_3">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>360</y>
+        <width>141</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Download Updated Inputs</string>
       </property>
      </widget>
     </widget>

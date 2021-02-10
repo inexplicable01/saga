@@ -22,6 +22,8 @@ class MainContainerTab():
         self.commithisttable = mainguihandle.commithisttable
         self.refreshBttn = mainguihandle.refreshBttn
         self.refreshBttnUpstream = mainguihandle.refreshBttn_2
+        self.downloadUpstreamBttn = mainguihandle.refreshBttn_3
+        self.downloadUpstreamBttn.setDisabled(True)
         self.framelabel = mainguihandle.framelabel
         self.frameView = mainguihandle.frameView
         self.menuContainer = mainguihandle.menuContainer
@@ -39,6 +41,7 @@ class MainContainerTab():
         # self.openContainerBttn.clicked.connect(self.readcontainer)
         self.refreshBttn.clicked.connect(self.checkdelta)
         self.refreshBttnUpstream.clicked.connect(self.checkUpstream)
+        self.downloadUpstreamBttn.clicked.connect(self.downloadUpstream)
         self.resetbutton.clicked.connect(self.resetrequest)
         self.rebasebutton.clicked.connect(self.rebaserequest)
         self.commitBttn.clicked.connect(self.commit)
@@ -68,19 +71,37 @@ class MainContainerTab():
         self.checkdelta()
         # self.commithisttable.setModel(HistoryListModel(self.mainContainer.commithistory()))
 
+    def downloadUpstream(self):
+        fileheaderArr = [change['fileheader'] for change in self.changes]
+        revArr = [change['revision'] for change in self.changes]
+        chgstr = ''
+        for count, fileheader in enumerate(fileheaderArr):
+            self.mainContainer.workingFrame.downloadInputFile(fileheader, self.mainContainer.workingFrame.localfilepath)
+            fileEditPath = os.path.join(
+                self.mainContainer.workingFrame.localfilepath + '/' + self.mainContainer.workingFrame.filestrack[fileheader].file_name)
+            fileb = open(fileEditPath, 'rb')
+            self.mainContainer.workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
+            self.mainContainer.workingFrame.filestrack[fileheader].connection.Rev = revArr[count]
+            self.sceneObj[fileheader].setPen(QPen(Qt.black, 1))
+            chgstr = chgstr + fileheader + '\t' + 'File Updated From Upstream' + '\n'
+        self.frametextBrowser.setText(chgstr)
+        self.downloadUpstreamBttn.setDisabled(True)
+
+
     def checkUpstream(self):
-        changes = self.compareToUpstream(self.mainguihandle.authtoken)
-        if changes is not None:
-            changesarr = [change['fileheader'] for change in changes]
+        self.changes = self.compareToUpstream(self.mainguihandle.authtoken)
+        if self.changes:
+            changesarr = [change['fileheader'] for change in self.changes]
             for fileheader in self.mainContainer.FileHeaders.keys():
                 if fileheader in changesarr:
                     self.sceneObj[fileheader].setPen(QPen(Qt.red, 3))
                 else:
                     self.sceneObj[fileheader].setPen(QPen(Qt.black, 1))
             chgstr = ''
-            for change in changes:
+            for change in self.changes:
                 chgstr = chgstr + change['fileheader'] + '\t' + change['reason'] + '\n'
             self.frametextBrowser.setText(chgstr)
+            self.downloadUpstreamBttn.setEnabled(True)
         else:
             print('No Upstream Updates')
 
@@ -90,24 +111,25 @@ class MainContainerTab():
         changes = []
         for fileheader in workingFrame.filestomonitor.keys():
             if workingFrame.filestrack[fileheader].connection is not None:
-                if workingFrame.filestrack[fileheader].connection.refContainerId is not workingFrame.parentContainerId:
-                    containerID = workingFrame.filestrack[fileheader].connection.refContainerId
-                    if not os.path.exists(workingFrame.localfilepath + '/inputContainers/'):
-                        os.mkdir(workingFrame.localfilepath + '/inputContainers/')
-                    inputContainerPath = workingFrame.localfilepath + '/inputContainers/' + containerID
-                    dlcontainyaml = Container.downloadContainerInfo(inputContainerPath, authToken, BASE,
-                                                                    containerID)
-                    print(dlcontainyaml)
-                    dlcontainer = Container.LoadContainerFromYaml(containerfn=dlcontainyaml)
-                    dlcontainer.downloadbranch('Main', BASE, authToken, inputContainerPath)
-                    framePath = os.path.join(inputContainerPath + '/Main/' + 'Rev' + str(dlcontainer.revnum) + '.yaml')
-                    inputFrame = Frame(framePath)
-                    fileCheckPath = os.path.join(workingFrame.localfilepath + '/' + workingFrame.filestrack[fileheader].file_name)
-                    fileb = open(fileCheckPath, 'rb')
-                    workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
-                    # calculate md5 of file, if md5 has changed, update md5
-                    if workingFrame.filestrack[fileheader].md5 != inputFrame.filestrack[fileheader].md5:
-                        changes.append({'fileheader': fileheader, 'reason': 'MD5 Updated Upstream'})
+                if str(workingFrame.filestrack[fileheader].connection.connectionType) == 'ConnectionTypes.Input':
+                    if workingFrame.filestrack[fileheader].connection.refContainerId is not workingFrame.parentcontainerid:
+                        containerID = workingFrame.filestrack[fileheader].connection.refContainerId
+                        if not os.path.exists(workingFrame.localfilepath + '/inputContainers/'):
+                            os.mkdir(workingFrame.localfilepath + '/inputContainers/')
+                        inputContainerPath = workingFrame.localfilepath + '/inputContainers/' + containerID
+                        dlcontainyaml = Container.downloadContainerInfo(inputContainerPath, authToken, BASE,
+                                                                        containerID)
+                        print(dlcontainyaml)
+                        dlcontainer = Container.LoadContainerFromYaml(containerfn=dlcontainyaml)
+                        dlcontainer.downloadbranch('Main', BASE, authToken, inputContainerPath)
+                        framePath = os.path.join(inputContainerPath + '/Main/' + 'Rev' + str(dlcontainer.revnum) + '.yaml')
+                        inputFrame = Frame(framePath)
+                        fileCheckPath = os.path.join(workingFrame.localfilepath + '/' + workingFrame.filestrack[fileheader].file_name)
+                        fileb = open(fileCheckPath, 'rb')
+                        workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
+                        # calculate md5 of file, if md5 has changed, update md5
+                        if workingFrame.filestrack[fileheader].md5 != inputFrame.filestrack[fileheader].md5:
+                            changes.append({'fileheader': fileheader, 'reason': 'MD5 Updated Upstream', 'revision': inputFrame.filestrack[fileheader].connection.Rev})
         return changes
 
     def checkdelta(self):
