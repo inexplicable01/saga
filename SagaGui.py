@@ -32,8 +32,8 @@ class UI(QMainWindow):
     def __init__(self):
         # self.logf = open("C:\\Users\\waich\\LocalGitProjects\\saga\\error.txt", 'w+')
         super(UI, self).__init__()
-        uic.loadUi("saga/Graphics/SagaGui.ui", self)
-        self.enterEvent=self.action_enterEvent
+        uic.loadUi("Graphics/SagaGui.ui", self)
+        # self.enterEvent=self.action_enterEvent
 
         ## newcontainertab handles all the QT features on the new container tab, Initiates to false
         self.newcontainertab = NewContainerTab(self)

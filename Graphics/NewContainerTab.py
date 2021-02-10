@@ -76,7 +76,7 @@ class NewContainerTab():
         self.workingdir = inputs['dir']
 
         self.tempContainer.workingFrame = Frame(localfilepath = inputs['dir'])
-        self.tempContainer.workingFrame.parentContainerId = inputs['containername']
+        self.tempContainer.workingFrame.parentcontainerid = inputs['containername']
         self.tempContainer.workingFrame.FrameName = 'Rev1'
         self.tempContainer.workingFrame.writeoutFrameYaml(os.path.join(inputs['dir'], 'Main', 'Rev1.yaml'))
         self.curContainerPlot = ContainerPlot(self, self.curContainerView, self.tempContainer) #Edit to use refContainer

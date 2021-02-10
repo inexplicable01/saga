@@ -14,7 +14,7 @@ from PyQt5.QtCore import *
 import requests
 from Config import BASE
 
-blankFrame = {'parentContainerId':"",'FrameName': "", 'FrameInstanceId': "",'commitMessage': "",'inlinks': "",'outlinks': "",'AttachedFiles': "", 'commitUTCdatetime': "",'filestrack': ""}
+blankFrame = {'parentcontainerid':"",'FrameName': "", 'FrameInstanceId': "",'commitMessage': "",'inlinks': "",'outlinks': "",'AttachedFiles': "", 'commitUTCdatetime': "",'filestrack': ""}
 
 
 class Frame:
@@ -27,7 +27,7 @@ class Frame:
                 FrameYaml = yaml.load(file, Loader=yaml.FullLoader)
         # self.containerworkingfolder = os.path.dirname(containerfn)
         self.refframefn = framefn
-        self.parentContainerId = FrameYaml['parentContainerId']
+        self.parentcontainerid = FrameYaml['parentcontainerid']
         self.FrameName = FrameYaml['FrameName']
         # self.description = FrameYaml['Description']
         self.FrameInstanceId = FrameYaml['FrameInstanceId']
@@ -45,7 +45,7 @@ class Frame:
         self.filestrack = {}
         for ftrack in FrameYaml['filestrack']:
             FileHeader = ftrack['FileHeader']
-            # cont= Container(os.path.join('Container/',self.parentContainerId, 'containerstate.yaml'))
+            # cont= Container(os.path.join('Container/',self.parentcontainerid, 'containerstate.yaml'))
             conn=None
             if 'connection' in ftrack.keys() and ftrack['connection']:
                 conn = FileConnection(ftrack['connection']['refContainerId'],
