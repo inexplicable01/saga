@@ -76,7 +76,7 @@ class MainContainerTab():
         revArr = [change['revision'] for change in self.changes]
         chgstr = ''
         for count, fileheader in enumerate(fileheaderArr):
-            self.mainContainer.workingFrame.downloadInputFile(fileheader, self.mainContainer.workingFrame.localfilepath)
+            self.changes[count]['inputframe'].downloadInputFile(fileheader, self.mainContainer.workingFrame.localfilepath)
             fileEditPath = os.path.join(
                 self.mainContainer.workingFrame.localfilepath + '/' + self.mainContainer.workingFrame.filestrack[fileheader].file_name)
             fileb = open(fileEditPath, 'rb')
@@ -129,7 +129,7 @@ class MainContainerTab():
                         workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
                         # calculate md5 of file, if md5 has changed, update md5
                         if workingFrame.filestrack[fileheader].md5 != inputFrame.filestrack[fileheader].md5:
-                            changes.append({'fileheader': fileheader, 'reason': 'MD5 Updated Upstream', 'revision': inputFrame.filestrack[fileheader].connection.Rev})
+                            changes.append({'fileheader': fileheader, 'reason': 'MD5 Updated Upstream', 'revision': inputFrame.filestrack[fileheader].connection.Rev, 'inputframe': inputFrame})
         return changes
 
     def checkdelta(self):
@@ -160,7 +160,7 @@ class MainContainerTab():
             alterinputfileinfo = dialogWindow.getInputs()
             if alterinputfileinfo:
                 self.mainContainer.workingFrame.dealwithalteredInput(alterinputfileinfo)
-        self.readcontainer()
+        self.readcontainer(os.path.join(self.mainContainer.workingFrame.localfilepath + '/containerstate.yaml'))
         self.checkdelta()
 
 
@@ -173,19 +173,19 @@ class MainContainerTab():
             error_dialog.exec_()
             return
             # return
-        if self.userdata['email'] not in self.mainContainer.allowedUser:
+        if self.mainguihandle.userdata['email'] not in self.mainContainer.allowedUser:
             error_dialog.showMessage('You do not have the privilege to commit to this container')
             error_dialog.exec_()
             return
 
         self.addressAlteredInput()
-        self.mainContainer.workingFrame, committed = self.mainContainer.commit(self.mainContainer.workingFrame,self.commitmsgEdit.toPlainText(), self.authtoken, BASE)
+        self.mainContainer.workingFrame, committed = self.mainContainer.commit(self.commitmsgEdit.toPlainText(), self.mainguihandle.authtoken, BASE)
 
         if committed:
-            self.curContainer.save()
-            self.framelabel.setText(self.curContainer.workingFrame.FrameName)
+            self.mainContainer.save()
+            self.framelabel.setText(self.mainContainer.workingFrame.FrameName)
             self.checkdelta()
-            self.commithisttable.setModel(HistoryListModel(self.curContainer.commithistory()))
+            self.commithisttable.setModel(HistoryListModel(self.mainContainer.commithistory()))
 
 
     def readcontainer(self,path):

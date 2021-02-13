@@ -76,7 +76,6 @@ class Container:
         return container
 
     def commit(self, commitmsg, authtoken, BASE):
-
         frameRef = Frame(self.refframe, self.filestomonitor, self.containerworkingfolder)
 
         filesToUpload = {}
