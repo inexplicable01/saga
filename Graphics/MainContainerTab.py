@@ -178,7 +178,7 @@ class MainContainerTab():
             error_dialog.exec_()
             return
 
-        self.addressAlteredInput()
+        # self.addressAlteredInput()
         self.mainContainer.workingFrame, committed = self.mainContainer.commit(self.commitmsgEdit.toPlainText(), self.mainguihandle.authtoken, BASE)
 
         if committed:

@@ -32,10 +32,17 @@ class MapTab():
 
         self.selecteddetail = {'selectedobjname': None}
         # self.returncontlist.clicked.connect(partial( mainguihandle.getContainerInfo,self.containerlisttable))
-        mainguihandle.getContainerInfo(self.containerlisttable)
+
         ###########Gui Variables##############
         self.detailedmap = DetailedMap(self.detailsMapView, self.selecteddetail)
         self.containermap = ContainerMap({}, self.containerMapView, self.selecteddetail, self.detailedmap)
+
+        self.mainguihandle.tabWidget.currentChanged.connect(self.refreshMapTab)
+
+    def refreshMapTab(self):
+        if self.mainguihandle.tabWidget.currentIndex() == self.mainguihandle.tabWidget.indexOf(self.mainguihandle.Map):
+            self.mainguihandle.getContainerInfo(self.containerlisttable)
+            self.mainguihandle.getWorldContainers()
 
     def generateContainerMap(self):
         containeridlist = self.mainguihandle.worldlist
