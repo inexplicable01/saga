@@ -21,8 +21,10 @@ from Config import BASE
 
 import random
 import string
+
 def random_char(y):
     return ''.join(random.choice(string.ascii_letters) for x in range(y))
+
 
 def SignIn(MainGuiHandle):
     # print(BASE)
@@ -126,12 +128,12 @@ class InputDialog(QDialog):
         self.close()
 
 def newContainer(MainGuiHandle,newcontainertab):
-    # print('aldskjf')
     newcontainergui = newContainerDialog("Select a local location for building your container")
     inputs = newcontainergui.getInputs()
     if inputs:
         newcontainertab.initiate(inputs)
         MainGuiHandle.tabWidget.setCurrentIndex(newcontainertab.index)
+
     # dialog = QFileDialog()
     # foo_dir = dialog.getExistingDirectory(MainGuiHandle, 'Select an awesome directory')
     # print(foo_dir)

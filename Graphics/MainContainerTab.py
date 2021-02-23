@@ -76,7 +76,7 @@ class MainContainerTab():
         revArr = [change['revision'] for change in self.changes]
         chgstr = ''
         for count, fileheader in enumerate(fileheaderArr):
-            self.mainContainer.workingFrame.downloadInputFile(fileheader, self.mainContainer.workingFrame.localfilepath)
+            self.changes[count]['inputframe'].downloadInputFile(fileheader, self.mainContainer.workingFrame.localfilepath)
             fileEditPath = os.path.join(
                 self.mainContainer.workingFrame.localfilepath + '/' + self.mainContainer.workingFrame.filestrack[fileheader].file_name)
             fileb = open(fileEditPath, 'rb')
@@ -129,7 +129,7 @@ class MainContainerTab():
                         workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
                         # calculate md5 of file, if md5 has changed, update md5
                         if workingFrame.filestrack[fileheader].md5 != inputFrame.filestrack[fileheader].md5:
-                            changes.append({'fileheader': fileheader, 'reason': 'MD5 Updated Upstream', 'revision': inputFrame.filestrack[fileheader].connection.Rev})
+                            changes.append({'fileheader': fileheader, 'reason': 'MD5 Updated Upstream', 'revision': inputFrame.filestrack[fileheader].connection.Rev, 'inputframe': inputFrame})
         return changes
 
     def checkdelta(self):
@@ -160,7 +160,7 @@ class MainContainerTab():
             alterinputfileinfo = dialogWindow.getInputs()
             if alterinputfileinfo:
                 self.mainContainer.workingFrame.dealwithalteredInput(alterinputfileinfo)
-        self.readcontainer()
+        self.readcontainer(os.path.join(self.mainContainer.workingFrame.localfilepath + '/containerstate.yaml'))
         self.checkdelta()
 
 

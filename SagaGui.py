@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import *
-from PyQt5 import uic
+from PyQt5 import uic, QtWidgets
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
@@ -18,6 +18,8 @@ import os
 import sys
 import requests
 import json
+import logging
+import traceback
 
 from functools import partial
 from Config import BASE
@@ -27,6 +29,10 @@ from Config import BASE
 
 if os.path.exists("token.txt"):
     os.remove("token.txt")
+
+logging.basicConfig(filename='error.log', filemode='a',
+                    format='%(asctime)s,%(msecs)d - %(name)s - %(levelname)s - %(message)s',
+                    datefmt='%H:%M:%S')
 
 class UI(QMainWindow):
     def __init__(self):
@@ -58,8 +64,8 @@ class UI(QMainWindow):
         self.startingcheck = False
         self.guiworkingdir = os.getcwd()
 
-
         self.show()
+
 
     def getWorldContainers(self):
         response = requests.get(BASE + 'CONTAINERS/List')
@@ -113,6 +119,16 @@ class UI(QMainWindow):
             print('No User Signed in yet')
 
 
+def excepthook(exc_type, exc_value, exc_tb):
+    tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+    print("error catched!:")
+    print("error message:\n", tb)
+    logging.error("Error:", exc_info=(exc_type, exc_value, exc_tb))
+    # QtWidgets.QApplication.quit()
+    # or QtWidgets.QApplication.exit(0)
+
+
+sys.excepthook = excepthook
 app = QApplication([])
 window = UI()
 sys.exit(app.exec_())
