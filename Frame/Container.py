@@ -194,6 +194,7 @@ class Container:
             'Authorization': 'Bearer ' + authtoken['auth_token']
         }
         response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
+        print(response.headers)
         # request to FRAMES to get the latest frame from the branch as specified in currentbranch
         branch = response.headers['branch']
         # response also returned the name of the branch

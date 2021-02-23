@@ -91,7 +91,9 @@ class selectFileDialog(QDialog):
         openDirectoryDialog = QFileDialog.getOpenFileName(self, "Get Dir Path", self.containerworkdir)
         if openDirectoryDialog:
             [path, file_name] = os.path.split(openDirectoryDialog[0])
-            if not path==self.containerworkdir:
+            if os.path.samefile(path, self.containerworkdir):
+                self.filePathEdit.setText(os.path.join(self.containerworkdir, file_name))
+            else:
                 choice = QMessageBox.question(self, 'File not in Container',
                                                     "Copy file into Container folder?",
                                                     QMessageBox.Ok | QMessageBox.No)
