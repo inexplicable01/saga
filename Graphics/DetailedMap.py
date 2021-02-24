@@ -15,6 +15,8 @@ import requests
 import json
 import copy
 
+colorscheme = {typeInput: Qt.yellow, typeOutput: Qt.green, typeRequired: Qt.blue}
+
 containerBoxHeight = 250
 containerBoxWidth = 300
 gap=0.1
@@ -40,7 +42,7 @@ class DetailedMap():
             ConnectionBox(self.containerscene,\
                              self.activeContainers[containerId_in],self.activeContainers[containerId_out])
         else:
-            print(selectedobjname)
+            # print(selectedobjname)
             self.viewitems[selectedobjname] = self.containerscene.addItem( \
                 containerBox(self.containerscene,self.activeContainers[selectedobjname]))
         self.detailsMapView.setScene(self.containerscene)
@@ -61,6 +63,11 @@ class containerBox(QGraphicsRectItem):
         self.containerscene = containerscene
         self.titletext = self.containerscene.addText(container.containerId)
         self.titletext.setPos(QPointF(10,10))
+        self.titletext.setFont(QFont("Times",16))
+        self.inputlbl = self.containerscene.addText('Input')
+        self.inputlbl.setPos(QPointF(15,40))
+        self.outputlbl = self.containerscene.addText('Output')
+        self.outputlbl.setPos(QPointF(self.rect().width()/2+ 15,40))
         self.crossbox={}
         # self.outputbox = {}
         typecounter = {typeInput: 0, typeOutput: 0}
@@ -106,8 +113,8 @@ class FileRect(QGraphicsRectItem):
             boxgap = 0.1
         else:
             boxgap = 0
-        super().__init__(locF,50 + idx*100,containerBoxWidth * (1 + boxgap),60,parent)
-        self.setBrush(QBrush(Qt.green))
+        super().__init__(locF,60 + idx*100,containerBoxWidth * (1 + boxgap),60,parent)
+        self.setBrush(QBrush(colorscheme[type]))
         self.setPen(QPen(Qt.black))
         if type==typeInput:
             self.containertext = QGraphicsTextItem(fileinfo['Container'], parent=self)
