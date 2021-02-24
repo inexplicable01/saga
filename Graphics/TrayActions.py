@@ -164,7 +164,7 @@ class newContainerDialog(QDialog):
 
     def openDirectory(self):
         dialog = QFileDialog()
-        self.dir = dialog.getExistingDirectory(self, 'Select a dir to making your container')
+        self.dir = os.path.normpath(dialog.getExistingDirectory(self, 'Select a dir to making your container'))
         self.containernameEdit.setEnabled(True)
         self.containerpathlbl.setText(os.path.join(self.dir,self.containernameEdit.text()))
 

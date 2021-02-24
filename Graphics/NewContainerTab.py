@@ -9,6 +9,7 @@ import os
 import copy
 import random
 import string
+from Graphics.GuiUtil import AddIndexToView
 
 class NewContainerTab():
     def __init__(self, mainGuiHandle):
@@ -19,7 +20,7 @@ class NewContainerTab():
         self.curContainerView = mainGuiHandle.curContainerView
         self.returncontlist_2 = mainGuiHandle.returncontlist_2
         self.containerlisttable_2 = mainGuiHandle.containerlisttable_2
-        self.inputFileButton = mainGuiHandle.inputFileButton
+
         self.removeFileButton = mainGuiHandle.removeFileButton
         self.editFileButton = mainGuiHandle.editFileButton
         self.commitNewButton = mainGuiHandle.commitNewButton
@@ -32,6 +33,7 @@ class NewContainerTab():
         self.editFileButton = mainGuiHandle.editFileButton
         self.removeFileButton = mainGuiHandle.removeFileButton
         self.mainGuiHandle = mainGuiHandle
+        self.indexView2 = mainGuiHandle.indexView2
         # self.tester= mainGuiHandle.tester
         # self.authtoken= mainGuiHandle.authtoken
 
@@ -59,6 +61,7 @@ class NewContainerTab():
 
         self.RequiredButton.clicked.connect(partial(self.AddToTempContainer, 'Required'))
         self.outputFileButton.clicked.connect(partial(self.AddToTempContainer, 'Output'))
+        AddIndexToView(self.indexView2)
 
     def setTab(self, tabon):
         self.GuiTab.setEnabled(tabon)

@@ -11,6 +11,7 @@ from Config import BASE
 from Config import typeInput,typeOutput,typeRequired, boxwidth, boxheight
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
+from Graphics.GuiUtil import AddIndexToView
 
 class MainContainerTab():
     def __init__(self,mainguihandle):
@@ -26,6 +27,7 @@ class MainContainerTab():
         self.downloadUpstreamBttn.setDisabled(True)
         self.framelabel = mainguihandle.framelabel
         self.frameView = mainguihandle.frameView
+        self.indexView1 = mainguihandle.indexView1
         self.menuContainer = mainguihandle.menuContainer
         self.frametextBrowser = mainguihandle.frametextBrowser
         self.containerlabel = mainguihandle.containerlabel
@@ -52,6 +54,9 @@ class MainContainerTab():
         ###########History Info####
         self.commithisttable.clicked.connect(self.alterRevertButton)
         self.alterfiletracks=[]
+        AddIndexToView(self.indexView1)
+
+        self.frameView
 
     def resetrequest(self):
         response = requests.get(BASE + 'RESET')

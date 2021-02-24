@@ -113,7 +113,7 @@ class Container:
 
         if 'commitsuccess' in response.headers.keys():
             # Updating new frame information
-            frameyamlfn = os.path.join(self.containerId, self.currentbranch, response.headers['file_name'])
+            frameyamlfn = os.path.join(self.containerworkingfolder, self.currentbranch, response.headers['file_name'])
             open(frameyamlfn, 'wb').write(response.content)
             newframe = Frame(frameyamlfn, self.filestomonitor, self.containerworkingfolder)
             # Write out new frame information
@@ -121,7 +121,8 @@ class Container:
             self.refframe = frameyamlfn
             return newframe, response.headers['commitsuccess']
         else:
-            return self.workingFrame, response.headers['commitsuccess']
+            print(response)
+            return self.workingFrame, False
 
     def CommitNewContainer(self, containerName,commitmessage,authtoken,BASE):
         self.containerName = containerName
