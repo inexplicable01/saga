@@ -188,6 +188,7 @@ class NewContainerTab():
                     containeryaml = os.path.join(self.tempContainer.containerworkingfolder, 'containerstate.yaml')
                     self.mainGuiHandle.maincontainertab.readcontainer(containeryaml)
                     self.mainGuiHandle.tabWidget.setCurrentIndex(self.mainGuiHandle.maincontainertab.index)
+                    self.mainguihandle.maptab.updateContainerMap()
                 else:
                     print('Commit failed')
         else:

@@ -110,6 +110,8 @@ class InputDialog(QDialog):
         # else:
 
         self.MainGuiHandle.checkUserStatus()
+        if authtoken['status']=='success':
+            self.MainGuiHandle.maptab.updateContainerMap()
         self.close()
 
 
@@ -154,7 +156,7 @@ class newContainerDialog(QDialog):
         self.dir=''
         self.openDirButton.clicked.connect(self.openDirectory)
         # self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
-
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         res = ''.join(random.choices(string.ascii_uppercase +
                                      string.digits, k=7))
         self.containernameEdit.setText(res)
@@ -165,8 +167,10 @@ class newContainerDialog(QDialog):
     def openDirectory(self):
         dialog = QFileDialog()
         self.dir = os.path.normpath(dialog.getExistingDirectory(self, 'Select a dir to making your container'))
-        self.containernameEdit.setEnabled(True)
-        self.containerpathlbl.setText(os.path.join(self.dir,self.containernameEdit.text()))
+        if os.path.exists(self.dir):
+            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+            self.containernameEdit.setEnabled(True)
+            self.containerpathlbl.setText(os.path.join(self.dir,self.containernameEdit.text()))
 
     def textChanged(self,containername):
         # print(ttext)
