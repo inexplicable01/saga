@@ -37,12 +37,12 @@ class MapTab():
         self.detailedmap = DetailedMap(self.detailsMapView, self.selecteddetail)
         self.containermap = ContainerMap({}, self.containerMapView, self.selecteddetail, self.detailedmap)
 
-        self.mainguihandle.tabWidget.currentChanged.connect(self.refreshMapTab)
 
-    def refreshMapTab(self):
-        if self.mainguihandle.tabWidget.currentIndex() == self.mainguihandle.tabWidget.indexOf(self.mainguihandle.Map):
-            self.mainguihandle.getContainerInfo(self.containerlisttable)
-            self.mainguihandle.getWorldContainers()
+        # self.mainguihandle.tabWidget.currentChanged.connect(self.refreshMapTab)
+
+    # def refreshMapTab(self):
+    #     if self.mainguihandle.tabWidget.currentIndex() == self.mainguihandle.tabWidget.indexOf(self.mainguihandle.Map):
+
 
     def generateContainerMap(self):
         containeridlist = self.mainguihandle.worldlist
@@ -54,6 +54,10 @@ class MapTab():
         self.containermap.editcontainerConnections()
         self.containermap.plot()
         self.detailedmap.passobj(self.containermap)
+
+    def updateContainerMap(self):
+        self.mainguihandle.getContainerInfo(self.containerlisttable)
+        self.mainguihandle.getWorldContainers()
 
 
     def updatecontainertodl(self, listtable):
