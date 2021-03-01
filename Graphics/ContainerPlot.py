@@ -3,7 +3,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
-from Config import typeInput,typeOutput,typeRequired
+from Config import typeInput,typeOutput,typeRequired, colorscheme
 
 
 containerBoxHeight = 50
@@ -11,7 +11,7 @@ containerBoxWidth = 50
 gap=0.1
 
 class ContainerPlot():
-    def __init__(self, guiHandle, view, container:Container,  rectmousepressmethod=''):
+    def __init__(self, guiHandle, view, container:Container=None,  rectmousepressmethod=''):
 
         # self.containerName = containerName
         # self.path = framePath
@@ -35,7 +35,7 @@ class ContainerPlot():
         self.scene = QGraphicsScene()
         typeindex = {typeInput: 0, typeOutput: 2, typeRequired: 1}
         typecounter = {typeInput: 0, typeOutput: 0, typeRequired: 0}
-        colorscheme = {typeInput: Qt.yellow, typeOutput: Qt.green, typeRequired: Qt.blue}
+
         for fileheader, fileinfo in self.curContainer.FileHeaders.items():
             type = fileinfo['type']
             if type=='reference' or type=='references':
@@ -86,19 +86,6 @@ class coolerRectangle(QGraphicsRectItem):
 
     def mousePressEvent(self,event):
         print('pressed ' + self.type)
-        if self.view == self.guiHandle.refContainerView:
-            if self.type == typeOutput:
-                # self.definefiletype('Input', self.containerName, self.fileheader)
-                self.guiHandle.inputFileButton.setEnabled(True)
-                self.guiHandle.removeFileButton.setEnabled(False)
-                self.guiHandle.editFileButton.setEnabled(False)
-            else:
-                self.guiHandle.inputFileButton.setEnabled(False)
-                self.guiHandle.removeFileButton.setEnabled(True)
-                self.guiHandle.editFileButton.setEnabled(True)
-            self.guiHandle.curfileheader = self.fileheader
-            self.guiHandle.selectedContainer = self.curContainer
-            self.guiHandle.curfiletype=self.type
-            # self.guiHandle.tester.setText(self.guiHandle.filetype)
-        elif self.view == self.guiHandle.curContainerView:
-            self.guiHandle.editDeleteButtons(self.type, self.curContainer.containerName, self.fileheader)
+        self.guiHandle.coolerRectangleFeedback(self.type, self.view, self.fileheader , self.curContainer)
+
+

@@ -67,7 +67,7 @@ class InputDialog(QDialog):
         cancelbttn = buttonBox.addButton('Cancel', QDialogButtonBox.AcceptRole)
 
         genbttn.clicked.connect(self.gen)
-        cancelbttn.clicked.connect(self.cancel)
+        cancelbttn.clicked.connect(self.close)
         signupbttn.clicked.connect(self.signup)
         signinbttn.clicked.connect(self.signin)
 
@@ -88,9 +88,6 @@ class InputDialog(QDialog):
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:
             return (self.first.text(), self.second.text(), self.third.text(), self.fourth.text())
-
-    def cancel(self):
-        self.close()
 
     def gen(self):
         self.username.setText(random_char(7))
@@ -157,11 +154,11 @@ class newContainerDialog(QDialog):
         self.openDirButton.clicked.connect(self.openDirectory)
         # self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+
         res = ''.join(random.choices(string.ascii_uppercase +
                                      string.digits, k=7))
         self.containernameEdit.setText(res)
         # self.containerpathlbl.setText(os.path.join(self.dir, res))
-        self.containernameEdit.textChanged[str].connect(self.textChanged)
         self.containernameEdit.textChanged[str].connect(self.textChanged)
 
     def openDirectory(self):

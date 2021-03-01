@@ -33,14 +33,14 @@
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>0</x>
       <y>10</y>
       <width>1351</width>
       <height>721</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="Map">
      <attribute name="title">
@@ -145,19 +145,6 @@
        <string>Container Name</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="resetbutton">
-      <property name="geometry">
-       <rect>
-        <x>220</x>
-        <y>10</y>
-        <width>111</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>ResetButton</string>
-      </property>
-     </widget>
      <widget class="QTextBrowser" name="frametextBrowser">
       <property name="geometry">
        <rect>
@@ -171,7 +158,7 @@
      <widget class="QLabel" name="label_2">
       <property name="geometry">
        <rect>
-        <x>490</x>
+        <x>690</x>
         <y>100</y>
         <width>371</width>
         <height>16</height>
@@ -181,13 +168,13 @@
        <string>Container Commit History</string>
       </property>
      </widget>
-     <widget class="QGraphicsView" name="frameView">
+     <widget class="QGraphicsView" name="maincontainerview">
       <property name="geometry">
        <rect>
-        <x>20</x>
+        <x>10</x>
         <y>110</y>
         <width>441</width>
-        <height>251</height>
+        <height>331</height>
        </rect>
       </property>
      </widget>
@@ -220,9 +207,9 @@
      <widget class="QPushButton" name="refreshBttn">
       <property name="geometry">
        <rect>
-        <x>0</x>
-        <y>360</y>
-        <width>171</width>
+        <x>10</x>
+        <y>450</y>
+        <width>131</width>
         <height>61</height>
        </rect>
       </property>
@@ -233,9 +220,9 @@
      <widget class="QTextEdit" name="commitmsgEdit">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>446</y>
-        <width>431</width>
+        <x>10</x>
+        <y>550</y>
+        <width>441</width>
         <height>51</height>
        </rect>
       </property>
@@ -243,8 +230,8 @@
      <widget class="QLabel" name="label_4">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>430</y>
+        <x>10</x>
+        <y>520</y>
         <width>421</width>
         <height>16</height>
        </rect>
@@ -256,8 +243,8 @@
      <widget class="QPushButton" name="commitBttn">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>500</y>
+        <x>10</x>
+        <y>620</y>
         <width>171</width>
         <height>61</height>
        </rect>
@@ -266,24 +253,11 @@
        <string>Commit</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="rebasebutton">
-      <property name="geometry">
-       <rect>
-        <x>340</x>
-        <y>10</y>
-        <width>111</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>RebaseButton</string>
-      </property>
-     </widget>
      <widget class="QPushButton" name="revertbttn">
       <property name="geometry">
        <rect>
-        <x>490</x>
-        <y>530</y>
+        <x>690</x>
+        <y>660</y>
         <width>231</width>
         <height>28</height>
        </rect>
@@ -295,10 +269,10 @@
      <widget class="QTableView" name="commithisttable">
       <property name="geometry">
        <rect>
-        <x>490</x>
-        <y>120</y>
-        <width>791</width>
-        <height>401</height>
+        <x>690</x>
+        <y>130</y>
+        <width>591</width>
+        <height>511</height>
        </rect>
       </property>
       <attribute name="horizontalHeaderDefaultSectionSize">
@@ -314,9 +288,9 @@
      <widget class="QPushButton" name="refreshBttn_2">
       <property name="geometry">
        <rect>
-        <x>170</x>
-        <y>360</y>
-        <width>171</width>
+        <x>150</x>
+        <y>450</y>
+        <width>121</width>
         <height>61</height>
        </rect>
       </property>
@@ -327,9 +301,9 @@
      <widget class="QPushButton" name="refreshBttn_3">
       <property name="geometry">
        <rect>
-        <x>340</x>
-        <y>360</y>
-        <width>141</width>
+        <x>280</x>
+        <y>450</y>
+        <width>171</width>
         <height>61</height>
        </rect>
       </property>
@@ -340,11 +314,97 @@
      <widget class="QGraphicsView" name="indexView1">
       <property name="geometry">
        <rect>
-        <x>310</x>
+        <x>300</x>
         <y>40</y>
         <width>151</width>
         <height>61</height>
        </rect>
+      </property>
+     </widget>
+     <widget class="QWidget" name="layoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>480</x>
+        <y>120</y>
+        <width>191</width>
+        <height>221</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QPushButton" name="inputFileButton_2">
+         <property name="text">
+          <string>Add Input File from Reference</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="RequiredButton_2">
+         <property name="text">
+          <string>Add Required File</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="outputFileButton_2">
+         <property name="text">
+          <string>Add Output File</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="editFileButton_2">
+         <property name="text">
+          <string>Edit File</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="removeFileButton_2">
+         <property name="text">
+          <string>Remove File</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QLabel" name="label_5">
+      <property name="geometry">
+       <rect>
+        <x>480</x>
+        <y>100</y>
+        <width>161</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Container Edit Options</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>480</x>
+        <y>370</y>
+        <width>131</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Currently Selected: </string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="selectedfileheader">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>400</y>
+        <width>101</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
       </property>
      </widget>
     </widget>
