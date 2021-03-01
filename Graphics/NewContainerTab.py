@@ -99,13 +99,15 @@ class NewContainerTab():
         rownumber = containerList.row()
         index = containerList.model().index(rownumber, 0)
         containerId = containerList.model().data(index, 0)
+        index = containerList.model().index(rownumber, 3)
+        revNum = containerList.model().data(index,0)
         refcontainerpath = os.path.join('ContainerMapWorkDir', containerId , 'containerstate.yaml')
         if os.path.exists(refcontainerpath):
-            self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
+            self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath, revnum = revNum)
         else:
             refpath = os.path.join('ContainerMapWorkDir')
             Container.downloadContainerInfo(refpath,self.mainGuiHandle.authtoken, BASE, containerId)
-            self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
+            self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath, revnum = revNum)
         # self.tester.setText(self.selectedContainer.containerName)
         self.refContainerPlot.changeContainer(self.selectedContainer)
         self.refContainerPlot.plot()
