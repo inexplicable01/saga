@@ -23,7 +23,7 @@ blankcontainer = {'containerName':"" ,'containerId':"",'FileHeaders': {} ,'allow
 
 class Container:
     def __init__(self, containerworkingfolder,containerName,containerId,
-                 FileHeaders,allowedUser,currentbranch,filestomonitor,revnum,refframe,
+                 FileHeaders,allowedUser,currentbranch,revnum,refframe,
                  workingFrame: Frame):
         self.containerworkingfolder = containerworkingfolder
         self.containerName = containerName
@@ -31,7 +31,6 @@ class Container:
         self.FileHeaders = FileHeaders
         self.allowedUser = allowedUser
         self.currentbranch = currentbranch
-        self.filestomonitor =filestomonitor
         self.revnum =revnum
         self.refframe =refframe
         self.workingFrame= workingFrame
@@ -43,7 +42,7 @@ class Container:
                            containerId="",
                            FileHeaders={},
                            allowedUser=[],
-                           currentbranch="Main",filestomonitor={},revnum='1',
+                           currentbranch="Main",revnum='1',
                            refframe='dont have one yet', workingFrame = Frame())
         return newcontainer
 
@@ -58,12 +57,12 @@ class Container:
                 if type(fileinfo['Container']) != list:
                     fileinfo['Container']=[fileinfo['Container']]
             FileHeaders[fileheader] = fileinfo
-        filestomonitor = {}
-        for FileHeader, file in FileHeaders.items():
-            filestomonitor[FileHeader]= file['type']
+        # filestomonitor = {}
+        # for FileHeader, file in FileHeaders.items():
+        #     filestomonitor[FileHeader]= file['type']
         refframe, revnum = FrameNumInBranch(os.path.join(containerworkingfolder, currentbranch), revnum)
         try:
-            workingFrame = Frame(refframe, filestomonitor, containerworkingfolder)
+            workingFrame = Frame(refframe, None, containerworkingfolder)
         except Exception as e:
             workingFrame = Frame()
         container = cls(containerworkingfolder=containerworkingfolder,
@@ -71,16 +70,19 @@ class Container:
                            containerId=containeryaml['containerId'],
                            FileHeaders=FileHeaders,
                            allowedUser=containeryaml['allowedUser'],
-                           currentbranch=currentbranch,filestomonitor=filestomonitor, revnum=revnum,
+                           currentbranch=currentbranch, revnum=revnum,
                            refframe=refframe, workingFrame=workingFrame)
         return container
 
     def commit(self, commitmsg, authtoken, BASE):
-        frameRef = Frame(self.refframe, self.filestomonitor, self.containerworkingfolder)
+        frameRef = Frame(self.refframe, None, self.containerworkingfolder)
 
         filesToUpload = {}
         updateinfo = {}
         for fileheader, filetrack in self.workingFrame.filestrack.items():
+            if self.FileHeaders[fileheader]['type']== typeInput:
+                # we currently do not care about changes done to inputs
+                continue
             filepath = os.path.join(self.containerworkingfolder, filetrack.file_name)
             # Should file be committed?
             commit_file, md5 = self.CheckCommit(filetrack, filepath, frameRef)
@@ -99,7 +101,7 @@ class Container:
 
         updateinfojson = json.dumps(updateinfo)
         containerdictjson = self.__repr__()
-        framedictjson = frameRef.__repr__()
+        framedictjson = self.workingFrame.__repr__()
 
 
         response = requests.post(BASE + 'COMMIT',
@@ -115,7 +117,7 @@ class Container:
             # Updating new frame information
             frameyamlfn = os.path.join(self.containerworkingfolder, self.currentbranch, response.headers['file_name'])
             open(frameyamlfn, 'wb').write(response.content)
-            newframe = Frame(frameyamlfn, self.filestomonitor, self.containerworkingfolder)
+            newframe = Frame(frameyamlfn, None, self.containerworkingfolder)
             # Write out new frame information
             # The frame file is saved to the frame FS
             self.refframe = frameyamlfn
@@ -195,6 +197,7 @@ class Container:
             'Authorization': 'Bearer ' + authtoken['auth_token']
         }
         response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
+        print(response.headers)
         # request to FRAMES to get the latest frame from the branch as specified in currentbranch
         branch = response.headers['branch']
         # response also returned the name of the branch
@@ -225,7 +228,7 @@ class Container:
         # glob.glob() +'/'+ Rev + revnum + ".yaml"
         yamllist = glob.glob(os.path.join(self.containerworkingfolder, self.currentbranch , '*.yaml'))
         for yamlfn in yamllist:
-            pastframe = Frame(yamlfn, self.filestomonitor, self.containerworkingfolder)
+            pastframe = Frame(yamlfn, None, self.containerworkingfolder)
             historydict[pastframe.FrameName] = {'commitmessage':pastframe.commitMessage,
                                                'timestamp':pastframe.commitUTCdatetime }
         return historydict
@@ -267,6 +270,13 @@ class Container:
         self.workingFrame.addfromOutputtoInputFileTotrack(fileheader=fileheader,
         style=typeInput, fullpath=fullpath, reffiletrack=reffiletrack,
         refContainerId=refContainerId, branch=branch, rev=rev)
+        # self.filestomonitor['fileheader'] =  typeInput
+
+    def filestomonitor(self):
+        ftm={}
+        for FileHeader, file in self.FileHeaders.items():
+            ftm[FileHeader] = file['type']
+        return ftm
 
     def dictify(self):
         dictout = {}

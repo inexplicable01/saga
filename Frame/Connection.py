@@ -45,5 +45,8 @@ class FileConnection:
         str +='\n\t\tFileConnection:  ' + self.refContainerId + '\n'
         str += '\t\tconnectionType:   ' + self.connectionType.name + '\n'
         str += '\t\tbranch:   ' + self.branch + '\n'
-        str += '\t\tRev:   ' + self.Rev + '\n'
+        if self.Rev:
+            str += '\t\tRev:   ' + self.Rev + '\n'
+        else:
+            str += '\t\tRev:   Missing \n'
         return str

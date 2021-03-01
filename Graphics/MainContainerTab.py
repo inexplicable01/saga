@@ -4,20 +4,23 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Graphics.QAbstract.HistoryListModel import HistoryListModel
 from Graphics.Dialogs import alteredinputFileDialog
+from Graphics.ContainerPlot import ContainerPlot
+from Graphics.Dialogs import ErrorMessage, inputFileDialog, removeFileDialog, selectFileDialog, commitDialog,alteredinputFileDialog
+from functools import partial
 import requests
 import os
 import hashlib
-from Config import BASE
-from Config import typeInput,typeOutput,typeRequired, boxwidth, boxheight
+from Config import BASE, typeInput,typeOutput,typeRequired, boxwidth, boxheight, colorscheme
 from Frame.FrameStruct import Frame
 from Frame.Container import Container
 from Graphics.GuiUtil import AddIndexToView
+from Graphics.PopUps.AddInputPopUp import AddInputPopUp
 
 class MainContainerTab():
     def __init__(self,mainguihandle):
         self.commitBttn = mainguihandle.commitBttn
-        self.resetbutton = mainguihandle.resetbutton
-        self.rebasebutton = mainguihandle.rebasebutton
+        # self.resetbutton = mainguihandle.resetbutton
+        # self.rebasebutton = mainguihandle.rebasebutton
         self.revertbttn = mainguihandle.revertbttn
         self.commitmsgEdit = mainguihandle.commitmsgEdit
         self.commithisttable = mainguihandle.commithisttable
@@ -26,37 +29,52 @@ class MainContainerTab():
         self.downloadUpstreamBttn = mainguihandle.refreshBttn_3
         self.downloadUpstreamBttn.setDisabled(True)
         self.framelabel = mainguihandle.framelabel
-        self.frameView = mainguihandle.frameView
+        self.maincontainerview = mainguihandle.maincontainerview
         self.indexView1 = mainguihandle.indexView1
         self.menuContainer = mainguihandle.menuContainer
         self.frametextBrowser = mainguihandle.frametextBrowser
         self.containerlabel = mainguihandle.containerlabel
+        self.inputFileButton_2 = mainguihandle.inputFileButton_2
+        self.RequiredButton_2 = mainguihandle.RequiredButton_2
+        self.outputFileButton_2 = mainguihandle.outputFileButton_2
+        self.selectedfileheader = mainguihandle.selectedfileheader
+        self.editFileButton_2 = mainguihandle.editFileButton_2
+        self.removeFileButton_2 = mainguihandle.removeFileButton_2
+
         self.index=1
 
         self.mainguihandle =mainguihandle
 
         self.GuiTab = mainguihandle.ContainerTab
+
+        self.maincontainerplot = None
         # self.openContainerBttn = mainguihandle.openContainerBttn
         self.commitBttn.setEnabled(False)
         self.workingdir=''
         # self.openContainerBttn.setText('Open Container')
         # self.openContainerBttn.clicked.connect(self.readcontainer)
+        self.RequiredButton_2.clicked.connect(partial(self.AddToTempContainer, 'Required'))
+        self.outputFileButton_2.clicked.connect(partial(self.AddToTempContainer, 'Output'))
+        self.removeFileButton_2.clicked.connect(self.removeFileInfo)
+        self.inputFileButton_2.clicked.connect(self.AddInputFile)
         self.refreshBttn.clicked.connect(self.checkdelta)
         self.refreshBttnUpstream.clicked.connect(self.checkUpstream)
         self.downloadUpstreamBttn.clicked.connect(self.downloadUpstream)
-        self.resetbutton.clicked.connect(self.resetrequest)
-        self.rebasebutton.clicked.connect(self.rebaserequest)
+        # self.resetbutton.clicked.connect(self.resetrequest)
+        # self.rebasebutton.clicked.connect(self.rebaserequest)
         self.commitBttn.clicked.connect(self.commit)
         self.sceneObj = {}
         self.revertbttn.clicked.connect(self.revert)
         self.revertbttn.setEnabled(False)
+        self.editFileButton_2.setEnabled(False)
+        self.removeFileButton_2.setEnabled(False)
         self.commitmsgEdit.setDisabled(True)
         ###########History Info####
         self.commithisttable.clicked.connect(self.alterRevertButton)
         self.alterfiletracks=[]
+        self.curfileheader=None
         AddIndexToView(self.indexView1)
 
-        self.frameView
 
     def resetrequest(self):
         response = requests.get(BASE + 'RESET')
@@ -92,6 +110,20 @@ class MainContainerTab():
         self.frametextBrowser.setText(chgstr)
         self.downloadUpstreamBttn.setDisabled(True)
 
+    def AddInputFile(self):
+        addinputwindow = AddInputPopUp(mainguihandle=self.mainguihandle)
+        upstreaminfo = addinputwindow.getInputs()
+        if upstreaminfo:
+            upstreamcontainer = upstreaminfo['UpstreamContainer']
+            branch='Main'
+            fullpath, filetrack = upstreamcontainer.workingFrame.downloadInputFile(upstreaminfo['fileheader'],self.workingdir)
+            self.mainContainer.addInputFileObject(fileheader=upstreaminfo['fileheader'],
+                                                  reffiletrack = filetrack,
+                                                  fullpath=fullpath,
+                                                  refContainerId=upstreamcontainer.containerId,
+                                                  branch=branch,
+                                                  rev='Rev' + str(upstreamcontainer.revnum))
+            self.maincontainerplot.plot()
 
     def checkUpstream(self):
         self.changes = self.compareToUpstream(self.mainguihandle.authtoken)
@@ -112,9 +144,9 @@ class MainContainerTab():
 
     def compareToUpstream(self, authToken):
         workingFrame = self.mainContainer.workingFrame
-        refframe = Frame(workingFrame.refframefn, workingFrame.filestomonitor, workingFrame.localfilepath)
+        refframe = Frame(workingFrame.refframefn, None, workingFrame.localfilepath)
         changes = []
-        for fileheader in workingFrame.filestomonitor.keys():
+        for fileheader in self.mainContainer.filestomonitor().keys():
             if workingFrame.filestrack[fileheader].connection is not None:
                 if str(workingFrame.filestrack[fileheader].connection.connectionType) == 'ConnectionTypes.Input':
                     if workingFrame.filestrack[fileheader].connection.refContainerId is not workingFrame.parentcontainerid:
@@ -141,22 +173,25 @@ class MainContainerTab():
         allowCommit = False
         fixInput = False
         # allowCommit, changes, fixInput , self.alterfiletracks= self.mainContainer.checkFrame(self.mainContainer.workingFrame)
-        changes, self.alterfiletracks = self.mainContainer.workingFrame.compareToRefFrame()
+        changes, self.alterfiletracks = self.mainContainer.workingFrame.compareToRefFrame(self.mainContainer.filestomonitor())
         if len(changes) > 0:
             allowCommit = True
 
         self.commitBttn.setEnabled(allowCommit)
         self.commitmsgEdit.setDisabled(not allowCommit)
+        # refresh plot
+        self.maincontainerplot.plot()
 
-        changesarr=[change['fileheader'] for change in changes]
+        # changesarr=[change['fileheader'] for change in changes]
+
         for fileheader in self.mainContainer.FileHeaders.keys():
-            if fileheader in changesarr:
-                self.sceneObj[fileheader].setPen(QPen(Qt.red, 3))
-            else:
-                self.sceneObj[fileheader].setPen(QPen(Qt.black, 1))
+            if fileheader in changes.keys():
+                color = colorscheme[changes[fileheader]['reason']]
+                self.maincontainerplot.RectBox[fileheader].setPen(QPen(color, 3))
+
         chgstr = ''
-        for change in changes:
-            chgstr = chgstr + change['fileheader'] + '\t' + change['reason'] + '\n'
+        for fileheader, change in changes.items():
+            chgstr = chgstr + fileheader + '\t' + change['reason'] + '\n'
         self.frametextBrowser.setText(chgstr)
 
     def addressAlteredInput(self):
@@ -204,34 +239,56 @@ class MainContainerTab():
         self.commithisttable.setColumnWidth(0, self.commithisttable.width()*0.1)
         self.commithisttable.setColumnWidth(1, self.commithisttable.width() * 0.6)
         self.commithisttable.setColumnWidth(2, self.commithisttable.width() * 0.29)
-        self.plotcontainer()
+        self.maincontainerplot=ContainerPlot(self, self.maincontainerview, container=self.mainContainer)
+        self.maincontainerplot.plot()
         # if self.menuContainer.isEnabled() and self.mainguihandle.authtoken:
         #     self.tabWidget.setEnabled(True)
         self.setTab(True)
 
+    def coolerRectangleFeedback(self, type, view, fileheader , curContainer):
+        self.curfileheader = fileheader
+        self.curfiletype = type
+        self.selectedfileheader.setText(fileheader)
 
-    def plotcontainer(self):
-        scene = QGraphicsScene()
-        typeindex = {typeInput: 0, typeOutput: 2, typeRequired: 1}
-        typecounter = {typeInput: 0, typeOutput: 0, typeRequired: 0}
-        colorscheme = {typeInput: Qt.yellow, typeOutput: Qt.green, typeRequired: Qt.blue}
+        if fileheader in self.mainContainer.filestomonitor():
+            self.removeFileButton_2.setEnabled(True)
+        else:
+            self.removeFileButton_2.setEnabled(False)
+        print(type)
+        print(fileheader)
 
-        for fileheader, fileinfo in self.mainContainer.FileHeaders.items():
-            type = fileinfo['type']
-            if type == 'references':
-                continue
-            self.sceneObj[fileheader] = scene.addRect(-100 + 100 * typeindex[type], -200 + 100 * typecounter[type], \
-                                                      boxwidth, boxheight, QPen(Qt.black), QBrush(colorscheme[type]))
-            text = scene.addText(fileheader)
-            text.setPos(-100 + 100 * typeindex[type], -200 + 100 * typecounter[type])
-            if fileheader in self.mainContainer.workingFrame.filestrack.keys():
-                text = scene.addText(self.mainContainer.workingFrame.filestrack[fileheader].file_name)
-                text.setPos(-100 + 100 * typeindex[type], -200 + 100 * typecounter[type] + 20)
-            else:
-                text = scene.addText('Missing')
-                text.setPos(-100 + 100 * typeindex[type], -200 + 100 * typecounter[type] + 20)
-            typecounter[type] += 1
-        self.frameView.setScene(scene)
+    def AddToTempContainer(self, fileType: str):
+        self.inputFileButton_2.setEnabled(False)
+        fileInfoDialog = selectFileDialog(fileType, self.mainContainer.containerworkingfolder, self.mainGuiHandle.worldlist)
+        fileInfo = fileInfoDialog.getInputs()
+        if fileInfo:
+            self.mainContainer.addFileObject(fileInfo['fileheader'], fileInfo['ContainerFileInfo'], fileType)
+            if fileType =='Required':
+                self.mainContainer.workingFrame.addFileTotrack(fileInfo['FilePath'], fileInfo['fileheader'], fileType)
+            if fileType=='Output':
+                self.mainContainer.workingFrame.addOutputFileTotrack(fileInfo, fileType)
+            self.maincontainerplot.plot()
+
+    def removeFileInfo(self):
+        fileDialog = removeFileDialog(self.curfileheader)
+        fileheader = fileDialog.removeFile()
+        if fileheader:
+            del self.mainContainer.workingFrame.filestrack[self.curfileheader]
+            del self.mainContainer.FileHeaders[self.curfileheader]
+            # newTempContainer = copy.deepcopy(self.tempContainer)
+            # newTempFrame = copy.deepcopy(self.tempContainer.workingFrame)
+            # for key, value in self.tempContainer.FileHeaders.items():
+            #     if key == fileheader:
+            #         del newTempContainer.FileHeaders[key]
+            # self.tempContainer = newTempContainer
+            #
+            # for key,value in self.tempContainer.workingFrame.filestrack.items():
+            #     if key == fileheader:
+            #         del newTempFrame.filestrack[key]
+            # self.tempContainer.workingFrame = newTempFrame
+            self.maincontainerplot.plot()
+            #
+            self.removeFileButton_2.setEnabled(False)
 
     def alterRevertButton(self,histtable):
         rownumber = histtable.row()

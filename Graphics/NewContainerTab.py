@@ -127,17 +127,31 @@ class NewContainerTab():
                                                   branch=branch,
                                                   rev='Rev' + str(self.selectedContainer.revnum))
 
-        # self.curContainerPlot.createInputRect()
+        self.curContainerPlot.createInputRect()
         self.curContainerPlot.plot()
         self.inputFileButton.setEnabled(False)
 
 
-    def editDeleteButtons(self,fileType: str, containerName ='', fileheader=''):
+    def coolerRectangleFeedback(self, type, view, fileheader , curContainer):
         # self.selectedContainerId = containerName
-        self.curfileheader = fileheader
-        self.removeFileButton.setEnabled(True)
-        if fileType != 'Input':
-            self.editFileButton.setEnabled(True)
+        if view == self.refContainerView:
+            if type == typeOutput:
+                self.inputFileButton.setEnabled(True)
+                self.removeFileButton.setEnabled(False)
+                self.editFileButton.setEnabled(False)
+            else:
+                self.inputFileButton.setEnabled(False)
+                self.removeFileButton.setEnabled(True)
+                self.editFileButton.setEnabled(True)
+            self.curfileheader = fileheader
+            self.selectedContainer = curContainer
+            self.curfiletype = type
+            # self.guiHandle.tester.setText(self.guiHandle.filetype)
+        elif view == self.curContainerView:
+            self.curfileheader = fileheader
+            self.removeFileButton.setEnabled(True)
+            if type == typeInput:
+                self.editFileButton.setEnabled(True)
 
     def editFileInfo(self):
         editFileDialog = selectFileDialog(self.curfiletype,self.tempContainer.containerworkingfolder)
