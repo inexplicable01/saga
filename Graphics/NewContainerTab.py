@@ -9,6 +9,7 @@ import os
 import copy
 import random
 import string
+from Graphics.GuiUtil import AddIndexToView
 
 class NewContainerTab():
     def __init__(self, mainGuiHandle):
@@ -19,7 +20,7 @@ class NewContainerTab():
         self.curContainerView = mainGuiHandle.curContainerView
         self.returncontlist_2 = mainGuiHandle.returncontlist_2
         self.containerlisttable_2 = mainGuiHandle.containerlisttable_2
-        self.inputFileButton = mainGuiHandle.inputFileButton
+
         self.removeFileButton = mainGuiHandle.removeFileButton
         self.editFileButton = mainGuiHandle.editFileButton
         self.commitNewButton = mainGuiHandle.commitNewButton
@@ -32,6 +33,7 @@ class NewContainerTab():
         self.editFileButton = mainGuiHandle.editFileButton
         self.removeFileButton = mainGuiHandle.removeFileButton
         self.mainGuiHandle = mainGuiHandle
+        self.indexView2 = mainGuiHandle.indexView2
         # self.tester= mainGuiHandle.tester
         # self.authtoken= mainGuiHandle.authtoken
 
@@ -59,6 +61,7 @@ class NewContainerTab():
 
         self.RequiredButton.clicked.connect(partial(self.AddToTempContainer, 'Required'))
         self.outputFileButton.clicked.connect(partial(self.AddToTempContainer, 'Output'))
+        AddIndexToView(self.indexView2)
 
     def setTab(self, tabon):
         self.GuiTab.setEnabled(tabon)
@@ -126,17 +129,31 @@ class NewContainerTab():
                                                   branch=branch,
                                                   rev='Rev' + str(self.selectedContainer.revnum))
 
-        # self.curContainerPlot.createInputRect()
+        self.curContainerPlot.createInputRect()
         self.curContainerPlot.plot()
         self.inputFileButton.setEnabled(False)
 
 
-    def editDeleteButtons(self,fileType: str, containerName ='', fileheader=''):
+    def coolerRectangleFeedback(self, type, view, fileheader , curContainer):
         # self.selectedContainerId = containerName
-        self.curfileheader = fileheader
-        self.removeFileButton.setEnabled(True)
-        if fileType != 'Input':
-            self.editFileButton.setEnabled(True)
+        if view == self.refContainerView:
+            if type == typeOutput:
+                self.inputFileButton.setEnabled(True)
+                self.removeFileButton.setEnabled(False)
+                self.editFileButton.setEnabled(False)
+            else:
+                self.inputFileButton.setEnabled(False)
+                self.removeFileButton.setEnabled(True)
+                self.editFileButton.setEnabled(True)
+            self.curfileheader = fileheader
+            self.selectedContainer = curContainer
+            self.curfiletype = type
+            # self.guiHandle.tester.setText(self.guiHandle.filetype)
+        elif view == self.curContainerView:
+            self.curfileheader = fileheader
+            self.removeFileButton.setEnabled(True)
+            if type == typeInput:
+                self.editFileButton.setEnabled(True)
 
     def editFileInfo(self):
         editFileDialog = selectFileDialog(self.curfiletype,self.tempContainer.containerworkingfolder)
@@ -187,6 +204,7 @@ class NewContainerTab():
                     containeryaml = os.path.join(self.tempContainer.containerworkingfolder, 'containerstate.yaml')
                     self.mainGuiHandle.maincontainertab.readcontainer(containeryaml)
                     self.mainGuiHandle.tabWidget.setCurrentIndex(self.mainGuiHandle.maincontainertab.index)
+                    self.mainguihandle.maptab.updateContainerMap()
                 else:
                     print('Commit failed')
         else:

@@ -15,6 +15,8 @@ import requests
 import json
 import copy
 
+colorscheme = {typeInput: Qt.yellow, typeOutput: Qt.green, typeRequired: Qt.blue}
+
 containerBoxHeight = 250
 containerBoxWidth = 300
 gap=0.1
@@ -36,11 +38,11 @@ class DetailedMap():
 
         if '_' in selectedobjname:
             [containerId_in, containerId_out] = selectedobjname.split('_')
-            print(containerId_in,containerId_out)
+            # print(containerId_in,containerId_out)
             ConnectionBox(self.containerscene,\
                              self.activeContainers[containerId_in],self.activeContainers[containerId_out])
         else:
-            print(selectedobjname)
+            # print(selectedobjname)
             self.viewitems[selectedobjname] = self.containerscene.addItem( \
                 containerBox(self.containerscene,self.activeContainers[selectedobjname]))
         self.detailsMapView.setScene(self.containerscene)
@@ -61,6 +63,11 @@ class containerBox(QGraphicsRectItem):
         self.containerscene = containerscene
         self.titletext = self.containerscene.addText(container.containerId)
         self.titletext.setPos(QPointF(10,10))
+        self.titletext.setFont(QFont("Times",16))
+        self.inputlbl = self.containerscene.addText('Input')
+        self.inputlbl.setPos(QPointF(15,40))
+        self.outputlbl = self.containerscene.addText('Output')
+        self.outputlbl.setPos(QPointF(self.rect().width()/2+ 15,40))
         self.crossbox={}
         # self.outputbox = {}
         typecounter = {typeInput: 0, typeOutput: 0}
@@ -106,22 +113,29 @@ class FileRect(QGraphicsRectItem):
             boxgap = 0.1
         else:
             boxgap = 0
-        super().__init__(locF,50 + idx*100,containerBoxWidth * (1 + boxgap),60,parent)
-        self.setBrush(QBrush(Qt.green))
+        super().__init__(locF,60 + idx*100,containerBoxWidth * (1 + boxgap),60,parent)
+
         self.setPen(QPen(Qt.black))
         if type==typeInput:
+            self.setBrush(QBrush(colorscheme[type]))
             self.containertext = QGraphicsTextItem(fileinfo['Container'], parent=self)
             self.containertext.setPos(self.rect().topLeft()+QPoint(0,-20))
         elif type==typeOutput:
+            self.setBrush(QBrush(colorscheme[type]))
             for idx,outputcontainer in enumerate(fileinfo['Container']):
                 self.containertext = QGraphicsTextItem(outputcontainer, parent=self)
                 self.containertext.setPos(self.rect().topRight()+QPoint(-50, -20 -idx*15))
         elif type=='Connection':
+            grad = QLinearGradient(self.rect().topLeft(), self.rect().topRight())
+            grad.setColorAt(1, Qt.yellow)
+            grad.setColorAt(0, Qt.green)
+            self.setBrush(QBrush(grad))
             offset = 0.25 #print('')#nothing yet
         self.upbox = QGraphicsRectItem(containerBoxWidth*0.1,10 ,containerBoxWidth*0.25,40,self)
         self.upbox.setPos(self.rect().topLeft())
         self.upboxtext =QGraphicsTextItem(fileheader, parent=self.upbox)
         self.upboxtext.setPos(self.upbox.rect().topLeft())
+
 
         self.downbox = QGraphicsRectItem(containerBoxWidth*(1-0.1-0.25+boxgap),10 ,containerBoxWidth*0.25,40,self)
         self.downbox.setPos(self.rect().topLeft())

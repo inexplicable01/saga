@@ -12,7 +12,7 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import requests
-from Config import BASE
+from Config import BASE,changenewfile, changemd5,changedate , changeremoved
 
 blankFrame = {'parentcontainerid':"",'FrameName': "", 'FrameInstanceId': "",'commitMessage': "",'inlinks': "",'outlinks': "",'AttachedFiles': "", 'commitUTCdatetime': "",'filestrack': ""}
 
@@ -32,7 +32,7 @@ class Frame:
         # self.description = FrameYaml['Description']
         self.FrameInstanceId = FrameYaml['FrameInstanceId']
         self.commitMessage = FrameYaml['commitMessage']
-        self.filestomonitor = filestomonitor
+        # self.filestomonitor = filestomonitor
         self.inlinks = FrameYaml['inlinks']
         self.outlinks = FrameYaml['outlinks']
         self.AttachedFiles = FrameYaml['AttachedFiles']
@@ -105,7 +105,7 @@ class Frame:
         filetrack = alterinputfileinfo['alterfiletrack']
         fileheader = filetrack.FileHeader
 
-        refframe = Frame(self.refframefn, self.filestomonitor ,self.localfilepath )
+        refframe = Frame(self.refframefn, None,self.localfilepath )
         reffiletrack = refframe.filestrack[fileheader]
         ## File Management
         os.rename(os.path.join(self.localfilepath,filetrack.file_name), os.path.join(self.localfilepath,alterinputfileinfo['nfilename']))
@@ -216,22 +216,34 @@ class Frame:
 
     def revertTo(self, reverttirev):
         framefn = os.path.join(self.localfilepath, 'Main', reverttirev+'.yaml')
-        revertframe = Frame(framefn, self.filestomonitor, self.localfilepath)
+        revertframe = Frame(framefn, None, self.localfilepath)
         for fileheader, filetrack in revertframe.filestrack.items():
             revertframe.getfile(filetrack.file_id, filetrack.file_name, self.localfilepath, filetrack.lastEdited)
 
-    def compareToRefFrame(self):
+    def compareToRefFrame(self, filestomonitor):
         alterfiletracks=[]
-        refframe = Frame(self.refframefn, self.filestomonitor, self.localfilepath)
-        changes = []
-        for fileheader in self.filestomonitor.keys():
+        refframe = Frame(self.refframefn, None, self.localfilepath)
+        changes = {}
+        refframefileheaders = list(refframe.filestrack.keys())
+        for fileheader in filestomonitor.keys():
+            refframefileheaders.remove(fileheader)
+            if fileheader not in refframe.filestrack.keys() and fileheader not in self.filestrack.keys():
+                # check if fileheader is in neither refframe or current frame,
+                raise('somehow Container needs to track ' + fileheader + 'but its not in ref frame or current frame')
+
+            if fileheader not in refframe.filestrack.keys() and fileheader in self.filestrack.keys():
+                # check if fileheader is in the refframe, If not in frame, that means user just added a new fileheader
+                changes[fileheader]= {'reason': changenewfile}
+                continue
+
             path = self.localfilepath + '/' + self.filestrack[fileheader].file_name
             fileb = open(path, 'rb')
             self.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
             # calculate md5 of file, if md5 has changed, update md5
+
             if refframe.filestrack[fileheader].md5 != self.filestrack[fileheader].md5:
                 self.filestrack[fileheader].lastEdited = os.path.getmtime(path)
-                changes.append({'fileheader': fileheader, 'reason': 'MD5 Changed'})
+                changes[fileheader]= {'reason': changemd5}
                 if self.filestrack[fileheader].connection:
                     if self.filestrack[fileheader].connection.connectionType==ConnectionTypes.Input:
                         alterfiletracks.append(self.filestrack[fileheader])
@@ -240,10 +252,12 @@ class Frame:
             self.filestrack[fileheader].lastEdited = os.path.getmtime(path)
 
             if self.filestrack[fileheader].lastEdited != refframe.filestrack[fileheader].lastEdited:
-                changes.append({'fileheader': fileheader, 'reason': 'DateChangeOnly'})
+                changes[fileheader] = {'reason': changedate}
                 self.filestrack[fileheader].lastEdited = os.path.getmtime(path)
                 print('Date changed without Md5 changin')
                 continue
+        for removedheaders in refframefileheaders:
+            changes[removedheaders] = {'reason': changeremoved}
         return changes, alterfiletracks
 
 

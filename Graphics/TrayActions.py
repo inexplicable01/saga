@@ -67,7 +67,7 @@ class InputDialog(QDialog):
         cancelbttn = buttonBox.addButton('Cancel', QDialogButtonBox.AcceptRole)
 
         genbttn.clicked.connect(self.gen)
-        cancelbttn.clicked.connect(self.cancel)
+        cancelbttn.clicked.connect(self.close)
         signupbttn.clicked.connect(self.signup)
         signinbttn.clicked.connect(self.signin)
 
@@ -89,9 +89,6 @@ class InputDialog(QDialog):
         if self.exec_() == QDialog.Accepted:
             return (self.first.text(), self.second.text(), self.third.text(), self.fourth.text())
 
-    def cancel(self):
-        self.close()
-
     def gen(self):
         self.username.setText(random_char(7))
         self.email.setText(random_char(7)+"@gmail.com")
@@ -110,6 +107,8 @@ class InputDialog(QDialog):
         # else:
 
         self.MainGuiHandle.checkUserStatus()
+        if authtoken['status']=='success':
+            self.MainGuiHandle.maptab.updateContainerMap()
         self.close()
 
 
@@ -154,19 +153,21 @@ class newContainerDialog(QDialog):
         self.dir=''
         self.openDirButton.clicked.connect(self.openDirectory)
         # self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
 
         res = ''.join(random.choices(string.ascii_uppercase +
                                      string.digits, k=7))
         self.containernameEdit.setText(res)
         # self.containerpathlbl.setText(os.path.join(self.dir, res))
         self.containernameEdit.textChanged[str].connect(self.textChanged)
-        self.containernameEdit.textChanged[str].connect(self.textChanged)
 
     def openDirectory(self):
         dialog = QFileDialog()
-        self.dir = dialog.getExistingDirectory(self, 'Select a dir to making your container')
-        self.containernameEdit.setEnabled(True)
-        self.containerpathlbl.setText(self.dir)
+        self.dir = os.path.normpath(dialog.getExistingDirectory(self, 'Select a dir to making your container'))
+        if os.path.exists(self.dir):
+            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+            self.containernameEdit.setEnabled(True)
+            self.containerpathlbl.setText(os.path.join(self.dir,self.containernameEdit.text()))
 
     def textChanged(self,containername):
         # print(ttext)
