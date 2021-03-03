@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from Frame.FrameStruct import Frame
-from Frame.Container import Container
+from SagaApp.FrameStruct import Frame
+from SagaApp.Container import Container
 from Config import typeInput,typeOutput,typeRequired, colorscheme
 
 

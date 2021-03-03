@@ -11,8 +11,8 @@ import json
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
 import os
 from functools import partial
-from Frame.FrameStruct import Frame
-from Frame.Container import Container
+from SagaApp.FrameStruct import Frame
+from SagaApp.Container import Container
 
 class MapTab():
     def __init__(self, mainguihandle):

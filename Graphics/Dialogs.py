@@ -4,11 +4,11 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
 import yaml
-from Frame.FrameStruct import Frame
-from Frame.Container import Container
-from Frame.FileObjects import FileTrack
+from SagaApp.FrameStruct import Frame
+from SagaApp.Container import Container
+from SagaApp.FileObjects import FileTrack
 from Config import typeInput,typeRequired,typeOutput
-from Frame.commit import commit
+from SagaApp.commit import commit
 import os
 from shutil import copyfile
 
@@ -16,7 +16,7 @@ import sys
 import requests
 import json
 import copy
-from Frame.Container import Container
+from SagaApp.Container import Container
 
 class ErrorMessage(QMessageBox):
     def __init__(self):
@@ -32,7 +32,7 @@ class inputFileDialog(QDialog):
     def __init__(self, ContainerId, fileheader):
         super().__init__()
         # self.fileName = fileName
-        uic.loadUi("Graphics/inputFileDialog.ui", self)
+        uic.loadUi("Graphics/UI/inputFileDialog.ui", self)
         self.ContainerId, = ContainerId,
         self.fileheader = fileheader
         self.containerName_label.setText(self.ContainerId,)
@@ -45,11 +45,18 @@ class inputFileDialog(QDialog):
             return None
 
 class removeFileDialog(QDialog):
-    def __init__(self, fileheader):
+    def __init__(self, fileheader,candelete, candeletemesssage):
         super().__init__()
-        uic.loadUi("Graphics/removeFileDialog.ui", self)
+        uic.loadUi("Graphics/UI/removeFileDialog.ui", self)
         self.fileheader = fileheader
         self.fileNameLabel.setText(self.fileheader)
+
+        if not candelete:
+            self.deletewarninglbl.setText(candeletemesssage)
+            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        else:
+            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+
     def removeFile(self):
         if self.exec_() == QDialog.Accepted:
             return self.fileheader
@@ -58,7 +65,7 @@ class removeFileDialog(QDialog):
 class commitDialog(QDialog):
     def __init__(self, containerName, description, commitMessage):
         super().__init__()
-        uic.loadUi("Graphics/commitContainerDialog.ui", self)
+        uic.loadUi("Graphics/UI/commitContainerDialog.ui", self)
         self.containerName = containerName
         self.containerNameLabel.setText(self.containerName)
     def commit(self):
@@ -72,15 +79,15 @@ class selectFileDialog(QDialog):
         super().__init__()
         self.fileType = fileType
         if self.fileType == typeRequired:
-            uic.loadUi("Graphics/file_info.ui", self)
+            uic.loadUi("Graphics/UI/file_info.ui", self)
             self.ownerEdit.setText('OwnerRequired')
             self.descriptionEdit.setText('DescrtiptionRequired')
         elif self.fileType == typeOutput:
-            uic.loadUi("Graphics/file_info_outputs.ui", self)
+            uic.loadUi("Graphics/UI/file_info_outputs.ui", self)
             self.ownerEdit.setText('Owneroutput')
             self.descriptionEdit.setText('Descrtiptionoutpu')
-            for container in containerlist:
-                self.downcontainerbox.addItem(container)
+            # for container in containerlist:
+            #     self.downcontainerbox.addItem(container)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
         self.openDirButton.clicked.connect(self.openDirectory)
@@ -91,7 +98,7 @@ class selectFileDialog(QDialog):
         openDirectoryDialog = QFileDialog.getOpenFileName(self, "Get Dir Path", self.containerworkdir)
         if openDirectoryDialog:
             [path, file_name] = os.path.split(openDirectoryDialog[0])
-            if not os.path.normpath(path)==self.containerworkdir:
+            if not os.path.normpath(path)==os.path.normpath(self.containerworkdir):
                 choice = QMessageBox.question(self, 'File not in Container',
                                                     "Copy file into Container folder?",
                                                     QMessageBox.Ok | QMessageBox.No)
@@ -112,10 +119,10 @@ class selectFileDialog(QDialog):
                         'Owner': self.ownerEdit.text(), 'Description': self.descriptionEdit.text(),
                         'ContainerFileInfo': containerFileInfo}
             elif self.fileType == typeOutput:
-                containerFileInfo = {'Container': self.downcontainerbox.currentText(), 'type': typeOutput}
+                containerFileInfo = {'Container': [], 'type': typeOutput}
                 return {'fileheader': self.fileObjHeaderEdit.text(), 'FilePath': self.filePathEdit.text(),
                         'Owner': self.ownerEdit.text(), 'Description': self.descriptionEdit.text(),
-                        'ContainerFileInfo': containerFileInfo, 'ContainerDestination':self.downcontainerbox.currentText()}
+                        'ContainerFileInfo': containerFileInfo}
         else:
             return None
 
@@ -123,7 +130,7 @@ class alteredinputFileDialog(QDialog):
     def __init__(self, alterfiletrack:FileTrack):
         super().__init__()
         # self.fileName = fileName
-        uic.loadUi("Graphics/alteredinputFileDialog.ui", self)
+        uic.loadUi("Graphics/UI/alteredinputFileDialog.ui", self)
         self.alterfiletrack = alterfiletrack
         self.old_filename_lbl.setText(alterfiletrack.file_name)
         self.old_fileheader_lbl.setText(alterfiletrack.FileHeader)
