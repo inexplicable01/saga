@@ -1,4 +1,4 @@
-from Frame.FrameStruct import Frame
+from SagaApp.FrameStruct import Frame
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import gridfs
@@ -13,7 +13,7 @@ import json
 import warnings
 from Config import typeInput,typeOutput,typeRequired
 from hackpatch import workingdir
-from Frame.SagaUtil import FrameNumInBranch
+from SagaApp.SagaUtil import FrameNumInBranch
 from datetime import datetime
 
 fileobjtypes = ['inputObjs', 'requiredObjs', 'outputObjs']
@@ -47,7 +47,7 @@ class Container:
         return newcontainer
 
     @classmethod
-    def LoadContainerFromYaml(cls, containerfn, currentbranch='Main',revnum='1'):
+    def LoadContainerFromYaml(cls, containerfn, currentbranch='Main',revnum=None):
         containerworkingfolder = os.path.dirname(containerfn)
         with open(containerfn) as file:
             containeryaml = yaml.load(file, Loader=yaml.FullLoader)
@@ -121,9 +121,11 @@ class Container:
             # Write out new frame information
             # The frame file is saved to the frame FS
             self.refframe = frameyamlfn
+
             return newframe, response.headers['commitsuccess']
         else:
-            print(response)
+            print('Commit Fail')
+            print(response.json())
             return self.workingFrame, False
 
     def CommitNewContainer(self, containerName,commitmessage,authtoken,BASE):

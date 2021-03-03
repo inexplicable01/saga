@@ -1,8 +1,8 @@
 import os
 import requests
 import yaml
-from Frame.Container import Container
-from Frame.FrameStruct import Frame
+from SagaApp.Container import Container
+from SagaApp.FrameStruct import Frame
 BASE = "http://fatpanda1985.pythonanywhere.com/"
 
 # BASE = "http://127.0.0.1:5000/"

@@ -11,8 +11,8 @@ from Graphics.NewContainerTab import NewContainerTab
 from Graphics.MainContainerTab import MainContainerTab
 from Graphics.MapTab import MapTab
 
-from Frame.FrameStruct import Frame
-from Frame.Container import Container
+from SagaApp.FrameStruct import Frame
+from SagaApp.Container import Container
 
 import os
 import sys
@@ -23,6 +23,7 @@ import traceback
 
 from functools import partial
 from Config import BASE
+from SagaApp.WorldMap import WorldMap
 
 # from NewContainerGraphics import newContainerGraphics
 # from hackpatch import downloadedFrames
@@ -34,11 +35,13 @@ logging.basicConfig(filename='error.log', filemode='a',
                     format='%(asctime)s,%(msecs)d - %(name)s - %(levelname)s - %(message)s',
                     datefmt='%H:%M:%S')
 
+wmap = WorldMap()
+
 class UI(QMainWindow):
     def __init__(self):
         # self.logf = open("C:\\Users\\waich\\LocalGitProjects\\saga\\error.txt", 'w+')
         super(UI, self).__init__()
-        uic.loadUi("Graphics/SagaGui.ui", self)
+        uic.loadUi("Graphics/UI/SagaGui.ui", self)
         # self.enterEvent=self.action_enterEvent
 
         ## newcontainertab handles all the QT features on the new container tab, Initiates to false
@@ -77,7 +80,7 @@ class UI(QMainWindow):
             if not os.path.exists(os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID)):
                 os.mkdir(os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID))
             open(os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']), 'wb').write(response.content)
-            cont = Container.LoadContainerFromYaml(os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']))
+            cont = Container.LoadContainerFromYaml( os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']))
             cont.downloadbranch('Main', BASE, self.authtoken,os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID))
         self.worldlist = containerinfolist.keys()
 

@@ -11,8 +11,9 @@ import requests
 import os
 import hashlib
 from Config import BASE, typeInput,typeOutput,typeRequired, boxwidth, boxheight, colorscheme
-from Frame.FrameStruct import Frame
-from Frame.Container import Container
+from SagaApp.FrameStruct import Frame
+from SagaApp.Container import Container
+from SagaApp.WorldMap import WorldMap
 from Graphics.GuiUtil import AddIndexToView
 from Graphics.PopUps.AddInputPopUp import AddInputPopUp
 
@@ -131,9 +132,9 @@ class MainContainerTab():
             changesarr = [change['fileheader'] for change in self.changes]
             for fileheader in self.mainContainer.FileHeaders.keys():
                 if fileheader in changesarr:
-                    self.sceneObj[fileheader].setPen(QPen(Qt.red, 3))
+                    self.maincontainerplot.RectBox[fileheader].setBrush(QBrush(Qt.red))
                 else:
-                    self.sceneObj[fileheader].setPen(QPen(Qt.black, 1))
+                    self.maincontainerplot.RectBox[fileheader].setBrush(QBrush(Qt.white))
             chgstr = ''
             for change in self.changes:
                 chgstr = chgstr + change['fileheader'] + '\t' + change['reason'] + '\n'
@@ -182,8 +183,6 @@ class MainContainerTab():
         # refresh plot
         self.maincontainerplot.plot()
 
-        # changesarr=[change['fileheader'] for change in changes]
-
         for fileheader in self.mainContainer.FileHeaders.keys():
             if fileheader in changes.keys():
                 color = colorscheme[changes[fileheader]['reason']]
@@ -223,6 +222,7 @@ class MainContainerTab():
 
         if committed:
             self.mainContainer.save()
+            self.mainguihandle.maptab.updateContainerMap()
             self.framelabel.setText(self.mainContainer.workingFrame.FrameName)
             self.checkdelta()
             self.commithisttable.setModel(HistoryListModel(self.mainContainer.commithistory()))
@@ -233,7 +233,7 @@ class MainContainerTab():
         self.mainContainer = Container.LoadContainerFromYaml(path, revnum=None)
         [self.workingdir, file_name] = os.path.split(path)
         self.containerlabel.setText('Container Name : ' + self.mainContainer.containerName)
-        self.mainguihandle.startingcheck=True
+
         self.framelabel.setText(self.mainContainer.workingFrame.FrameName)
         self.commithisttable.setModel(HistoryListModel(self.mainContainer.commithistory()))
         self.commithisttable.setColumnWidth(0, self.commithisttable.width()*0.1)
@@ -258,8 +258,8 @@ class MainContainerTab():
         print(fileheader)
 
     def AddToTempContainer(self, fileType: str):
-        self.inputFileButton_2.setEnabled(False)
-        fileInfoDialog = selectFileDialog(fileType, self.mainContainer.containerworkingfolder, self.mainGuiHandle.worldlist)
+        # self.inputFileButton_2.setEnabled(False)
+        fileInfoDialog = selectFileDialog(fileType, self.mainContainer.containerworkingfolder, self.mainguihandle.worldlist)
         fileInfo = fileInfoDialog.getInputs()
         if fileInfo:
             self.mainContainer.addFileObject(fileInfo['fileheader'], fileInfo['ContainerFileInfo'], fileType)
@@ -270,24 +270,18 @@ class MainContainerTab():
             self.maincontainerplot.plot()
 
     def removeFileInfo(self):
-        fileDialog = removeFileDialog(self.curfileheader)
+        # remove fileheader from current main container
+        wmap = WorldMap()
+        candelete, candeletemesssage = wmap.CheckContainerCanDeleteOutput(curcontainerid=self.mainContainer.containerId, fileheader=self.curfileheader,guiworkingdir=self.mainguihandle.guiworkingdir)
+        fileDialog = removeFileDialog(self.curfileheader, candelete, candeletemesssage) # Dialog to confirm deleting container
         fileheader = fileDialog.removeFile()
+
         if fileheader:
-            del self.mainContainer.workingFrame.filestrack[self.curfileheader]
-            del self.mainContainer.FileHeaders[self.curfileheader]
-            # newTempContainer = copy.deepcopy(self.tempContainer)
-            # newTempFrame = copy.deepcopy(self.tempContainer.workingFrame)
-            # for key, value in self.tempContainer.FileHeaders.items():
-            #     if key == fileheader:
-            #         del newTempContainer.FileHeaders[key]
-            # self.tempContainer = newTempContainer
-            #
-            # for key,value in self.tempContainer.workingFrame.filestrack.items():
-            #     if key == fileheader:
-            #         del newTempFrame.filestrack[key]
-            # self.tempContainer.workingFrame = newTempFrame
+            if self.curfileheader in self.mainContainer.workingFrame.filestrack.keys():
+                del self.mainContainer.workingFrame.filestrack[self.curfileheader]
+            if self.curfileheader in self.mainContainer.FileHeaders.keys():
+                del self.mainContainer.FileHeaders[self.curfileheader]
             self.maincontainerplot.plot()
-            #
             self.removeFileButton_2.setEnabled(False)
 
     def alterRevertButton(self,histtable):

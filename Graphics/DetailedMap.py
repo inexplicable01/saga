@@ -4,11 +4,11 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
 import yaml
-from Frame.FrameStruct import Frame
-from Frame.Container import Container
+from SagaApp.FrameStruct import Frame
+from SagaApp.Container import Container
 from Config import typeInput,typeOutput,typeRequired
-from Frame.FileObjects import FileTrack
-from Frame.commit import commit
+from SagaApp.FileObjects import FileTrack
+from SagaApp.commit import commit
 import os
 import sys
 import requests

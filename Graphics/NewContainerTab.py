@@ -1,7 +1,7 @@
 from Graphics.Dialogs import ErrorMessage, inputFileDialog, removeFileDialog, selectFileDialog, commitDialog,alteredinputFileDialog
 from functools import partial
-from Frame.FrameStruct import Frame
-from Frame.Container import Container
+from SagaApp.FrameStruct import Frame
+from SagaApp.Container import Container
 from Graphics.ContainerPlot import ContainerPlot
 from Config import BASE
 from Config import typeInput,typeRequired,typeOutput
@@ -12,30 +12,30 @@ import string
 from Graphics.GuiUtil import AddIndexToView
 
 class NewContainerTab():
-    def __init__(self, mainGuiHandle):
+    def __init__(self, mainguihandle):
         self.index = 2
-        self.inputFileButton = mainGuiHandle.inputFileButton
-        self.RequiredButton = mainGuiHandle.RequiredButton
-        self.outputFileButton = mainGuiHandle.outputFileButton
-        self.curContainerView = mainGuiHandle.curContainerView
-        self.returncontlist_2 = mainGuiHandle.returncontlist_2
-        self.containerlisttable_2 = mainGuiHandle.containerlisttable_2
+        self.inputFileButton = mainguihandle.inputFileButton
+        self.RequiredButton = mainguihandle.RequiredButton
+        self.outputFileButton = mainguihandle.outputFileButton
+        self.curContainerView = mainguihandle.curContainerView
+        self.returncontlist_2 = mainguihandle.returncontlist_2
+        self.containerlisttable_2 = mainguihandle.containerlisttable_2
 
-        self.removeFileButton = mainGuiHandle.removeFileButton
-        self.editFileButton = mainGuiHandle.editFileButton
-        self.commitNewButton = mainGuiHandle.commitNewButton
-        self.refContainerView = mainGuiHandle.refContainerView
-        self.containerName_lineEdit= mainGuiHandle.containerName_lineEdit
-        self.descriptionText= mainGuiHandle.descriptionText
-        self.messageText= mainGuiHandle.messageText
-        self.GuiTab = mainGuiHandle.NewContainerTab
-        self.inputFileButton = mainGuiHandle.inputFileButton
-        self.editFileButton = mainGuiHandle.editFileButton
-        self.removeFileButton = mainGuiHandle.removeFileButton
-        self.mainGuiHandle = mainGuiHandle
-        self.indexView2 = mainGuiHandle.indexView2
-        # self.tester= mainGuiHandle.tester
-        # self.authtoken= mainGuiHandle.authtoken
+        self.removeFileButton = mainguihandle.removeFileButton
+        self.editFileButton = mainguihandle.editFileButton
+        self.commitNewButton = mainguihandle.commitNewButton
+        self.refContainerView = mainguihandle.refContainerView
+        self.containerName_lineEdit= mainguihandle.containerName_lineEdit
+        self.descriptionText= mainguihandle.descriptionText
+        self.messageText= mainguihandle.messageText
+        self.GuiTab = mainguihandle.NewContainerTab
+        self.inputFileButton = mainguihandle.inputFileButton
+        self.editFileButton = mainguihandle.editFileButton
+        self.removeFileButton = mainguihandle.removeFileButton
+        self.mainguihandle = mainguihandle
+        self.indexView2 = mainguihandle.indexView2
+        # self.tester= mainguihandle.tester
+        # self.authtoken= mainguihandle.authtoken
 
         letters = string.ascii_letters
         self.containerName_lineEdit.setText(''.join(random.choice(letters) for i in range(10)) )
@@ -51,7 +51,7 @@ class NewContainerTab():
 
         self.refContainerPlot = ContainerPlot(self, self.refContainerView, container=Container.InitiateContainer())
 
-        self.returncontlist_2.clicked.connect(partial(mainGuiHandle.getContainerInfo, self.containerlisttable_2))
+        self.returncontlist_2.clicked.connect(partial(mainguihandle.getContainerInfo, self.containerlisttable_2))
         self.containerlisttable_2.clicked.connect(self.showContainerFromList)
         self.inputFileButton.clicked.connect(self.addInputFileToTempContainer)
         self.fileheader = ''
@@ -88,7 +88,7 @@ class NewContainerTab():
 
     def AddToTempContainer(self, fileType: str):
         self.inputFileButton.setEnabled(False)
-        fileInfoDialog = selectFileDialog(fileType, self.tempContainer.containerworkingfolder, self.mainGuiHandle.worldlist)
+        fileInfoDialog = selectFileDialog(fileType, self.tempContainer.containerworkingfolder, self.mainguihandle.worldlist)
         fileInfo = fileInfoDialog.getInputs()
         if fileInfo:
             self.tempContainer.addFileObject(fileInfo['fileheader'], fileInfo['ContainerFileInfo'], fileType)
@@ -107,7 +107,7 @@ class NewContainerTab():
             self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         else:
             refpath = os.path.join('ContainerMapWorkDir')
-            Container.downloadContainerInfo(refpath,self.mainGuiHandle.authtoken, BASE, containerId)
+            Container.downloadContainerInfo(refpath,self.mainguihandle.authtoken, BASE, containerId)
             self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         # self.tester.setText(self.selectedContainer.containerName)
         self.refContainerPlot.changeContainer(self.selectedContainer)
@@ -127,7 +127,7 @@ class NewContainerTab():
                                                   branch=branch,
                                                   rev='Rev' + str(self.selectedContainer.revnum))
 
-        self.curContainerPlot.createInputRect()
+        # self.curContainerPlot.createInputRect()
         self.curContainerPlot.plot()
         self.inputFileButton.setEnabled(False)
 
@@ -196,12 +196,12 @@ class NewContainerTab():
             if commited:
                 containerName=self.containerName_lineEdit.text()
                 commitmessage= self.messageText.toPlainText()
-                success = self.tempContainer.CommitNewContainer(containerName,commitmessage,self.mainGuiHandle.authtoken,BASE)
+                success = self.tempContainer.CommitNewContainer(containerName,commitmessage,self.mainguihandle.authtoken,BASE)
                 if success:
                     self.setTab(False)
                     containeryaml = os.path.join(self.tempContainer.containerworkingfolder, 'containerstate.yaml')
-                    self.mainGuiHandle.maincontainertab.readcontainer(containeryaml)
-                    self.mainGuiHandle.tabWidget.setCurrentIndex(self.mainGuiHandle.maincontainertab.index)
+                    self.mainguihandle.maincontainertab.readcontainer(containeryaml)
+                    self.mainguihandle.tabWidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
                     self.mainguihandle.maptab.updateContainerMap()
                 else:
                     print('Commit failed')

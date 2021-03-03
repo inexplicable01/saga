@@ -3,8 +3,8 @@ import os
 import requests
 from Config import BASE
 import yaml
-from Frame.FileObjects import FileTrack
-from Frame.Connection import FileConnection, ConnectionTypes
+from SagaApp.FileObjects import FileTrack
+from SagaApp.Connection import FileConnection, ConnectionTypes
 import time
 import json
 from PyQt5.QtWidgets import *
@@ -152,7 +152,7 @@ class Frame:
         branch = 'Main'
         fullpath = fileinfo['FilePath']
         [path, file_name] = os.path.split(fullpath)
-        conn = FileConnection(fileinfo['ContainerDestination'],
+        conn = FileConnection([],
                               connectionType=ConnectionTypes.Output,
                               branch=branch)
         if os.path.exists(fileinfo['FilePath']):
@@ -226,7 +226,6 @@ class Frame:
         changes = {}
         refframefileheaders = list(refframe.filestrack.keys())
         for fileheader in filestomonitor.keys():
-            refframefileheaders.remove(fileheader)
             if fileheader not in refframe.filestrack.keys() and fileheader not in self.filestrack.keys():
                 # check if fileheader is in neither refframe or current frame,
                 raise('somehow Container needs to track ' + fileheader + 'but its not in ref frame or current frame')
@@ -235,7 +234,7 @@ class Frame:
                 # check if fileheader is in the refframe, If not in frame, that means user just added a new fileheader
                 changes[fileheader]= {'reason': changenewfile}
                 continue
-
+            refframefileheaders.remove(fileheader)
             path = self.localfilepath + '/' + self.filestrack[fileheader].file_name
             fileb = open(path, 'rb')
             self.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
