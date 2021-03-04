@@ -7,10 +7,10 @@ from Graphics.QAbstract.ContainerListModel import ContainerListModel
 from Graphics.ContainerMap import ContainerMap
 from Graphics.DetailedMap import DetailedMap
 import yaml
-from Frame.FrameStruct import Frame
-from Frame.Container import Container
-from Frame.FileObjects import FileTrack
-from Frame.commit import commit
+from SagaApp.FrameStruct import Frame
+from SagaApp.Container import Container
+from SagaApp.FileObjects import FileTrack
+from SagaApp.commit import commit
 import os
 import sys
 import requests
@@ -54,12 +54,6 @@ class InputDialog(QDialog):
         self.email.setText('usercemail@gmail.com')
         self.password.setText('passwordC')
 
-        # self.third = QLineEdit(self)
-        # self.fourth = QLineEdit(self)
-        # self.signinBttn = QPushButton('Sign In',self)
-        # self.signupBttn = QPushButton('Sign Up', self)
-        # self.cancelBttn = QPushButton('Cancel',self)
-        # self.cancelBttn.setText()
         buttonBox = QDialogButtonBox(self)
         signinbttn = buttonBox.addButton('Sign In', QDialogButtonBox.ActionRole)
         genbttn = buttonBox.addButton('Generate new User', QDialogButtonBox.ActionRole)
@@ -148,7 +142,7 @@ def find_Local_Container(MainGuiHandle,maincontainertab):
 class newContainerDialog(QDialog):
     def __init__(self, path):
         super().__init__()
-        uic.loadUi("Graphics/newContainer.ui", self)
+        uic.loadUi("Graphics/UI/newContainer.ui", self)
         self.containerpathlbl.setText(path)
         self.dir=''
         self.openDirButton.clicked.connect(self.openDirectory)

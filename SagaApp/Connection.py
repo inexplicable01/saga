@@ -42,7 +42,13 @@ class FileConnection:
     def __repr__(self):
         str=''
         # print('FileHeader:   '+ self.FileHeader)
-        str +='\n\t\tFileConnection:  ' + self.refContainerId + '\n'
+        if type(self.refContainerId) is list:
+            strref = ''
+            for refid in self.refContainerId:
+                strref=strref + refid + ' '
+            str += '\n\t\tFileConnection:  ' + strref +  '\n'
+        else:
+            str +='\n\t\tFileConnection:  ' + self.refContainerId + '\n'
         str += '\t\tconnectionType:   ' + self.connectionType.name + '\n'
         str += '\t\tbranch:   ' + self.branch + '\n'
         if self.Rev:

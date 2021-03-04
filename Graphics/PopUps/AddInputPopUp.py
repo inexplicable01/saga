@@ -3,10 +3,10 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import yaml
-from Frame.FrameStruct import Frame
-from Frame.Container import Container
+from SagaApp.FrameStruct import Frame
+from SagaApp.Container import Container
 from Graphics.ContainerPlot import ContainerPlot
-from Frame.FileObjects import FileTrack
+from SagaApp.FileObjects import FileTrack
 from Config import typeInput,typeRequired,typeOutput
 import os
 import sys
@@ -30,7 +30,6 @@ class AddInputPopUp(QDialog):
         self.fileheader = None
         self.type = None
         self.curContainer = None
-
 
     def coolerRectangleFeedback(self, type, view, fileheader, curContainer:Container):
         self.fileheader = fileheader

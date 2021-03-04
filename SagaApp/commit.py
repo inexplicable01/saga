@@ -1,4 +1,4 @@
-from Frame.FrameStruct import Frame
+from SagaApp.FrameStruct import Frame
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import gridfs
@@ -30,7 +30,7 @@ def commit(curframe : Frame,largestRev):
     for ContainerObjName, filetrackobj in curframe.filestrack.items():
         fileb = open(os.path.join(filetrackobj.localFilePath, filetrackobj.file_name), 'rb')
         # Should file be committed?
-        commit_file, md5 =  CheckCommit(filetrackobj,fileb,frameRef)    # a function with filetrackobj and look for it in reference Frame Instance.
+        commit_file, md5 =  CheckCommit(filetrackobj,fileb,frameRef)    # a function with filetrackobj and look for it in reference SagaApp Instance.
         if commit_file:
             # new file needs to be committed as the new local file is not the same as previous md5
             storageinfo = fs.put(fileb,
