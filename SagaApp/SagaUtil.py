@@ -30,6 +30,6 @@ def FrameNumInBranch(path, revnum):
         # if none
         latestrev, revnum = latestFrameInBranch(path)
         if revnum==0:
-            warnings.warn("Can't find SagaApp in Container", Warning)
+            warnings.warn("Can't find frame in Container", Warning)
         return os.path.join(path, 'Rev' + str(revnum) + ".yaml"), revnum
 

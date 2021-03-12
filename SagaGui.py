@@ -89,6 +89,8 @@ class UI(QMainWindow):
     def getContainerInfo(self, listtable):
         response = requests.get(BASE + 'CONTAINERS/List')
         containerinfolist = json.loads(response.headers['containerinfolist'])
+        if not containerinfolist:
+            containerinfolist= {'empty': {'ContainerDescription': 'empty', 'branches': [{'name': 'Empty', 'revcount': 0}]}}
         listtable.setModel(ContainerListModel(containerinfolist))
 
     def action_enterEvent(self, event):
