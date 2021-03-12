@@ -10,7 +10,6 @@ import yaml
 from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
 from SagaApp.FileObjects import FileTrack
-from SagaApp.commit import commit
 import os
 import sys
 import requests

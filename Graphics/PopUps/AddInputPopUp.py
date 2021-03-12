@@ -59,7 +59,7 @@ class AddInputPopUp(QDialog):
             self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         # self.tester.setText(self.selectedContainer.containerName)
         self.refContainerPlot.changeContainer(self.selectedContainer)
-        self.refContainerPlot.plot()
+        self.refContainerPlot.plot({})
 
     def getInputs(self):
         print('working')

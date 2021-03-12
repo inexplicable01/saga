@@ -8,7 +8,7 @@ from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
 from SagaApp.FileObjects import FileTrack
 from Config import typeInput,typeRequired,typeOutput
-from SagaApp.commit import commit
+
 import os
 from shutil import copyfile
 

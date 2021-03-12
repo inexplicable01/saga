@@ -62,6 +62,7 @@ class NewContainerTab():
         self.RequiredButton.clicked.connect(partial(self.AddToTempContainer, 'Required'))
         self.outputFileButton.clicked.connect(partial(self.AddToTempContainer, 'Output'))
         AddIndexToView(self.indexView2)
+        self.changes = {}
 
     def setTab(self, tabon):
         self.GuiTab.setEnabled(tabon)
@@ -96,7 +97,7 @@ class NewContainerTab():
                 self.tempContainer.workingFrame.addFileTotrack(fileInfo['FilePath'], fileInfo['fileheader'], fileType)
             if fileType=='Output':
                 self.tempContainer.workingFrame.addOutputFileTotrack(fileInfo, fileType)
-            self.curContainerPlot.plot()
+            self.curContainerPlot.plot(self.changes)
 
     def showContainerFromList(self, containerList):
         rownumber = containerList.row()
@@ -111,7 +112,7 @@ class NewContainerTab():
             self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         # self.tester.setText(self.selectedContainer.containerName)
         self.refContainerPlot.changeContainer(self.selectedContainer)
-        self.refContainerPlot.plot()
+        self.refContainerPlot.plot(self.changes)
 
 
     def addInputFileToTempContainer(self):
@@ -128,7 +129,7 @@ class NewContainerTab():
                                                   rev='Rev' + str(self.selectedContainer.revnum))
 
         # self.curContainerPlot.createInputRect()
-        self.curContainerPlot.plot()
+        self.curContainerPlot.plot(self.changes)
         self.inputFileButton.setEnabled(False)
 
 
@@ -165,7 +166,7 @@ class NewContainerTab():
             self.tempContainer.workingFrame.addFileTotrack(editFileInfo['FilePath'], editFileInfo['FileObjHeader'], self.curfiletype)
             if self.curfileheader != editFileInfo['FileObjHeader']:
                 self.curContainerPlot.editRect(self.curfileheader, editFileInfo['FileObjHeader'])
-                self.curContainerPlot.plot()
+                self.curContainerPlot.plot(self.changes)
 
 
     def removeFileInfo(self):
