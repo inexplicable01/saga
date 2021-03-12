@@ -5,7 +5,7 @@ from PyQt5.QtCore import *
 from Graphics.QAbstract.HistoryListModel import HistoryListModel
 from Graphics.Dialogs import alteredinputFileDialog
 from Graphics.ContainerPlot import ContainerPlot
-from Graphics.Dialogs import ErrorMessage, inputFileDialog, removeFileDialog, selectFileDialog, commitDialog,alteredinputFileDialog
+from Graphics.Dialogs import ganttChartFiles, ErrorMessage, inputFileDialog, removeFileDialog, selectFileDialog, commitDialog,alteredinputFileDialog
 from functools import partial
 import requests
 import os
@@ -41,6 +41,7 @@ class MainContainerTab():
         self.selectedfileheader = mainguihandle.selectedfileheader
         self.editFileButton_2 = mainguihandle.editFileButton_2
         self.removeFileButton_2 = mainguihandle.removeFileButton_2
+        self.fileHistoryBttn = mainguihandle.fileHistoryBttn
 
         self.index=1
 
@@ -54,6 +55,7 @@ class MainContainerTab():
         self.workingdir=''
         # self.openContainerBttn.setText('Open Container')
         # self.openContainerBttn.clicked.connect(self.readcontainer)
+        self.fileHistoryBttn.clicked.connect(self.fileGanttChart)
         self.RequiredButton_2.clicked.connect(partial(self.AddToTempContainer, 'Required'))
         self.outputFileButton_2.clicked.connect(partial(self.AddToTempContainer, 'Output'))
         self.removeFileButton_2.clicked.connect(self.removeFileInfo)
@@ -76,6 +78,9 @@ class MainContainerTab():
         self.curfileheader=None
         AddIndexToView(self.indexView1)
 
+    def fileGanttChart(self):
+        self.ganttChart = ganttChartFiles()
+        self.ganttChart.showChart()
 
     def resetrequest(self):
         response = requests.get(BASE + 'RESET')

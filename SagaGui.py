@@ -10,7 +10,7 @@ from Graphics.TrayActions import SignIn, SignOut, newContainer, find_Local_Conta
 from Graphics.NewContainerTab import NewContainerTab
 from Graphics.MainContainerTab import MainContainerTab
 from Graphics.MapTab import MapTab
-
+# from Graphics.Dialogs import errorPopUp
 from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
 
@@ -127,6 +127,7 @@ def excepthook(exc_type, exc_value, exc_tb):
     print("error catched!:")
     print("error message:\n", tb)
     logging.error("Error:", exc_info=(exc_type, exc_value, exc_tb))
+    errorDialog.showMessage("ERROR MESSAGE:" + tb)
     # QtWidgets.QApplication.quit()
     # or QtWidgets.QApplication.exit(0)
 
@@ -134,4 +135,6 @@ def excepthook(exc_type, exc_value, exc_tb):
 sys.excepthook = excepthook
 app = QApplication([])
 window = UI()
+errorDialog = QtWidgets.QErrorMessage()
+
 sys.exit(app.exec_())

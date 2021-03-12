@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1338</width>
+    <width>1315</width>
     <height>766</height>
    </rect>
   </property>
@@ -125,6 +125,27 @@
       </property>
       <property name="text">
        <string>Click on Container to Select</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="ganttChartBttn">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>610</y>
+        <width>421</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>20</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Project Gantt Chart</string>
       </property>
      </widget>
     </widget>
@@ -407,6 +428,19 @@
        <string/>
       </property>
      </widget>
+     <widget class="QPushButton" name="fileHistoryBttn">
+      <property name="geometry">
+       <rect>
+        <x>990</x>
+        <y>660</y>
+        <width>231</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>File History</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="NewContainerTab">
      <attribute name="title">
@@ -662,8 +696,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1338</width>
-     <height>26</height>
+     <width>1315</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProfile">
