@@ -4,6 +4,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 # from flask_user import login_required, UserManager, UserMixin
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
+
 # from Graphics.ContainerMap import ContainerMap
 # from Graphics.DetailedMap import DetailedMap
 # import yaml
@@ -11,6 +12,7 @@ from Graphics.QAbstract.ContainerListModel import ContainerListModel
 # from SagaApp.Container import Container
 # from SagaApp.FileObjects import FileTrack
 # from SagaApp.commit import commit
+
 import os
 import sys
 import requests

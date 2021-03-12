@@ -1,6 +1,6 @@
 from PyQt5.QtCore import *
-# BASE = "http://fatpanda1985.pythonanywhere.com/"
-BASE = "http://127.0.0.1:5000/"
+BASE = "http://fatpanda1985.pythonanywhere.com/"
+# BASE = "http://127.0.0.1:5000/"
 WorldMapDir = 'ContainerMapWorkDir'
 
 # comment
@@ -10,7 +10,7 @@ typeRequired='Required'
 
 changenewfile = 'New File Header Added'
 changemd5 = 'MD5 Changed'
-changedate = 'Date Change Only'
+changedate = 'MD5 Changed'
 changeremoved = 'File Header Removed'
 
 colorscheme = {typeInput: Qt.yellow, typeOutput: Qt.green, typeRequired: Qt.blue, changedate: Qt.cyan,\

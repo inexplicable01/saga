@@ -76,6 +76,8 @@ class MainContainerTab():
         self.commithisttable.clicked.connect(self.alterRevertButton)
         self.alterfiletracks=[]
         self.curfileheader=None
+        self.changes = {}
+
         AddIndexToView(self.indexView1)
 
     def fileGanttChart(self):
@@ -129,19 +131,19 @@ class MainContainerTab():
                                                   refContainerId=upstreamcontainer.containerId,
                                                   branch=branch,
                                                   rev='Rev' + str(upstreamcontainer.revnum))
-            self.maincontainerplot.plot()
+            self.maincontainerplot.plot(self.changes)
 
     def checkUpstream(self):
         self.changes = self.compareToUpstream(self.mainguihandle.authtoken)
-        if self.changes:
-            changesarr = [change['fileheader'] for change in self.changes]
-            for fileheader in self.mainContainer.FileHeaders.keys():
-                if fileheader in changesarr:
-                    self.maincontainerplot.RectBox[fileheader].setBrush(QBrush(Qt.red))
-                else:
-                    self.maincontainerplot.RectBox[fileheader].setBrush(QBrush(Qt.white))
+        if len(self.changes.keys())>0:
+            # changesarr = [change['fileheader'] for change in self.changes]
+            # for fileheader in self.mainContainer.FileHeaders.keys():
+            #     if fileheader in changesarr:
+            #         self.maincontainerplot.RectBox[fileheader].setBrush(QBrush(Qt.red))
+            #     else:
+            #         self.maincontainerplot.RectBox[fileheader].setBrush(QBrush(Qt.white))
             chgstr = ''
-            for change in self.changes:
+            for change in self.changes.keys():
                 chgstr = chgstr + change['fileheader'] + '\t' + change['reason'] + '\n'
             self.frametextBrowser.setText(chgstr)
             self.downloadUpstreamBttn.setEnabled(True)
@@ -151,50 +153,51 @@ class MainContainerTab():
     def compareToUpstream(self, authToken):
         workingFrame = self.mainContainer.workingFrame
         refframe = Frame(workingFrame.refframefn, None, workingFrame.localfilepath)
-        changes = []
-        for fileheader in self.mainContainer.filestomonitor().keys():
-            if workingFrame.filestrack[fileheader].connection is not None:
-                if str(workingFrame.filestrack[fileheader].connection.connectionType) == 'ConnectionTypes.Input':
-                    if workingFrame.filestrack[fileheader].connection.refContainerId is not workingFrame.parentcontainerid:
-                        containerID = workingFrame.filestrack[fileheader].connection.refContainerId
-                        if not os.path.exists(workingFrame.localfilepath + '/inputContainers/'):
-                            os.mkdir(workingFrame.localfilepath + '/inputContainers/')
-                        inputContainerPath = workingFrame.localfilepath + '/inputContainers/' + containerID
-                        dlcontainyaml = Container.downloadContainerInfo(inputContainerPath, authToken, BASE,
-                                                                        containerID)
-                        print(dlcontainyaml)
-                        dlcontainer = Container.LoadContainerFromYaml(containerfn=dlcontainyaml)
-                        dlcontainer.downloadbranch('Main', BASE, authToken, inputContainerPath)
-                        framePath = os.path.join(inputContainerPath + '/Main/' + 'Rev' + str(dlcontainer.revnum) + '.yaml')
-                        inputFrame = Frame(framePath)
-                        fileCheckPath = os.path.join(workingFrame.localfilepath + '/' + workingFrame.filestrack[fileheader].file_name)
-                        fileb = open(fileCheckPath, 'rb')
-                        workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
-                        # calculate md5 of file, if md5 has changed, update md5
-                        if workingFrame.filestrack[fileheader].md5 != inputFrame.filestrack[fileheader].md5:
-                            changes.append({'fileheader': fileheader, 'reason': 'MD5 Updated Upstream', 'revision': inputFrame.filestrack[fileheader].connection.Rev, 'inputframe': inputFrame})
+        changes = {}
+        # changes = []
+        # for fileheader in self.mainContainer.filestomonitor().keys():
+        #     if workingFrame.filestrack[fileheader].connection is not None:
+        #         if str(workingFrame.filestrack[fileheader].connection.connectionType) == 'ConnectionTypes.Input':
+        #             if workingFrame.filestrack[fileheader].connection.refContainerId is not workingFrame.parentcontainerid:
+        #                 containerID = workingFrame.filestrack[fileheader].connection.refContainerId
+        #                 if not os.path.exists(workingFrame.localfilepath + '/inputContainers/'):
+        #                     os.mkdir(workingFrame.localfilepath + '/inputContainers/')
+        #                 inputContainerPath = workingFrame.localfilepath + '/inputContainers/' + containerID
+        #                 dlcontainyaml = Container.downloadContainerInfo(inputContainerPath, authToken, BASE,
+        #                                                                 containerID)
+        #                 print(dlcontainyaml)
+        #                 dlcontainer = Container.LoadContainerFromYaml(containerfn=dlcontainyaml)
+        #                 dlcontainer.downloadbranch('Main', BASE, authToken, inputContainerPath)
+        #                 framePath = os.path.join(inputContainerPath + '/Main/' + 'Rev' + str(dlcontainer.revnum) + '.yaml')
+        #                 inputFrame = Frame(framePath)
+        #                 fileCheckPath = os.path.join(workingFrame.localfilepath + '/' + workingFrame.filestrack[fileheader].file_name)
+        #                 fileb = open(fileCheckPath, 'rb')
+        #                 workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
+        #                 # calculate md5 of file, if md5 has changed, update md5
+        #                 if workingFrame.filestrack[fileheader].md5 != inputFrame.filestrack[fileheader].md5:
+        #                     changes.append({'fileheader': fileheader, 'reason': 'MD5 Updated Upstream', 'revision': inputFrame.filestrack[fileheader].connection.Rev, 'inputframe': inputFrame})
         return changes
 
     def checkdelta(self):
         allowCommit = False
         fixInput = False
         # allowCommit, changes, fixInput , self.alterfiletracks= self.mainContainer.checkFrame(self.mainContainer.workingFrame)
-        changes, self.alterfiletracks = self.mainContainer.workingFrame.compareToRefFrame(self.mainContainer.filestomonitor())
-        if len(changes) > 0:
+        self.changes, self.alterfiletracks = self.mainContainer.workingFrame.compareToRefFrame(self.mainContainer.filestomonitor())
+        if len(self.changes) > 0:
             allowCommit = True
 
         self.commitBttn.setEnabled(allowCommit)
         self.commitmsgEdit.setDisabled(not allowCommit)
         # refresh plot
-        self.maincontainerplot.plot()
+        self.maincontainerplot.plot(self.changes)
 
-        for fileheader in self.mainContainer.FileHeaders.keys():
-            if fileheader in changes.keys():
-                color = colorscheme[changes[fileheader]['reason']]
-                self.maincontainerplot.RectBox[fileheader].setPen(QPen(color, 3))
+        # for fileheader in self.mainContainer.FileHeaders.keys():
+        #     if fileheader in changes.keys():
+        #         color = colorscheme[changes[fileheader]['reason']]
+        #         self.maincontainerplot.RectBox[fileheader].setPen(QPen(color, 3))
 
         chgstr = ''
-        for fileheader, change in changes.items():
+        for fileheader, change in self.changes.items():
             chgstr = chgstr + fileheader + '\t' + change['reason'] + '\n'
         self.frametextBrowser.setText(chgstr)
 
@@ -245,7 +248,7 @@ class MainContainerTab():
         self.commithisttable.setColumnWidth(1, self.commithisttable.width() * 0.6)
         self.commithisttable.setColumnWidth(2, self.commithisttable.width() * 0.29)
         self.maincontainerplot=ContainerPlot(self, self.maincontainerview, container=self.mainContainer)
-        self.maincontainerplot.plot()
+        self.maincontainerplot.plot(self.changes)
         # if self.menuContainer.isEnabled() and self.mainguihandle.authtoken:
         #     self.tabWidget.setEnabled(True)
         self.setTab(True)
@@ -272,7 +275,7 @@ class MainContainerTab():
                 self.mainContainer.workingFrame.addFileTotrack(fileInfo['FilePath'], fileInfo['fileheader'], fileType)
             if fileType=='Output':
                 self.mainContainer.workingFrame.addOutputFileTotrack(fileInfo, fileType)
-            self.maincontainerplot.plot()
+            self.maincontainerplot.plot(self.changes)
 
     def removeFileInfo(self):
         # remove fileheader from current main container
@@ -286,7 +289,7 @@ class MainContainerTab():
                 del self.mainContainer.workingFrame.filestrack[self.curfileheader]
             if self.curfileheader in self.mainContainer.FileHeaders.keys():
                 del self.mainContainer.FileHeaders[self.curfileheader]
-            self.maincontainerplot.plot()
+            self.maincontainerplot.plot(self.changes)
             self.removeFileButton_2.setEnabled(False)
 
     def alterRevertButton(self,histtable):

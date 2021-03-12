@@ -8,7 +8,9 @@ import yaml
 from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
 from SagaApp.FileObjects import FileTrack
-from SagaApp.commit import commit
+from Config import typeInput,typeOutput,typeRequired, colorscheme
+
+
 import os
 import sys
 import requests
@@ -17,6 +19,8 @@ import copy
 
 rectheight = 40
 rectwidth = 40
+# fileboxHeight = 50
+# fileboxWidth = 50
 
 class ContainerMap():
     def __init__(self, activeContainers, qtview, selecteddetail,detailedmap):
@@ -95,8 +99,9 @@ class ContainerMap():
         gridsize = math.ceil(math.sqrt(len(self.activeContainers.values())))
         for container in self.activeContainers.values():
             # print(container.containerName)
-            text = self.containerscene.addText(container.containerName)
-            self.activeContainersObj[container.containerId]=containerRect(idx,idy, text, self.drawline, self.detailedmap,self.selecteddetail)
+            # text = self.containerscene.addText(container.containerName)
+            self.activeContainersObj[container.containerId]=containerRect(idx,idy, container.containerName, \
+                                                                          self.drawline, self.detailedmap,self.selecteddetail)
             self.containerscene.addItem(self.activeContainersObj[container.containerId])
             idx +=1
             if idx>gridsize:
@@ -106,7 +111,7 @@ class ContainerMap():
 
 
 class containerRect(QGraphicsRectItem):
-    def __init__(self, idx,idy,text,drawline, detailedmap,selecteddetail,rectheight=rectheight, rectwidth=rectwidth):
+    def __init__(self, idx,idy,containerName,drawline, detailedmap,selecteddetail,rectheight=rectheight, rectwidth=rectwidth):
         super().__init__(0, 0, rectheight, rectwidth)
         self.rectheight = rectheight
         self.rectwidth = rectwidth
@@ -114,8 +119,8 @@ class containerRect(QGraphicsRectItem):
         self.setPos(self.QPos)
         self.setBrush(QBrush(Qt.transparent))
         self.setPen(QPen(Qt.black))
-        self.text = text
-        self.text.setPos(self.QPos)
+        self.containerName = containerName
+        # self.text.setPos(self.QPos)
         self.drawline=drawline
         self.detailedmap = detailedmap
         self.selecteddetail=selecteddetail
@@ -127,6 +132,29 @@ class containerRect(QGraphicsRectItem):
     def mousePressEvent(self,event):
         print('pressed')
 
+    def boundingRect(self):
+        return self.rect()
+
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget = None):
+        rect = self.boundingRect()
+        additionalwidth = 100
+        textRect = QRectF(rect.topLeft().x() - additionalwidth / 2, rect.topLeft().y() + rectheight,
+                          rectwidth+ additionalwidth, 20)
+        picRect = QRectF(rect.topLeft().x(), rect.topLeft().y(), rect.width() , rect.height() )
+        # picRect.moveCenter(rect.center())
+
+        # Draw type Background color
+        painter.setPen(QPen(QBrush(Qt.black), 4))
+        painter.setBrush(QBrush(Qt.black))
+        painter.drawRect(rect)
+        # Draw text
+        painter.setPen(QPen(QBrush(Qt.black), 6))
+        painter.drawText(textRect, Qt.AlignCenter, self.containerName)
+        # Draw Picture
+        qpic = QImage('Graphics/FileIcons/Container.png')
+        painter.drawImage(picRect, qpic)
+
+
     def mouseMoveEvent(self,event):
         orig_cursor_position = event.lastScenePos()
         updated_cursor_position = event.scenePos()
@@ -135,12 +163,13 @@ class containerRect(QGraphicsRectItem):
         updated_cursor_y = updated_cursor_position.y() - orig_cursor_position.y() + orig_position.y()
         self.QPos = QPointF(updated_cursor_x, updated_cursor_y)
         self.setPos(self.QPos)
-        self.text.setPos(self.QPos)
+        self.update()
+        # self.text.setPos(self.QPos)
 
     def mouseReleaseEvent(self,event):
         self.drawline()
-        self.selecteddetail['selectedobjname']=self.text.toPlainText()
-        self.detailedmap.selectedobj(self.text.toPlainText())
+        self.selecteddetail['selectedobjname']=self.containerName
+        self.detailedmap.selectedobj(self.containerName)
 
 class containerLine(QGraphicsLineItem):
     def __init__(self, Q1,Q2,lineid,detailedmap):
@@ -149,6 +178,8 @@ class containerLine(QGraphicsLineItem):
         self.setPen(QPen(QBrush(Qt.green), 6))
         self.lineid=lineid
         self.detailedmap=detailedmap
+
+
 
         # self.setFlag(QGraphicsItem.ItemIsMovable, True)
     def mousePressEvent(self,event):
