@@ -71,12 +71,12 @@ class UI(QMainWindow):
 
 
     def getWorldContainers(self):
-        response = requests.get(BASE + 'CONTAINERS/List')
+        response = requests.get(BASE + 'CONTAINERS/List',headers={"Authorization": 'Bearer ' + self.authtoken['auth_token']})
         containerinfolist = json.loads(response.headers['containerinfolist'])
         if not os.path.exists(os.path.join(self.guiworkingdir,'ContainerMapWorkDir')):
             os.mkdir(os.path.join(self.guiworkingdir,'ContainerMapWorkDir'))
         for containerID in containerinfolist.keys():
-            response = requests.get(BASE + 'CONTAINERS/containerID', data={'containerID': containerID})
+            response = requests.get(BASE + 'CONTAINERS/containerID', data={'containerID': containerID}, headers={"Authorization": 'Bearer ' + self.authtoken['auth_token']})
             if not os.path.exists(os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID)):
                 os.mkdir(os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID))
             open(os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']), 'wb').write(response.content)
@@ -87,7 +87,7 @@ class UI(QMainWindow):
 
 
     def getContainerInfo(self, listtable):
-        response = requests.get(BASE + 'CONTAINERS/List')
+        response = requests.get(BASE + 'CONTAINERS/List',headers={"Authorization": 'Bearer ' + self.authtoken['auth_token']})
         containerinfolist = json.loads(response.headers['containerinfolist'])
         if not containerinfolist:
             containerinfolist= {'empty': {'ContainerDescription': 'empty', 'branches': [{'name': 'Empty', 'revcount': 0}]}}
