@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>833</width>
-    <height>331</height>
+    <width>934</width>
+    <height>371</height>
    </rect>
   </property>
   <property name="font">
@@ -23,8 +23,8 @@
     <rect>
      <x>20</x>
      <y>60</y>
-     <width>781</width>
-     <height>151</height>
+     <width>881</width>
+     <height>191</height>
     </rect>
    </property>
    <property name="text">
@@ -41,7 +41,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>240</y>
+     <y>280</y>
      <width>291</width>
      <height>51</height>
     </rect>
@@ -53,8 +53,8 @@
   <widget class="QPushButton" name="actualButton">
    <property name="geometry">
     <rect>
-     <x>510</x>
-     <y>240</y>
+     <x>580</x>
+     <y>290</y>
      <width>291</width>
      <height>51</height>
     </rect>

@@ -13,7 +13,7 @@ def AddIndexToView(view):
     text.setPos(-indexwidth+20, indexheight)
     scene.addRect(0, indexheight + offset, indexwidth * 0.8, indexheight , QPen(Qt.black), QBrush(Qt.yellow))
 
-    text = scene.addText('Required')
+    text = scene.addText('Working')
     text.setPos(-indexwidth+20, indexheight * 2)
     scene.addRect(0, indexheight * 2 + offset, indexwidth * 0.8, indexheight , QPen(Qt.black), QBrush(Qt.blue))
 

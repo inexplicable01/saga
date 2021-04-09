@@ -39,7 +39,7 @@ class MainContainerTab():
         self.RequiredButton_2 = mainguihandle.RequiredButton_2
         self.outputFileButton_2 = mainguihandle.outputFileButton_2
         self.selectedfileheader = mainguihandle.selectedfileheader
-        self.editFileButton_2 = mainguihandle.editFileButton_2
+        # self.editFileButton_2 = mainguihandle.editFileButton_2
         self.removeFileButton_2 = mainguihandle.removeFileButton_2
         self.fileHistoryBttn = mainguihandle.fileHistoryBttn
 
@@ -69,7 +69,7 @@ class MainContainerTab():
         self.sceneObj = {}
         self.revertbttn.clicked.connect(self.revert)
         self.revertbttn.setEnabled(False)
-        self.editFileButton_2.setEnabled(False)
+        # self.editFileButton_2.setEnabled(False)
         self.removeFileButton_2.setEnabled(False)
         self.commitmsgEdit.setDisabled(True)
         ###########History Info####
@@ -103,20 +103,22 @@ class MainContainerTab():
         # self.commithisttable.setModel(HistoryListModel(self.mainContainer.commithistory()))
 
     def downloadUpstream(self):
-        fileheaderArr = [change['fileheader'] for change in self.changes]
-        revArr = [change['revision'] for change in self.changes]
+        fileheaderArr = [fileheader for fileheader,change in self.changes.items()]
+        revArr = [change['revision'] for fileheader,change in self.changes.items()]
         chgstr = ''
-        for count, fileheader in enumerate(fileheaderArr):
-            self.changes[count]['inputframe'].downloadInputFile(fileheader, self.mainContainer.workingFrame.localfilepath)
+        for fileheader, change in self.changes.items():
+            self.changes[fileheader]['inputframe'].downloadInputFile(fileheader, self.mainContainer.workingFrame.localfilepath)
             fileEditPath = os.path.join(
                 self.mainContainer.workingFrame.localfilepath + '/' + self.mainContainer.workingFrame.filestrack[fileheader].file_name)
             fileb = open(fileEditPath, 'rb')
             self.mainContainer.workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
-            self.mainContainer.workingFrame.filestrack[fileheader].connection.Rev = revArr[count]
-            self.sceneObj[fileheader].setPen(QPen(Qt.black, 1))
+            self.mainContainer.workingFrame.filestrack[fileheader].connection.Rev = change['revision']
             chgstr = chgstr + fileheader + '\t' + 'File Updated From Upstream' + '\n'
+        self.changes = self.compareToUpstream(self.mainguihandle.authtoken)
+        self.mainContainer.updatedInputs = True
         self.frametextBrowser.setText(chgstr)
         self.downloadUpstreamBttn.setDisabled(True)
+        self.maincontainerplot.plot(self.changes)
 
     def AddInputFile(self):
         addinputwindow = AddInputPopUp(mainguihandle=self.mainguihandle)
@@ -136,17 +138,12 @@ class MainContainerTab():
     def checkUpstream(self):
         self.changes = self.compareToUpstream(self.mainguihandle.authtoken)
         if len(self.changes.keys())>0:
-            # changesarr = [change['fileheader'] for change in self.changes]
-            # for fileheader in self.mainContainer.FileHeaders.keys():
-            #     if fileheader in changesarr:
-            #         self.maincontainerplot.RectBox[fileheader].setBrush(QBrush(Qt.red))
-            #     else:
-            #         self.maincontainerplot.RectBox[fileheader].setBrush(QBrush(Qt.white))
             chgstr = ''
-            for change in self.changes.keys():
-                chgstr = chgstr + change['fileheader'] + '\t' + change['reason'] + '\n'
+            for fileheader, change in self.changes.items():
+                chgstr = chgstr + fileheader + '\t' + change['reason'] + '\n'
             self.frametextBrowser.setText(chgstr)
             self.downloadUpstreamBttn.setEnabled(True)
+            self.maincontainerplot.plot(self.changes)
         else:
             print('No Upstream Updates')
 
@@ -154,28 +151,26 @@ class MainContainerTab():
         workingFrame = self.mainContainer.workingFrame
         refframe = Frame(workingFrame.refframefn, None, workingFrame.localfilepath)
         changes = {}
-        # changes = []
-        # for fileheader in self.mainContainer.filestomonitor().keys():
-        #     if workingFrame.filestrack[fileheader].connection is not None:
-        #         if str(workingFrame.filestrack[fileheader].connection.connectionType) == 'ConnectionTypes.Input':
-        #             if workingFrame.filestrack[fileheader].connection.refContainerId is not workingFrame.parentcontainerid:
-        #                 containerID = workingFrame.filestrack[fileheader].connection.refContainerId
-        #                 if not os.path.exists(workingFrame.localfilepath + '/inputContainers/'):
-        #                     os.mkdir(workingFrame.localfilepath + '/inputContainers/')
-        #                 inputContainerPath = workingFrame.localfilepath + '/inputContainers/' + containerID
-        #                 dlcontainyaml = Container.downloadContainerInfo(inputContainerPath, authToken, BASE,
-        #                                                                 containerID)
-        #                 print(dlcontainyaml)
-        #                 dlcontainer = Container.LoadContainerFromYaml(containerfn=dlcontainyaml)
-        #                 dlcontainer.downloadbranch('Main', BASE, authToken, inputContainerPath)
-        #                 framePath = os.path.join(inputContainerPath + '/Main/' + 'Rev' + str(dlcontainer.revnum) + '.yaml')
-        #                 inputFrame = Frame(framePath)
-        #                 fileCheckPath = os.path.join(workingFrame.localfilepath + '/' + workingFrame.filestrack[fileheader].file_name)
-        #                 fileb = open(fileCheckPath, 'rb')
-        #                 workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
-        #                 # calculate md5 of file, if md5 has changed, update md5
-        #                 if workingFrame.filestrack[fileheader].md5 != inputFrame.filestrack[fileheader].md5:
-        #                     changes.append({'fileheader': fileheader, 'reason': 'MD5 Updated Upstream', 'revision': inputFrame.filestrack[fileheader].connection.Rev, 'inputframe': inputFrame})
+        for fileheader in self.mainContainer.filestomonitor().keys():
+            if workingFrame.filestrack[fileheader].connection is not None:
+                if str(workingFrame.filestrack[fileheader].connection.connectionType) == 'ConnectionTypes.Input':
+                    if workingFrame.filestrack[fileheader].connection.refContainerId is not workingFrame.parentcontainerid:
+                        #Check to see if input file is internal to container, not referencing other containers
+                        containerID = workingFrame.filestrack[fileheader].connection.refContainerId
+                        inputContainerPath = os.path.join(self.mainguihandle.guiworkingdir, 'ContainerMapWorkDir')
+                        inputContainerPathID = os.path.join(self.mainguihandle.guiworkingdir, 'ContainerMapWorkDir', containerID)
+                        dlcontainyaml = Container.downloadContainerInfo(inputContainerPath, authToken, BASE,
+                                                                            containerID)
+                        dlcontainer = Container.LoadContainerFromYaml(containerfn=dlcontainyaml)
+                        dlcontainer.downloadbranch('Main', BASE, authToken, inputContainerPathID)
+                        framePath = os.path.join(inputContainerPathID + '/Main/' + 'Rev' + str(dlcontainer.revnum) + '.yaml')
+                        inputFrame = Frame(framePath)
+                        fileCheckPath = os.path.join(workingFrame.localfilepath + '/' + workingFrame.filestrack[fileheader].file_name)
+                        fileb = open(fileCheckPath, 'rb')
+                        workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
+                        # calculate md5 of file, if md5 has changed, update md5
+                        if workingFrame.filestrack[fileheader].md5 != inputFrame.filestrack[fileheader].md5:
+                            changes[fileheader] = {'reason': 'MD5 Updated Upstream', 'revision': inputFrame.filestrack[fileheader].connection.Rev, 'inputframe': inputFrame}
         return changes
 
     def checkdelta(self):
