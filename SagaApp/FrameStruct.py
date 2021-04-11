@@ -9,9 +9,10 @@ import time
 import json
 from PyQt5.QtWidgets import *
 from PyQt5 import uic
-from PyQt5.QtGui import *
+from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtCore import *
 import requests
+from Graphics.Dialogs import downloadProgressBar
 from Config import BASE,changenewfile, changemd5,changedate , changeremoved
 
 blankFrame = {'parentcontainerid':"",'FrameName': "", 'FrameInstanceId': "",'commitMessage': "",'inlinks': "",'outlinks': "",'AttachedFiles': "", 'commitUTCdatetime': "",'filestrack': ""}
@@ -268,7 +269,18 @@ class Frame:
                                       'file_name': self.filestrack[fileheader].file_name})
         # Loops through the filestrack in curframe and request files listed in the frame
         fn = os.path.join(workingdir, response.headers['file_name'])
-        open(fn, 'wb').write(response.content)
+        self.progress = downloadProgressBar(response.headers['file_name'])
+        dataDownloaded = 0
+        self.progress.updateProgress(dataDownloaded)
+        with open(fn, 'wb') as f:
+            for data in response.iter_content(1024):
+                dataDownloaded += len(data)
+                f.write(data)
+                percentDone = 100 * dataDownloaded/len(response.content)
+                self.progress.updateProgress(percentDone)
+                QGuiApplication.processEvents()
+
+
         # saves the content into file.
         os.utime(fn, (self.filestrack[fileheader].lastEdited, self.filestrack[fileheader].lastEdited))
         return fn,self.filestrack[fileheader]

@@ -127,6 +127,27 @@
        <string>Click on Container to Select</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="ganttChartBttn">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>610</y>
+        <width>421</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>20</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Project Gantt Chart</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="ContainerTab">
      <attribute name="title">
@@ -405,6 +426,19 @@
       </property>
       <property name="text">
        <string/>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="fileHistoryBttn">
+      <property name="geometry">
+       <rect>
+        <x>990</x>
+        <y>660</y>
+        <width>231</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>File History</string>
       </property>
      </widget>
     </widget>
