@@ -16,6 +16,8 @@ from SagaApp.Container import Container
 from SagaApp.WorldMap import WorldMap
 from Graphics.GuiUtil import AddIndexToView
 from Graphics.PopUps.AddInputPopUp import AddInputPopUp
+import threading
+import time
 
 class MainContainerTab():
     def __init__(self,mainguihandle):
@@ -77,8 +79,46 @@ class MainContainerTab():
         self.alterfiletracks=[]
         self.curfileheader=None
         self.changes = {}
+        self.containerLoaded = False
 
         AddIndexToView(self.indexView1)
+        self.mainguihandle.tabWidget.currentChanged.connect(self.constantCheck)
+        # self.t = threading.Timer(1.0, self.checkingFileDelta)
+
+    def constantCheck(self):
+        if self.mainguihandle.tabWidget.currentIndex() == self.mainguihandle.tabWidget.indexOf(self.mainguihandle.ContainerTab):
+            # self.t.start()
+            self.checkingFileDelta()
+
+    def checkingFileDelta(self):
+        t = threading.Timer(1.0, self.checkingFileDelta)
+        t.start()
+        timerStart = time.process_time()
+        print("Is This Working??")
+
+        # if self.containerLoaded == True:
+        #     allowCommit = False
+        #     self.changes, self.alterfiletracks = self.mainContainer.workingFrame.compareToRefFrame(
+        #         self.mainContainer.filestomonitor())
+        #     if len(self.changes) > 0:
+        #         allowCommit = True
+        #
+        #         self.commitBttn.setEnabled(allowCommit)
+        #         self.commitmsgEdit.setDisabled(not allowCommit)
+        #         # refresh plot
+        #         self.maincontainerplot.plot(self.changes)
+        #
+        #         chgstr = ''
+        #         for fileheader, change in self.changes.items():
+        #             chgstr = chgstr + fileheader + '\t' + change['reason'] + '\n'
+        #         self.frametextBrowser.setText(chgstr)
+        #
+        # if self.mainguihandle.tabWidget.currentIndex() is not self.mainguihandle.tabWidget.indexOf(self.mainguihandle.ContainerTab):
+        #     t.cancel()
+        print("--- %s seconds ---" % (time.process_time() - timerStart))
+
+
+
 
     def fileGanttChart(self):
         self.ganttChart = ganttChartFiles()
@@ -247,6 +287,7 @@ class MainContainerTab():
         # if self.menuContainer.isEnabled() and self.mainguihandle.authtoken:
         #     self.tabWidget.setEnabled(True)
         self.setTab(True)
+        self.containerLoaded = True
 
     def coolerRectangleFeedback(self, type, view, fileheader , curContainer):
         self.curfileheader = fileheader

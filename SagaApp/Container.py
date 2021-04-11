@@ -203,9 +203,9 @@ class Container:
         }
         response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
         print(response.headers)
+        print(response.content)
         # request to FRAMES to get the latest frame from the branch as specified in currentbranch
         branch = response.headers['branch']
-        print(branch)
         # response also returned the name of the branch
         if not os.path.exists(os.path.join(refpath, containerId, branch)):
             os.mkdir(os.path.join(refpath, containerId,branch))
