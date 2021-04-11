@@ -214,7 +214,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>checkDelta</string>
+       <string>Check Changes</string>
       </property>
      </widget>
      <widget class="QTextEdit" name="commitmsgEdit">

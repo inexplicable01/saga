@@ -132,6 +132,8 @@ class coolerRectangle(QGraphicsRectItem):
             qpic = QImage('Graphics/FileIcons/mp4icon.png')
         elif file_extension in ['.txt']:
             qpic = QImage('Graphics/FileIcons/txticon.png')
+        elif file_extension in ['.pdf']:
+            qpic = QImage('Graphics/FileIcons/pdficon.png')
         else:
             qpic= QImage('Graphics/FileIcons/genericfile.png')
         painter.drawImage(picRect, qpic)

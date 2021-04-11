@@ -102,7 +102,7 @@ class UI(QMainWindow):
             with open('token.txt') as json_file:
                 authtoken = json.load(json_file)
                 response = requests.get(
-                    BASE + '/auth/status',
+                    BASE + '/auth/userdetails',
                     headers={"Authorization": 'Bearer ' + authtoken['auth_token']}
                 )
                 usertoken = response.json()

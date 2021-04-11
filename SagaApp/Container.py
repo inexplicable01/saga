@@ -80,6 +80,8 @@ class Container:
         filesToUpload = {}
         updateinfo = {}
         for fileheader, filetrack in self.workingFrame.filestrack.items():
+            if fileheader not in self.FileHeaders.keys():
+                continue
             if self.FileHeaders[fileheader]['type']== typeInput:
                 # we currently do not care about changes done to inputs
                 continue
