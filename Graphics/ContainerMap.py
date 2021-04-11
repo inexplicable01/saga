@@ -8,8 +8,7 @@ import yaml
 from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
 from SagaApp.FileObjects import FileTrack
-from Config import typeInput,typeOutput,typeRequired, colorscheme
-
+from Config import typeInput,typeOutput,typeRequired, colorscheme,mapdetailstxt
 
 import os
 import sys
@@ -23,7 +22,7 @@ rectwidth = 40
 # fileboxWidth = 50
 
 class ContainerMap():
-    def __init__(self, activeContainers, qtview, selecteddetail,detailedmap):
+    def __init__(self, activeContainers, qtview, selecteddetail,detailedmap, mainguihandle):
         self.activeContainers = activeContainers  # contain the container objs
         self.qtview = qtview
         self.selecteddetail=selecteddetail
@@ -33,6 +32,11 @@ class ContainerMap():
         self.qtview.setScene(self.containerscene)
         self.containerConnections = {} # dictionary of Id: list of OD
         self.containerConnectLines={}  # dictionary of lineId:LineObject
+        self.mainguihandle=mainguihandle
+        self.mapdet={'containerlocations':{}}
+        self.sectionid=''
+
+
 
     def reset(self):
         self.containerscene = QGraphicsScene()
@@ -95,35 +99,57 @@ class ContainerMap():
         self.activeContainers[container.containerId]=container
 
     def plot(self):
+        try:
+            self.sectionid=self.mainguihandle.userdata['sectionid']
+            self.mapdetailtxt = os.path.join(self.mainguihandle.guiworkingdir, 'SagaGuiData', self.sectionid,
+                                             mapdetailstxt)
+            with open(self.mapdetailtxt , 'r') as mapdets:
+                self.mapdet = yaml.load(mapdets, Loader=yaml.FullLoader)
+        except Exception as e:
+            print('could not load map data for world map')
         idx,idy=1,1
         gridsize = math.ceil(math.sqrt(len(self.activeContainers.values())))
-        for container in self.activeContainers.values():
-            # print(container.containerName)
-            # text = self.containerscene.addText(container.containerName)
-            self.activeContainersObj[container.containerId]=containerRect(idx,idy, container.containerName, \
-                                                                          self.drawline, self.detailedmap,self.selecteddetail)
+        for containerid, container in self.activeContainers.items():
+            if  containerid not in  self.mapdet['containerlocations'].keys():
+                xloc = idx * 100
+                yloc = idy * 100
+                self.mapdet['containerlocations'][containerid]={'xloc':xloc,'yloc':yloc}# initialize
+            else:
+                xloc=self.mapdet['containerlocations'][containerid]['xloc']
+                yloc=self.mapdet['containerlocations'][containerid]['yloc']
+            self.activeContainersObj[container.containerId]=containerRect(xloc,yloc,container, \
+                                                                          self)
             self.containerscene.addItem(self.activeContainersObj[container.containerId])
             idx +=1
             if idx>gridsize:
                 idx, idy = 1, idy + 1
         self.drawline()
 
+    def updatemapcoord(self,containerid, QPos):
+        self.mapdet['containerlocations'][containerid]['xloc']=QPos.x()
+        self.mapdet['containerlocations'][containerid]['yloc']=QPos.y()
+        with open(self.mapdetailtxt ,'w') as file:
+            yaml.dump(self.mapdet, file)
+
+
 
 
 class containerRect(QGraphicsRectItem):
-    def __init__(self, idx,idy,containerName,drawline, detailedmap,selecteddetail,rectheight=rectheight, rectwidth=rectwidth):
-        super().__init__(0, 0, rectheight, rectwidth)
+    def __init__(self, idx,idy,container:Container,containermaphandle,rectheight=rectheight, rectwidth=rectwidth):
+        super().__init__(0,0, rectheight, rectwidth)
         self.rectheight = rectheight
         self.rectwidth = rectwidth
-        self.QPos = QPointF(idx*100,idy*100)
+        self.QPos = QPointF(idx,idy)
         self.setPos(self.QPos)
         self.setBrush(QBrush(Qt.transparent))
         self.setPen(QPen(Qt.black))
-        self.containerName = containerName
+        self.containerName = container.containerName
+        self.containerid = container.containerId
         # self.text.setPos(self.QPos)
-        self.drawline=drawline
-        self.detailedmap = detailedmap
-        self.selecteddetail=selecteddetail
+        self.drawline=containermaphandle.drawline
+        self.detailedmap = containermaphandle.detailedmap
+        self.selecteddetail=containermaphandle.selecteddetail
+        self.updatemapcoord=containermaphandle.updatemapcoord
         # self.setFlag(QGraphicsItem.ItemIsMovable, True)
 
     def dragMoveEvent(self, event):
@@ -161,13 +187,15 @@ class containerRect(QGraphicsRectItem):
         orig_position = self.scenePos()
         updated_cursor_x = updated_cursor_position.x()- orig_cursor_position.x()+ orig_position.x()
         updated_cursor_y = updated_cursor_position.y() - orig_cursor_position.y() + orig_position.y()
-        self.QPos = QPointF(updated_cursor_x, updated_cursor_y)
+        self.QPos =QPointF(updated_cursor_x, updated_cursor_y)
+        # self.QPos = QPointF(updated_cursor_position.x(), updated_cursor_position.y())
         self.setPos(self.QPos)
         self.update()
         # self.text.setPos(self.QPos)
 
     def mouseReleaseEvent(self,event):
         self.drawline()
+        self.updatemapcoord(self.containerid,self.QPos)
         self.selecteddetail['selectedobjname']=self.containerName
         self.detailedmap.selectedobj(self.containerName)
 

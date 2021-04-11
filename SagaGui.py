@@ -13,6 +13,7 @@ from Graphics.MapTab import MapTab
 # from Graphics.Dialogs import errorPopUp
 from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
+from Graphics.PopUps.newsection import newSection,enterSection
 
 import os
 import sys
@@ -20,9 +21,10 @@ import requests
 import json
 import logging
 import traceback
+import yaml
 
 from functools import partial
-from Config import BASE
+from Config import BASE,mapdetailstxt
 from SagaApp.WorldMap import WorldMap
 
 # from NewContainerGraphics import newContainerGraphics
@@ -44,6 +46,14 @@ class UI(QMainWindow):
         uic.loadUi("Graphics/UI/SagaGui.ui", self)
         # self.enterEvent=self.action_enterEvent
 
+        self.guiworkingdir = os.getcwd()
+        ## There are two main paths that the GUI needs to be concerns about
+        #1. Where the current container of interests is.
+        #2. Where is the GUI running from?  This contains settings about the GUI itself and some larger meta-data
+        if not os.path.exists(os.path.join(self.guiworkingdir, 'SagaGuiData')):
+            os.mkdir(os.path.join(self.guiworkingdir, 'SagaGuiData'))
+
+
         ## newcontainertab handles all the QT features on the new container tab, Initiates to false
         self.newcontainertab = NewContainerTab(self)
         self.newcontainertab.setTab(False)
@@ -57,17 +67,25 @@ class UI(QMainWindow):
         self.tabWidget.setEnabled(False)
         self.menuContainer.setEnabled(False)
 
+
+
+
         ###########Tray Actions #############
         self.actionSign_In.triggered.connect(partial(SignIn, self))
         self.actionSign_Out.triggered.connect(partial(SignOut, self))
         self.actionNew_Container.triggered.connect(partial(newContainer, self,self.newcontainertab))
         self.actionFind_Local_Container.triggered.connect(partial(find_Local_Container, self, self.maincontainertab))
+        self.actionNew_Section.triggered.connect(partial(newSection, self))
+        self.actionEnter_Section.triggered.connect(partial(enterSection, self))
+
 
         self.checkUserStatus()
         self.startingcheck = False
-        self.guiworkingdir = os.getcwd()
+
 
         self.show()
+
+
 
 
     def getWorldContainers(self):
@@ -83,6 +101,13 @@ class UI(QMainWindow):
             cont = Container.LoadContainerFromYaml( os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']))
             cont.downloadbranch('Main', BASE, self.authtoken,os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID))
         self.worldlist = containerinfolist.keys()
+        if not os.path.exists(os.path.join(self.guiworkingdir, 'SagaGuiData', self.userdata['sectionid'])):
+            os.mkdir(os.path.join(self.guiworkingdir, 'SagaGuiData',self.userdata['sectionid']))
+            with open(os.path.join(self.guiworkingdir, 'SagaGuiData',self.userdata['sectionid'], mapdetailstxt),'w') as file:
+                yaml.dump({'containerlocations':{}}, file)
+
+
+
 
 
 

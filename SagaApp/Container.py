@@ -106,7 +106,7 @@ class Container:
         framedictjson = self.workingFrame.__repr__()
 
 
-        response = requests.post(BASE + 'COMMIT',
+        response = requests.post(BASE + 'SAGAOP/commit',
                                  headers={"Authorization": 'Bearer ' + authtoken['auth_token']},
                                  data={'containerID': self.containerId,
                                        'containerdictjson': containerdictjson,
@@ -139,7 +139,7 @@ class Container:
 
         commitContainer = self.dictify()
         commitFrame = self.workingFrame.dictify()
-        url = BASE + 'CONTAINERS/newContainer'
+        url = BASE + 'SAGAOP/newContainer'
         payload = {'containerdictjson': json.dumps(commitContainer), 'framedictjson': json.dumps(commitFrame)}
 
         filesToUpload={}
