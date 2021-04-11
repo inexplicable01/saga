@@ -214,7 +214,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>checkDelta</string>
+       <string>Check Changes</string>
       </property>
      </widget>
      <widget class="QTextEdit" name="commitmsgEdit">
@@ -663,7 +663,7 @@
      <x>0</x>
      <y>0</y>
      <width>1463</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProfile">
@@ -679,9 +679,18 @@
     </property>
     <addaction name="actionNew_Container"/>
     <addaction name="actionFind_Local_Container"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menuSection">
+    <property name="title">
+     <string>Section</string>
+    </property>
+    <addaction name="actionNew_Section"/>
+    <addaction name="actionEnter_Section"/>
    </widget>
    <addaction name="menuProfile"/>
    <addaction name="menuContainer"/>
+   <addaction name="menuSection"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionSign_In">
@@ -702,6 +711,21 @@
   <action name="actionFind_Local_Container">
    <property name="text">
     <string>Find Local Container</string>
+   </property>
+  </action>
+  <action name="actionAdd_New_Section">
+   <property name="text">
+    <string>Add New Section</string>
+   </property>
+  </action>
+  <action name="actionNew_Section">
+   <property name="text">
+    <string>New Section</string>
+   </property>
+  </action>
+  <action name="actionEnter_Section">
+   <property name="text">
+    <string>Enter an Existing Section</string>
    </property>
   </action>
  </widget>

@@ -121,7 +121,7 @@ class coolerRectangle(QGraphicsRectItem):
         painter.drawText(textRect, Qt.AlignCenter, self.fileheader)
         # Draw Picture
         filename, file_extension = os.path.splitext(self.filename)
-        print('file_extension',file_extension)
+        # print('file_extension',file_extension)
         if file_extension in ['.docx','.doc']:
             qpic = QImage('Graphics/FileIcons/Word.png')
         elif file_extension in ['.pptx','.ppt']:
@@ -132,6 +132,8 @@ class coolerRectangle(QGraphicsRectItem):
             qpic = QImage('Graphics/FileIcons/mp4icon.png')
         elif file_extension in ['.txt']:
             qpic = QImage('Graphics/FileIcons/txticon.png')
+        elif file_extension in ['.pdf']:
+            qpic = QImage('Graphics/FileIcons/pdficon.png')
         else:
             qpic= QImage('Graphics/FileIcons/genericfile.png')
         painter.drawImage(picRect, qpic)

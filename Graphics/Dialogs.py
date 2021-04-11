@@ -4,11 +4,10 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
 import yaml
-from SagaApp.FrameStruct import Frame
-from SagaApp.Container import Container
+# from SagaApp.FrameStruct import Frame
+# from SagaApp.Container import Container
 from SagaApp.FileObjects import FileTrack
 from Config import typeInput,typeRequired,typeOutput
-
 import os
 from shutil import copyfile
 
@@ -16,7 +15,48 @@ import sys
 import requests
 import json
 import copy
-from SagaApp.Container import Container
+# from SagaApp.Container import Container
+
+class ganttChartFiles(QDialog):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi("Graphics/UI/fileChart.ui", self)
+    def showChart(self):
+        self.exec()
+
+class ganttChartProject(QDialog):
+    def __init__(self):
+        super().__init__()
+        # uic.loadUi("Graphics/UI/projectChart.ui", self)
+        uic.loadUi("Graphics/UI/projectChart.ui", self)
+        self.actualButton.clicked.connect(self.showActualChart)
+        self.scheduledButton.clicked.connect(self.showScheduledChart)
+    def showChart(self):
+        self.exec()
+    def showActualChart(self):
+        self.titleLabel.setText("Actual Gantt Chart")
+        self.chartPic.setPixmap(QPixmap("Graphics/UI/Demo_Project_Gantt_Completed.png"))
+    def showScheduledChart(self):
+        self.chartPic.setPixmap(QPixmap("Graphics/UI/Demo_Project_Gantt.png"))
+        self.titleLabel.setText("Scheduled Gantt Chart")
+
+# class errorPopUp(QDialog):
+#     def __init__(self):
+#         super().__init__()
+#         uic.loadUi("Graphics/UI/errorMessage.ui",self)
+#     def showMessage(self, text):
+#         self.errorText.setText(text)
+#         self.exec()
+
+class downloadProgressBar(QWidget):
+    def __init__(self, fileId):
+        super().__init__()
+        uic.loadUi("Graphics/UI/downloadProgressBar.ui", self)
+        self.fileNameLabel.setText(fileId)
+    def updateProgress(self, value):
+        self.progressBar.setValue(value)
+        self.show()
+        # self.progressBar.setProperty("value", percent)
 
 class ErrorMessage(QMessageBox):
     def __init__(self):
