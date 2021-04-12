@@ -82,8 +82,18 @@ class UI(QMainWindow):
         self.checkUserStatus()
         self.startingcheck = False
 
-
+        # self.conect(self.testcreatemanyfiles)
         self.show()
+
+
+    # def testcreatemanyfiles(self):
+    #     Start by create a newuser and newSection
+    #     createcontainers with required and output for the first one
+    #     Create a hundred
+    #     for 1 to 1000:
+    #         createrandomfile
+    #         add to current frame and container
+    #         if input, then grab from randomcontainer:
 
 
 

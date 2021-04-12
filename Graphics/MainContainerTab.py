@@ -262,8 +262,8 @@ class MainContainerTab():
             self.removeFileButton_2.setEnabled(True)
         else:
             self.removeFileButton_2.setEnabled(False)
-        print(type)
-        print(fileheader)
+        # print(type)
+        # print(fileheader)
 
     def AddToTempContainer(self, fileType: str):
         # self.inputFileButton_2.setEnabled(False)

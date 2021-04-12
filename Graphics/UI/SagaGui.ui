@@ -34,13 +34,13 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>10</y>
-      <width>1351</width>
-      <height>771</height>
+      <y>0</y>
+      <width>1461</width>
+      <height>811</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="Map">
      <attribute name="title">
@@ -70,8 +70,8 @@
        <rect>
         <x>20</x>
         <y>220</y>
-        <width>451</width>
-        <height>331</height>
+        <width>731</width>
+        <height>491</height>
        </rect>
       </property>
      </widget>
@@ -92,7 +92,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>570</y>
+        <y>720</y>
         <width>311</width>
         <height>31</height>
        </rect>
@@ -104,7 +104,7 @@
      <widget class="QGraphicsView" name="detailsMapView">
       <property name="geometry">
        <rect>
-        <x>480</x>
+        <x>760</x>
         <y>220</y>
         <width>691</width>
         <height>331</height>

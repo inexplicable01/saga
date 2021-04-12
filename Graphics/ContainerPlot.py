@@ -92,7 +92,7 @@ class coolerRectangle(QGraphicsRectItem):
         self.filename = filename
 
     def mousePressEvent(self,event):
-        print('pressed ' + self.type)
+        print('pressed huh' + self.type)
         self.guiHandle.coolerRectangleFeedback(self.type, self.view, self.fileheader , self.curContainer)
         print('filename ', self.filename)
         self.update()
@@ -101,8 +101,10 @@ class coolerRectangle(QGraphicsRectItem):
 
         return self.rect()
 
-    def paint(self, painter:QPainter, option: QStyleOptionGraphicsItem, widget:QWidget=None):
 
+
+##Paint handles the actual drawing of the rect
+    def paint(self, painter:QPainter, option: QStyleOptionGraphicsItem, widget:QWidget=None):
         rect = self.boundingRect()
         additionalwidth = 100
         textRect = QRectF(rect.topLeft().x()-additionalwidth/2, rect.topLeft().y()+50, fileboxWidth+additionalwidth,20)
@@ -137,5 +139,7 @@ class coolerRectangle(QGraphicsRectItem):
         else:
             qpic= QImage('Graphics/FileIcons/genericfile.png')
         painter.drawImage(picRect, qpic)
+
+
 
 

@@ -154,7 +154,7 @@ class FileRect(QGraphicsRectItem):
         print(event)
 
     def mousePressEvent(self, event):
-        print('pressed')
+        print('List')
 
     def mouseMoveEvent(self, event):
         orig_cursor_position = event.lastScenePos()
