@@ -26,9 +26,9 @@ class MapTab():
         self.generateContainerBttn = mainguihandle.generateContainerBttn
         self.mainguihandle = mainguihandle
         self.dlContainerBttn = mainguihandle.dlContainerBttn
-        self.ganttChartBttn = mainguihandle.ganttChartBttn
+        # self.ganttChartBttn = mainguihandle.ganttChartBttn
 
-        self.ganttChartBttn.clicked.connect(self.showGanttChart)
+        # self.ganttChartBttn.clicked.connect(self.showGanttChart)
         self.generateContainerBttn.clicked.connect(self.generateContainerMap)
         self.containerlisttable.clicked.connect(self.updatecontainertodl)
         self.dlContainerBttn.clicked.connect(self.downloadcontainer)
@@ -38,7 +38,7 @@ class MapTab():
 
         ###########Gui Variables##############
         self.detailedmap = DetailedMap(self.detailsMapView, self.selecteddetail)
-        self.containermap = ContainerMap({}, self.containerMapView, self.selecteddetail, self.detailedmap)
+        self.containermap = ContainerMap({}, self.containerMapView, self.selecteddetail, self.detailedmap,self.mainguihandle)
 
 
         # self.mainguihandle.tabWidget.currentChanged.connect(self.refreshMapTab)

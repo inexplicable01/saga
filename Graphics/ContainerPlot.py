@@ -92,7 +92,7 @@ class coolerRectangle(QGraphicsRectItem):
         self.filename = filename
 
     def mousePressEvent(self,event):
-        print('pressed ' + self.type)
+        print('pressed huh' + self.type)
         self.guiHandle.coolerRectangleFeedback(self.type, self.view, self.fileheader , self.curContainer)
         print('filename ', self.filename)
         self.update()
@@ -101,8 +101,10 @@ class coolerRectangle(QGraphicsRectItem):
 
         return self.rect()
 
-    def paint(self, painter:QPainter, option: QStyleOptionGraphicsItem, widget:QWidget=None):
 
+
+##Paint handles the actual drawing of the rect
+    def paint(self, painter:QPainter, option: QStyleOptionGraphicsItem, widget:QWidget=None):
         rect = self.boundingRect()
         additionalwidth = 100
         textRect = QRectF(rect.topLeft().x()-additionalwidth/2, rect.topLeft().y()+50, fileboxWidth+additionalwidth,20)
@@ -121,6 +123,7 @@ class coolerRectangle(QGraphicsRectItem):
         painter.drawText(textRect, Qt.AlignCenter, self.fileheader)
         # Draw Picture
         filename, file_extension = os.path.splitext(self.filename)
+
         if file_extension in ['.docx','.doc']:
             qpic = QImage('Graphics/FileIcons/Word.png')
         elif file_extension in ['.pptx','.ppt']:
@@ -131,8 +134,12 @@ class coolerRectangle(QGraphicsRectItem):
             qpic = QImage('Graphics/FileIcons/mp4icon.png')
         elif file_extension in ['.txt']:
             qpic = QImage('Graphics/FileIcons/txticon.png')
+        elif file_extension in ['.pdf']:
+            qpic = QImage('Graphics/FileIcons/pdficon.png')
         else:
             qpic= QImage('Graphics/FileIcons/genericfile.png')
         painter.drawImage(picRect, qpic)
+
+
 
 

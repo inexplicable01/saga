@@ -48,7 +48,7 @@ class MainContainerTab():
         self.selectedfileheader = mainguihandle.selectedfileheader
         # self.editFileButton_2 = mainguihandle.editFileButton_2
         self.removeFileButton_2 = mainguihandle.removeFileButton_2
-        self.fileHistoryBttn = mainguihandle.fileHistoryBttn
+        # self.fileHistoryBttn = mainguihandle.fileHistoryBttn
 
         self.index=1
 
@@ -62,7 +62,7 @@ class MainContainerTab():
         self.workingdir=''
         # self.openContainerBttn.setText('Open Container')
         # self.openContainerBttn.clicked.connect(self.readcontainer)
-        self.fileHistoryBttn.clicked.connect(self.fileGanttChart)
+        # self.fileHistoryBttn.clicked.connect(self.fileGanttChart)
         self.RequiredButton_2.clicked.connect(partial(self.AddToTempContainer, 'Required'))
         self.outputFileButton_2.clicked.connect(partial(self.AddToTempContainer, 'Output'))
         self.removeFileButton_2.clicked.connect(self.removeFileInfo)
@@ -308,8 +308,8 @@ class MainContainerTab():
             self.removeFileButton_2.setEnabled(True)
         else:
             self.removeFileButton_2.setEnabled(False)
-        print(type)
-        print(fileheader)
+        # print(type)
+        # print(fileheader)
 
     def AddToTempContainer(self, fileType: str):
         # self.inputFileButton_2.setEnabled(False)

@@ -7,6 +7,9 @@ WorldMapDir = 'ContainerMapWorkDir'
 typeInput='Input'
 typeOutput='Output'
 typeRequired='Required'
+mapdetailstxt='mapdetails.txt'
+
+ServerOrFront = 'FrontEnd'
 
 changenewfile = 'New File Header Added'
 changemd5 = 'MD5 Changed'
@@ -18,3 +21,4 @@ colorscheme = {typeInput: Qt.yellow, typeOutput: Qt.green, typeRequired: Qt.blue
 
 boxwidth = 40
 boxheight = 40
+RECTMARGINpx=5

@@ -82,6 +82,8 @@ class Container:
         filesToUpload = {}
         updateinfo = {}
         for fileheader, filetrack in self.workingFrame.filestrack.items():
+            if fileheader not in self.FileHeaders.keys():
+                continue
             if self.FileHeaders[fileheader]['type']== typeInput:
                 # only commit new input files if input files were downloaded
                 if self.updatedInputs == False:
@@ -107,7 +109,7 @@ class Container:
         framedictjson = self.workingFrame.__repr__()
 
 
-        response = requests.post(BASE + 'COMMIT',
+        response = requests.post(BASE + 'SAGAOP/commit',
                                  headers={"Authorization": 'Bearer ' + authtoken['auth_token']},
                                  data={'containerID': self.containerId,
                                        'containerdictjson': containerdictjson,
@@ -140,7 +142,7 @@ class Container:
 
         commitContainer = self.dictify()
         commitFrame = self.workingFrame.dictify()
-        url = BASE + 'CONTAINERS/newContainer'
+        url = BASE + 'SAGAOP/newContainer'
         payload = {'containerdictjson': json.dumps(commitContainer), 'framedictjson': json.dumps(commitFrame)}
 
         filesToUpload={}

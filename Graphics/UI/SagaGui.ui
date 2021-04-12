@@ -34,9 +34,9 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>10</y>
-      <width>1351</width>
-      <height>781</height>
+      <y>0</y>
+      <width>1461</width>
+      <height>811</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -70,8 +70,8 @@
        <rect>
         <x>20</x>
         <y>220</y>
-        <width>451</width>
-        <height>331</height>
+        <width>731</width>
+        <height>491</height>
        </rect>
       </property>
      </widget>
@@ -92,7 +92,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>570</y>
+        <y>720</y>
         <width>311</width>
         <height>31</height>
        </rect>
@@ -104,7 +104,7 @@
      <widget class="QGraphicsView" name="detailsMapView">
       <property name="geometry">
        <rect>
-        <x>480</x>
+        <x>760</x>
         <y>220</y>
         <width>691</width>
         <height>331</height>
@@ -125,27 +125,6 @@
       </property>
       <property name="text">
        <string>Click on Container to Select</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="ganttChartBttn">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>610</y>
-        <width>421</width>
-        <height>81</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>20</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Project Gantt Chart</string>
       </property>
      </widget>
     </widget>
@@ -235,7 +214,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>checkDelta</string>
+       <string>Check Changes</string>
       </property>
      </widget>
      <widget class="QTextEdit" name="commitmsgEdit">
@@ -699,9 +678,18 @@
     </property>
     <addaction name="actionNew_Container"/>
     <addaction name="actionFind_Local_Container"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menuSection">
+    <property name="title">
+     <string>Section</string>
+    </property>
+    <addaction name="actionNew_Section"/>
+    <addaction name="actionEnter_Section"/>
    </widget>
    <addaction name="menuProfile"/>
    <addaction name="menuContainer"/>
+   <addaction name="menuSection"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionSign_In">
@@ -722,6 +710,21 @@
   <action name="actionFind_Local_Container">
    <property name="text">
     <string>Find Local Container</string>
+   </property>
+  </action>
+  <action name="actionAdd_New_Section">
+   <property name="text">
+    <string>Add New Section</string>
+   </property>
+  </action>
+  <action name="actionNew_Section">
+   <property name="text">
+    <string>New Section</string>
+   </property>
+  </action>
+  <action name="actionEnter_Section">
+   <property name="text">
+    <string>Enter an Existing Section</string>
    </property>
   </action>
  </widget>
