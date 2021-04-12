@@ -16,8 +16,11 @@ from SagaApp.Container import Container
 from SagaApp.WorldMap import WorldMap
 from Graphics.GuiUtil import AddIndexToView
 from Graphics.PopUps.AddInputPopUp import AddInputPopUp
-import threading
-import time
+from os import listdir
+import shutil
+# import threading
+# import time
+
 
 class MainContainerTab():
     def __init__(self,mainguihandle):
@@ -30,7 +33,9 @@ class MainContainerTab():
         self.refreshBttn = mainguihandle.refreshBttn
         self.refreshBttnUpstream = mainguihandle.refreshBttn_2
         self.downloadUpstreamBttn = mainguihandle.refreshBttn_3
+        self.refreshContainerBttn = mainguihandle.refreshBttn_4
         self.downloadUpstreamBttn.setDisabled(True)
+        # self.refreshContainerBttn.setDisabled(True)
         self.framelabel = mainguihandle.framelabel
         self.maincontainerview = mainguihandle.maincontainerview
         self.indexView1 = mainguihandle.indexView1
@@ -65,6 +70,7 @@ class MainContainerTab():
         self.refreshBttn.clicked.connect(self.checkdelta)
         self.refreshBttnUpstream.clicked.connect(self.checkUpstream)
         self.downloadUpstreamBttn.clicked.connect(self.downloadUpstream)
+        self.refreshContainerBttn.clicked.connect(self.refreshContainer)
         # self.resetbutton.clicked.connect(self.resetrequest)
         # self.rebasebutton.clicked.connect(self.rebaserequest)
         self.commitBttn.clicked.connect(self.commit)
@@ -82,43 +88,47 @@ class MainContainerTab():
         self.containerLoaded = False
 
         AddIndexToView(self.indexView1)
-        self.mainguihandle.tabWidget.currentChanged.connect(self.constantCheck)
         # self.t = threading.Timer(1.0, self.checkingFileDelta)
 
-    def constantCheck(self):
-        if self.mainguihandle.tabWidget.currentIndex() == self.mainguihandle.tabWidget.indexOf(self.mainguihandle.ContainerTab):
-            # self.t.start()
-            self.checkingFileDelta()
+    def refreshContainer(self):
+    #     redownload ContainerMapWorkDir
+        self.mainguihandle.getWorldContainers()
+    #   Check to see if newer revision now exists
+        revList = listdir(os.path.join(self.mainguihandle.guiworkingdir,'ContainerMapWorkDir',self.mainContainer.containerId,'Main'))
+        for index, fileName in enumerate(revList):
+            length = len(fileName)
+            revList[index] = int(fileName[-(length-3):-5])
+        revNum = max(revList)
+        if self.mainContainer.revnum < revNum:
 
-    def checkingFileDelta(self):
-        t = threading.Timer(1.0, self.checkingFileDelta)
-        t.start()
-        timerStart = time.process_time()
-        print("Is This Working??")
+        #     download container
+        #           download updated containstate
+        #           download updated frame yaml
+        #           download updated files
+        #     reload contain state into SAGA GUI
+            openDirectoryDialog = QFileDialog().getExistingDirectory(self.mainguihandle,
+                                                                     'Select Folder Space to Place ' + self.mainContainer.containerId
+                                                                     + ' container folder.')
+            if openDirectoryDialog:
+                contdir = os.path.join(openDirectoryDialog, self.mainContainer.containerId)
+                if not os.path.exists(contdir):
+                    os.mkdir(contdir)
+                else:
+                    print('Container exists already...removing')
+                    shutil.rmtree(contdir)
+                dlcontainyaml = Container.downloadContainerInfo(openDirectoryDialog, self.mainguihandle.authtoken, BASE,
+                                                                self.mainContainer.containerId)
+                dlcontainer = Container.LoadContainerFromYaml(containerfn=dlcontainyaml)
+                dlcontainer.downloadbranch('Main', BASE, self.mainguihandle.authtoken, contdir)
+                dlcontainer.workingFrame.downloadfullframefiles()
+                self.mainguihandle.maincontainertab.readcontainer(dlcontainyaml)
+                self.mainguihandle.tabWidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
+                # print(os.path.join(openDirectoryDialog, self.dlcontainer))
+                if openDirectoryDialog:
+                    print(os.path.split(openDirectoryDialog[0]))
 
-        # if self.containerLoaded == True:
-        #     allowCommit = False
-        #     self.changes, self.alterfiletracks = self.mainContainer.workingFrame.compareToRefFrame(
-        #         self.mainContainer.filestomonitor())
-        #     if len(self.changes) > 0:
-        #         allowCommit = True
-        #
-        #         self.commitBttn.setEnabled(allowCommit)
-        #         self.commitmsgEdit.setDisabled(not allowCommit)
-        #         # refresh plot
-        #         self.maincontainerplot.plot(self.changes)
-        #
-        #         chgstr = ''
-        #         for fileheader, change in self.changes.items():
-        #             chgstr = chgstr + fileheader + '\t' + change['reason'] + '\n'
-        #         self.frametextBrowser.setText(chgstr)
-        #
-        # if self.mainguihandle.tabWidget.currentIndex() is not self.mainguihandle.tabWidget.indexOf(self.mainguihandle.ContainerTab):
-        #     t.cancel()
-        print("--- %s seconds ---" % (time.process_time() - timerStart))
-
-
-
+        else:
+            print('Container is the lastest revision')
 
     def fileGanttChart(self):
         self.ganttChart = ganttChartFiles()
