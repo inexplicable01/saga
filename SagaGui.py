@@ -161,7 +161,7 @@ class UI(QMainWindow):
 
 def excepthook(exc_type, exc_value, exc_tb):
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
-    print("error catched!:")
+    print("error caught!:")
     print("error message:\n", tb)
     logging.error("Error:", exc_info=(exc_type, exc_value, exc_tb))
     errorDialog.showMessage("ERROR MESSAGE:" + tb)

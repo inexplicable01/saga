@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1463</width>
-    <height>831</height>
+    <height>854</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -220,8 +220,8 @@
      <widget class="QTextEdit" name="commitmsgEdit">
       <property name="geometry">
        <rect>
-        <x>450</x>
-        <y>600</y>
+        <x>10</x>
+        <y>680</y>
         <width>441</width>
         <height>51</height>
        </rect>
@@ -230,8 +230,8 @@
      <widget class="QLabel" name="label_4">
       <property name="geometry">
        <rect>
-        <x>450</x>
-        <y>580</y>
+        <x>10</x>
+        <y>660</y>
         <width>421</width>
         <height>16</height>
        </rect>
@@ -243,8 +243,8 @@
      <widget class="QPushButton" name="commitBttn">
       <property name="geometry">
        <rect>
-        <x>900</x>
-        <y>610</y>
+        <x>460</x>
+        <y>680</y>
         <width>171</width>
         <height>61</height>
        </rect>
@@ -303,7 +303,7 @@
        <rect>
         <x>280</x>
         <y>600</y>
-        <width>171</width>
+        <width>191</width>
         <height>61</height>
        </rect>
       </property>
@@ -324,9 +324,9 @@
      <widget class="QWidget" name="layoutWidget_2">
       <property name="geometry">
        <rect>
-        <x>480</x>
+        <x>460</x>
         <y>120</y>
-        <width>191</width>
+        <width>224</width>
         <height>221</height>
        </rect>
       </property>
@@ -349,13 +349,6 @@
         <widget class="QPushButton" name="outputFileButton_2">
          <property name="text">
           <string>Add Output File</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="editFileButton_2">
-         <property name="text">
-          <string>Edit File</string>
          </property>
         </widget>
        </item>
@@ -405,6 +398,19 @@
       </property>
       <property name="text">
        <string/>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="fileHistoryBttn">
+      <property name="geometry">
+       <rect>
+        <x>930</x>
+        <y>560</y>
+        <width>231</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>File History</string>
       </property>
      </widget>
     </widget>
@@ -507,7 +513,7 @@
        <rect>
         <x>610</x>
         <y>560</y>
-        <width>131</width>
+        <width>211</width>
         <height>28</height>
        </rect>
       </property>
@@ -528,9 +534,9 @@
      <widget class="QLabel" name="label_8">
       <property name="geometry">
        <rect>
-        <x>610</x>
+        <x>570</x>
         <y>370</y>
-        <width>91</width>
+        <width>121</width>
         <height>16</height>
        </rect>
       </property>
@@ -541,9 +547,9 @@
      <widget class="QLabel" name="label_9">
       <property name="geometry">
        <rect>
-        <x>610</x>
+        <x>570</x>
         <y>400</y>
-        <width>111</width>
+        <width>161</width>
         <height>16</height>
        </rect>
       </property>
@@ -574,9 +580,9 @@
      <widget class="QLabel" name="label_10">
       <property name="geometry">
        <rect>
-        <x>610</x>
+        <x>570</x>
         <y>480</y>
-        <width>101</width>
+        <width>181</width>
         <height>16</height>
        </rect>
       </property>
@@ -587,9 +593,9 @@
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>510</x>
+        <x>490</x>
         <y>70</y>
-        <width>191</width>
+        <width>224</width>
         <height>221</height>
        </rect>
       </property>
@@ -612,13 +618,6 @@
         <widget class="QPushButton" name="outputFileButton">
          <property name="text">
           <string>Add Output File</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="editFileButton">
-         <property name="text">
-          <string>Edit File</string>
          </property>
         </widget>
        </item>

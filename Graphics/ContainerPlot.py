@@ -37,9 +37,9 @@ class ContainerPlot():
         self.curContainer = newcontainer
 
     def plot(self, changes):
-        self.scene = QGraphicsScene()
+        if self.scene is None:
+            self.scene = QGraphicsScene()
         typecounter = {typeInput: 0, typeOutput: 0, typeRequired: 0}
-
         for fileheader, fileinfo in self.curContainer.FileHeaders.items():
             type = fileinfo['type']
             if type=='reference' or type=='references':
@@ -123,7 +123,6 @@ class coolerRectangle(QGraphicsRectItem):
         painter.drawText(textRect, Qt.AlignCenter, self.fileheader)
         # Draw Picture
         filename, file_extension = os.path.splitext(self.filename)
-        # print('file_extension',file_extension)
         if file_extension in ['.docx','.doc']:
             qpic = QImage('Graphics/FileIcons/Word.png')
         elif file_extension in ['.pptx','.ppt']:

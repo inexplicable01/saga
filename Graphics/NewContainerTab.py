@@ -22,7 +22,7 @@ class NewContainerTab():
         self.containerlisttable_2 = mainguihandle.containerlisttable_2
 
         self.removeFileButton = mainguihandle.removeFileButton
-        self.editFileButton = mainguihandle.editFileButton
+        # self.editFileButton = mainguihandle.editFileButton
         self.commitNewButton = mainguihandle.commitNewButton
         self.refContainerView = mainguihandle.refContainerView
         self.containerName_lineEdit= mainguihandle.containerName_lineEdit
@@ -30,7 +30,7 @@ class NewContainerTab():
         self.messageText= mainguihandle.messageText
         self.GuiTab = mainguihandle.NewContainerTab
         self.inputFileButton = mainguihandle.inputFileButton
-        self.editFileButton = mainguihandle.editFileButton
+        # self.editFileButton = mainguihandle.editFileButton
         self.removeFileButton = mainguihandle.removeFileButton
         self.mainguihandle = mainguihandle
         self.indexView2 = mainguihandle.indexView2
@@ -44,7 +44,7 @@ class NewContainerTab():
 
 
         self.inputFileButton.setEnabled(False)
-        self.editFileButton.setEnabled(False)
+        # self.editFileButton.setEnabled(False)
         self.removeFileButton.setEnabled(False)
         self.selectedContainerId=''
 
@@ -56,7 +56,7 @@ class NewContainerTab():
         self.inputFileButton.clicked.connect(self.addInputFileToTempContainer)
         self.fileheader = ''
         self.removeFileButton.clicked.connect(self.removeFileInfo)
-        self.editFileButton.clicked.connect(self.editFileInfo)
+        # self.editFileButton.clicked.connect(self.editFileInfo)
         self.commitNewButton.clicked.connect(self.commitNewContainer)
 
         self.RequiredButton.clicked.connect(partial(self.AddToTempContainer, 'Required'))
@@ -141,11 +141,11 @@ class NewContainerTab():
             if type == typeOutput:
                 self.inputFileButton.setEnabled(True)
                 self.removeFileButton.setEnabled(False)
-                self.editFileButton.setEnabled(False)
+                # self.editFileButton.setEnabled(False)
             else:
                 self.inputFileButton.setEnabled(False)
                 self.removeFileButton.setEnabled(True)
-                self.editFileButton.setEnabled(True)
+                # self.editFileButton.setEnabled(True)
             self.curfileheader = fileheader
             self.selectedContainer = curContainer
             self.curfiletype = type
@@ -153,14 +153,14 @@ class NewContainerTab():
         elif view == self.curContainerView:
             self.curfileheader = fileheader
             self.removeFileButton.setEnabled(True)
-            if type == typeInput:
-                self.editFileButton.setEnabled(True)
+            # if type == typeInput:
+                # self.editFileButton.setEnabled(True)
 
     def editFileInfo(self):
         editFileDialog = selectFileDialog(self.curfiletype,self.tempContainer.containerworkingfolder)
         editFileInfo = editFileDialog.getInputs()
         if editFileInfo:
-            self.editFileButton.setEnabled(False)
+            # self.editFileButton.setEnabled(False)
             self.removeFileButton.setEnabled(False)
             self.tempContainer.FileHeaders[editFileInfo['FileObjHeader']] = \
                 self.tempContainer.FileHeaders.pop(self.curfileheader)
@@ -175,7 +175,7 @@ class NewContainerTab():
         fileDialog = removeFileDialog(self.curfileheader)
         fileheader = fileDialog.removeFile()
         if fileheader:
-            self.editFileButton.setEnabled(False)
+            # self.editFileButton.setEnabled(False)
             self.removeFileButton.setEnabled(False)
             newTempContainer = copy.deepcopy(self.tempContainer)
             newTempFrame = copy.deepcopy(self.tempContainer.workingFrame)

@@ -34,6 +34,8 @@ class Container:
         self.revnum =revnum
         self.refframe =refframe
         self.workingFrame= workingFrame
+        self.updatedInputs = False
+
 
     @classmethod
     def InitiateContainer(cls):
@@ -83,8 +85,9 @@ class Container:
             if fileheader not in self.FileHeaders.keys():
                 continue
             if self.FileHeaders[fileheader]['type']== typeInput:
-                # we currently do not care about changes done to inputs
-                continue
+                # only commit new input files if input files were downloaded
+                if self.updatedInputs == False:
+                    continue
             filepath = os.path.join(self.containerworkingfolder, filetrack.file_name)
             # Should file be committed?
             commit_file, md5 = self.CheckCommit(filetrack, filepath, frameRef)
@@ -202,6 +205,7 @@ class Container:
         }
         response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
         print(response.headers)
+        print(response.content)
         # request to FRAMES to get the latest frame from the branch as specified in currentbranch
         branch = response.headers['branch']
         # response also returned the name of the branch
