@@ -54,7 +54,7 @@ class AddInputPopUp(QDialog):
         if os.path.exists(refcontainerpath):
             self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         else:
-            refpath = os.path.join('ContainerMapWorkDir')
+            refpath = os.path.join(self.mainGuiHandle.guiworkingdir,'ContainerMapWorkDir')
             Container.downloadContainerInfo(refpath,self.mainGuiHandle.authtoken, BASE, containerId)
             self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         # self.tester.setText(self.selectedContainer.containerName)
