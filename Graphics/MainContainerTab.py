@@ -205,7 +205,7 @@ class MainContainerTab():
 
     def compareToUpstream(self, authToken):
         workingFrame = self.mainContainer.workingFrame
-        refframe = Frame(workingFrame.refframefn, None, workingFrame.localfilepath)
+        # refframe = Frame(workingFrame.refframefn, None, workingFrame.localfilepath)
         changes = {}
         for fileheader in self.mainContainer.filestomonitor().keys():
             if workingFrame.filestrack[fileheader].connection is not None:
@@ -235,8 +235,15 @@ class MainContainerTab():
         # allowCommit, changes, fixInput , self.alterfiletracks= self.mainContainer.checkFrame(self.mainContainer.workingFrame)
         self.changes, self.alterfiletracks = self.mainContainer.workingFrame.compareToRefFrame(self.mainContainer.filestomonitor())
         for fileheader, changedetails in self.changes.items():
-            # if fileheader in self.mainContainer.filestomonitor().keys():
+            if fileheader in self.mainContainer.filestomonitor().keys():
                 # only set allowCommit to true if the changes involve what is in the Container's need to monitor
+                allowCommit = True
+        refContainer = Container.LoadContainerFromYaml(self.mainContainerpath)
+
+        identical, diff =Container.compare(refContainer,self.mainContainer)
+        ## This primarily checks for differences (adding or removing ) filehandles.
+        # There could be scenarios that filetracks are difffrerent but the filehandles did not change
+        if not identical:
             allowCommit = True
 
         self.commitBttn.setEnabled(allowCommit)
@@ -291,6 +298,7 @@ class MainContainerTab():
 
     def readcontainer(self,path):
         # path = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
+        self.mainContainerpath = path
         self.mainContainer = Container.LoadContainerFromYaml(path, revnum=None)
         [self.workingdir, file_name] = os.path.split(path)
         self.containerlabel.setText('Container Name : ' + self.mainContainer.containerName)
@@ -362,12 +370,9 @@ class MainContainerTab():
             filepath = os.path.join(self.mainContainer.containerworkingfolder, 'Test' + fileheader + '.txt')
             with open(filepath, 'w') as newfile:
                 newfile.write(''.join(random.choices(string.ascii_uppercase +string.digits, k=90)))
-
             fileType = random.choice([typeInput,typeRequired, typeOutput])
             # fileType=typeInput
-
             if fileType == typeInput and counter<maxinputadder:
-
                 availablecontainers = os.listdir(os.path.join(self.mainguihandle.guiworkingdir, 'ContainerMapWorkDir'))
                 print(availablecontainers)
 
