@@ -45,10 +45,11 @@ class MainContainerTab():
         self.inputFileButton_2 = mainguihandle.inputFileButton_2
         self.RequiredButton_2 = mainguihandle.RequiredButton_2
         self.outputFileButton_2 = mainguihandle.outputFileButton_2
-        self.selectedfileheader = mainguihandle.selectedfileheader
+        self.selectedFileHeader = mainguihandle.selectedFileHeader
         # self.editFileButton_2 = mainguihandle.editFileButton_2
         self.removeFileButton_2 = mainguihandle.removeFileButton_2
         # self.fileHistoryBttn = mainguihandle.fileHistoryBttn
+        self.descriptionText = mainguihandle.commitmsgEdit_2
 
         self.index=1
 
@@ -80,15 +81,18 @@ class MainContainerTab():
         # self.editFileButton_2.setEnabled(False)
         self.removeFileButton_2.setEnabled(False)
         self.commitmsgEdit.setDisabled(True)
+        self.descriptionText.setDisabled(True)
         ###########History Info####
         self.commithisttable.clicked.connect(self.alterRevertButton)
         self.alterfiletracks=[]
         self.curfileheader=None
         self.changes = {}
         self.containerLoaded = False
+        self.newContainerStatus = False
 
         AddIndexToView(self.indexView1)
         # self.t = threading.Timer(1.0, self.checkingFileDelta)
+
 
     def refreshContainer(self):
     #     redownload ContainerMapWorkDir
@@ -265,20 +269,46 @@ class MainContainerTab():
             error_dialog.exec_()
             return
             # return
-        if self.mainguihandle.userdata['email'] not in self.mainContainer.allowedUser:
-            error_dialog.showMessage('You do not have the privilege to commit to this container')
-            error_dialog.exec_()
-            return
 
         # self.addressAlteredInput()
-        self.mainContainer.workingFrame, committed = self.mainContainer.commit(self.commitmsgEdit.toPlainText(), self.mainguihandle.authtoken, BASE)
+        if self.newContainerStatus:
+            if '' not in [self.descriptionText.toPlainText(),
+                          self.commitmsgEdit.toPlainText()]:
+                commitCheck = commitDialog(self.mainContainer.containerName, self.descriptionText.toPlainText(),
+                                           self.commitmsgEdit.toPlainText())
+                committed = commitCheck.commit()
+                if committed:
+                    containerName = self.mainContainer.containerName
+                    commitmessage = self.commitmsgEdit.toPlainText()
+                    success = self.mainContainer.CommitNewContainer(containerName, commitmessage,
+                                                                    self.mainguihandle.authtoken, BASE)
+                    if success:
+                        self.newContainerStatus = False
+                        containeryaml = os.path.join(self.mainContainer.containerworkingfolder, 'containerstate.yaml')
+                        self.mainguihandle.maincontainertab.readcontainer(containeryaml)
+                        self.mainguihandle.tabWidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
+                        self.mainguihandle.maptab.updateContainerMap()
+                        self.descriptionText.setDisabled(True)
+                    else:
+                        print('Commit failed')
+            else:
+                self.errorMessage = ErrorMessage()
+                self.errorMessage.showError()
+        else:
+            if self.mainguihandle.userdata['email'] not in self.mainContainer.allowedUser:
+                error_dialog.showMessage('You do not have the privilege to commit to this container')
+                error_dialog.exec_()
+                return
+
+            self.mainContainer.workingFrame, committed = self.mainContainer.commit(self.commitmsgEdit.toPlainText(), self.mainguihandle.authtoken, BASE)
 
         if committed:
             self.mainContainer.save()
             self.mainguihandle.maptab.updateContainerMap()
             self.framelabel.setText(self.mainContainer.workingFrame.FrameName)
             self.checkdelta()
-            self.commithisttable.setModel(HistoryListModel(self.mainContainer.commithistory()))
+            self.histModel = HistoryListModel(self.mainContainer.commithistory())
+            self.commithisttable.setModel(self.histModel)
 
 
     def readcontainer(self,path):
@@ -288,7 +318,8 @@ class MainContainerTab():
         self.containerlabel.setText('Container Name : ' + self.mainContainer.containerName)
 
         self.framelabel.setText(self.mainContainer.workingFrame.FrameName)
-        self.commithisttable.setModel(HistoryListModel(self.mainContainer.commithistory()))
+        self.histModel = HistoryListModel(self.mainContainer.commithistory())
+        self.commithisttable.setModel(self.histModel)
         self.commithisttable.setColumnWidth(0, self.commithisttable.width()*0.1)
         self.commithisttable.setColumnWidth(1, self.commithisttable.width() * 0.6)
         self.commithisttable.setColumnWidth(2, self.commithisttable.width() * 0.29)
@@ -302,7 +333,7 @@ class MainContainerTab():
     def coolerRectangleFeedback(self, type, view, fileheader , curContainer):
         self.curfileheader = fileheader
         self.curfiletype = type
-        self.selectedfileheader.setText(fileheader)
+        self.selectedFileHeader.setText(fileheader)
 
         if fileheader in self.mainContainer.filestomonitor():
             self.removeFileButton_2.setEnabled(True)
@@ -326,7 +357,7 @@ class MainContainerTab():
     def removeFileInfo(self):
         # remove fileheader from current main container
         wmap = WorldMap()
-        candelete, candeletemesssage = wmap.CheckContainerCanDeleteOutput(curcontainerid=self.mainContainer.containerId, fileheader=self.curfileheader,guiworkingdir=self.mainguihandle.guiworkingdir)
+        candelete, candeletemesssage = wmap.CheckContainerCanDeleteOutput(curcontainerid=self.mainContainer.containerId, fileheader=self.curfileheader,guiworkingdir=self.mainguihandle.guiworkingdir, authtoken=self.mainguihandle.authtoken)
         fileDialog = removeFileDialog(self.curfileheader, candelete, candeletemesssage) # Dialog to confirm deleting container
         fileheader = fileDialog.removeFile()
 
@@ -344,3 +375,30 @@ class MainContainerTab():
         self.reverttorev = histtable.model().data(index, 0)
         self.revertbttn.setText('Revert back to ' + self.reverttorev)
         self.revertbttn.setEnabled(True)
+
+    def initiate(self, inputs):
+        os.mkdir(inputs['dir'])
+        os.mkdir(os.path.join(inputs['dir'], 'Main'))
+
+        self.mainContainer = Container.InitiateContainer(inputs['containername'], inputs['dir'])
+        self.mainContainer.containerName = inputs['containername']
+        self.mainContainer.containerworkingfolder = inputs['dir']
+        self.mainContainer.save()
+        self.containerlabel.setText(inputs['containername'])
+
+        self.workingdir = inputs['dir']
+
+        self.mainContainer.workingFrame = Frame(localfilepath = inputs['dir'])
+        self.mainContainer.workingFrame.parentcontainerid = inputs['containername']
+        self.mainContainer.workingFrame.FrameName = 'Rev1'
+        self.mainContainer.workingFrame.writeoutFrameYaml(os.path.join(inputs['dir'], 'Main', 'Rev1.yaml'))
+        self.maincontainerplot = ContainerPlot(self, self.maincontainerview, self.mainContainer) #Edit to use refContainer
+        # self.histModel.beginResetModel()
+        # self.histModel.removeRows(0, self.histModel.rowCount(0))
+        # self.histModel.endResetModel()
+        self.histModel = HistoryListModel({})
+        self.commithisttable.setModel(self.histModel)
+        self.framelabel.setText('Revision 0 (New Container)')
+        self.newContainerStatus = True
+        self.descriptionText.setEnabled(True)
+        self.setTab(True)
