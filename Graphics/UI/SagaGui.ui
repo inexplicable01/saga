@@ -466,16 +466,6 @@
              <string>Refresh Container</string>
             </property>
            </widget>
-           <widget class="QPushButton" name="testbttn">
-            <property name="text">
-             <string>Test Button</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="testremovebttn">
-            <property name="text">
-             <string>Test Remove Button</string>
-            </property>
-           </widget>
           </widget>
          </widget>
         </item>
@@ -484,6 +474,46 @@
      </widget>
     </item>
    </layout>
+     <widget class="QPushButton" name="fileHistoryBttn">
+      <property name="geometry">
+       <rect>
+        <x>930</x>
+        <y>560</y>
+        <width>231</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>File History</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="testbttn">
+      <property name="geometry">
+       <rect>
+        <x>770</x>
+        <y>640</y>
+        <width>211</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Test Generate</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="testremovebttn">
+      <property name="geometry">
+       <rect>
+        <x>990</x>
+        <y>640</y>
+        <width>211</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Test Remove</string>
+      </property>
+     </widget>
+    </widget>
    <widget class="QLabel" name="userstatuslbl">
     <property name="geometry">
      <rect>
@@ -504,7 +534,7 @@
      <x>0</x>
      <y>0</y>
      <width>1463</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProfile">
