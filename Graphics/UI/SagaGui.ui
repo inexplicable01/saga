@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1463</width>
-    <height>854</height>
+    <height>925</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,657 +17,463 @@
    <property name="cursor">
     <cursorShape>IBeamCursor</cursorShape>
    </property>
-   <widget class="QLabel" name="revlabel">
-    <property name="geometry">
-     <rect>
-      <x>370</x>
-      <y>110</y>
-      <width>55</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
-   <widget class="QTabWidget" name="tabWidget">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>1461</width>
-      <height>811</height>
-     </rect>
-    </property>
-    <property name="currentIndex">
-     <number>1</number>
-    </property>
-    <widget class="QWidget" name="Map">
-     <attribute name="title">
-      <string>Map</string>
-     </attribute>
-     <widget class="QTableView" name="containerlisttable">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>20</y>
-        <width>451</width>
-        <height>161</height>
-       </rect>
-      </property>
-      <attribute name="horizontalHeaderDefaultSectionSize">
-       <number>80</number>
-      </attribute>
-      <attribute name="verticalHeaderDefaultSectionSize">
-       <number>24</number>
-      </attribute>
-      <attribute name="verticalHeaderMinimumSectionSize">
-       <number>12</number>
-      </attribute>
-     </widget>
-     <widget class="QGraphicsView" name="containerMapView">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>220</y>
-        <width>731</width>
-        <height>491</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_3">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>200</y>
-        <width>111</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Container Map</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="generateContainerBttn">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>720</y>
-        <width>311</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Generate Container Map</string>
-      </property>
-     </widget>
-     <widget class="QGraphicsView" name="detailsMapView">
-      <property name="geometry">
-       <rect>
-        <x>760</x>
-        <y>220</y>
-        <width>691</width>
-        <height>331</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="dlContainerBttn">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>510</x>
-        <y>60</y>
-        <width>361</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Click on Container to Select</string>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="ContainerTab">
-     <attribute name="title">
-      <string>Container</string>
-     </attribute>
-     <widget class="QLabel" name="containerlabel">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>50</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Container Name</string>
-      </property>
-     </widget>
-     <widget class="QTextBrowser" name="frametextBrowser">
-      <property name="geometry">
-       <rect>
-        <x>490</x>
-        <y>30</y>
-        <width>791</width>
-        <height>51</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_2">
-      <property name="geometry">
-       <rect>
-        <x>690</x>
-        <y>100</y>
-        <width>371</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Container Commit History</string>
-      </property>
-     </widget>
-     <widget class="QGraphicsView" name="maincontainerview">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>110</y>
-        <width>441</width>
-        <height>471</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="framelabel">
-      <property name="geometry">
-       <rect>
-        <x>100</x>
-        <y>80</y>
-        <width>181</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>TextLabel</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="frameName">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>90</y>
-        <width>81</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Frame Name</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="refreshBttn">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>600</y>
-        <width>131</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Check Changes</string>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="commitmsgEdit">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>680</y>
-        <width>441</width>
-        <height>51</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_4">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>660</y>
-        <width>421</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Commit Message</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="commitBttn">
-      <property name="geometry">
-       <rect>
-        <x>460</x>
-        <y>680</y>
-        <width>171</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Commit</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="revertbttn">
-      <property name="geometry">
-       <rect>
-        <x>690</x>
-        <y>560</y>
-        <width>231</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Revert</string>
-      </property>
-     </widget>
-     <widget class="QTableView" name="commithisttable">
-      <property name="geometry">
-       <rect>
-        <x>690</x>
-        <y>130</y>
-        <width>591</width>
-        <height>421</height>
-       </rect>
-      </property>
-      <attribute name="horizontalHeaderDefaultSectionSize">
-       <number>80</number>
-      </attribute>
-      <attribute name="verticalHeaderDefaultSectionSize">
-       <number>24</number>
-      </attribute>
-      <attribute name="verticalHeaderMinimumSectionSize">
-       <number>12</number>
-      </attribute>
-     </widget>
-     <widget class="QPushButton" name="refreshBttn_2">
-      <property name="geometry">
-       <rect>
-        <x>150</x>
-        <y>600</y>
-        <width>121</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Check Upstream</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="refreshBttn_3">
-      <property name="geometry">
-       <rect>
-        <x>280</x>
-        <y>600</y>
-        <width>191</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Download Updated Inputs</string>
-      </property>
-     </widget>
-     <widget class="QGraphicsView" name="indexView1">
-      <property name="geometry">
-       <rect>
-        <x>300</x>
-        <y>40</y>
-        <width>151</width>
-        <height>61</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QWidget" name="layoutWidget_2">
-      <property name="geometry">
-       <rect>
-        <x>460</x>
-        <y>120</y>
-        <width>224</width>
-        <height>221</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QPushButton" name="inputFileButton_2">
-         <property name="text">
-          <string>Add Input File from Reference</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="RequiredButton_2">
-         <property name="text">
-          <string>Add Required File</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="outputFileButton_2">
-         <property name="text">
-          <string>Add Output File</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="removeFileButton_2">
-         <property name="text">
-          <string>Remove File</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QLabel" name="label_5">
-      <property name="geometry">
-       <rect>
-        <x>480</x>
-        <y>100</y>
-        <width>161</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Container Edit Options</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label">
-      <property name="geometry">
-       <rect>
-        <x>480</x>
-        <y>370</y>
-        <width>131</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Currently Selected: </string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="selectedfileheader">
-      <property name="geometry">
-       <rect>
-        <x>490</x>
-        <y>400</y>
-        <width>101</width>
-        <height>31</height>
-       </rect>
-      </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="1">
+     <widget class="QLabel" name="revlabel">
       <property name="text">
        <string/>
       </property>
      </widget>
-     <widget class="QPushButton" name="fileHistoryBttn">
-      <property name="geometry">
-       <rect>
-        <x>930</x>
-        <y>560</y>
-        <width>231</width>
-        <height>28</height>
-       </rect>
+    </item>
+    <item row="0" column="0">
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>1</number>
       </property>
-      <property name="text">
-       <string>File History</string>
-      </property>
+      <widget class="QWidget" name="Map">
+       <attribute name="title">
+        <string>Map</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="font">
+           <font>
+            <pointsize>26</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Container Map</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="2">
+         <widget class="QGraphicsView" name="detailsMapView"/>
+        </item>
+        <item row="3" column="0" colspan="2">
+         <widget class="QGraphicsView" name="containerMapView"/>
+        </item>
+        <item row="4" column="0">
+         <widget class="QPushButton" name="generateContainerBttn">
+          <property name="text">
+           <string>Generate Container Map</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QTableView" name="containerlisttable">
+          <attribute name="horizontalHeaderDefaultSectionSize">
+           <number>80</number>
+          </attribute>
+          <attribute name="verticalHeaderDefaultSectionSize">
+           <number>24</number>
+          </attribute>
+          <attribute name="verticalHeaderMinimumSectionSize">
+           <number>12</number>
+          </attribute>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QPushButton" name="dlContainerBttn">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Click on Container to Select</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="ContainerTab">
+       <attribute name="title">
+        <string>Container</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QSplitter" name="splitter_11">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <widget class="QSplitter" name="splitter_8">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <widget class="QSplitter" name="splitter_5">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>431</width>
+              <height>91</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <widget class="QLabel" name="containerlabel">
+             <property name="maximumSize">
+              <size>
+               <width>431</width>
+               <height>24</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>15</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+               <underline>true</underline>
+              </font>
+             </property>
+             <property name="text">
+              <string>Container Name</string>
+             </property>
+            </widget>
+            <widget class="QSplitter" name="splitter_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <widget class="QSplitter" name="splitter_3">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <widget class="QLabel" name="frameName">
+               <property name="maximumSize">
+                <size>
+                 <width>121</width>
+                 <height>62</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>Frame Name:</string>
+               </property>
+              </widget>
+              <widget class="QLabel" name="framelabel">
+               <property name="maximumSize">
+                <size>
+                 <width>71</width>
+                 <height>62</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>TextLabel</string>
+               </property>
+              </widget>
+             </widget>
+             <widget class="QGraphicsView" name="indexView1">
+              <property name="maximumSize">
+               <size>
+                <width>229</width>
+                <height>62</height>
+               </size>
+              </property>
+             </widget>
+            </widget>
+           </widget>
+           <widget class="QSplitter" name="splitter_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <widget class="QGraphicsView" name="maincontainerview"/>
+            <widget class="QSplitter" name="splitter">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <widget class="QPushButton" name="refreshBttn">
+              <property name="font">
+               <font>
+                <pointsize>14</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Check Changes</string>
+              </property>
+             </widget>
+             <widget class="QPushButton" name="refreshBttn_2">
+              <property name="font">
+               <font>
+                <pointsize>14</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Check Upstream</string>
+              </property>
+             </widget>
+             <widget class="QPushButton" name="refreshBttn_3">
+              <property name="font">
+               <font>
+                <pointsize>14</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Update Inputs</string>
+              </property>
+             </widget>
+            </widget>
+           </widget>
+          </widget>
+          <widget class="QSplitter" name="splitter_10">
+           <property name="maximumSize">
+            <size>
+             <width>431</width>
+             <height>161</height>
+            </size>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <widget class="QSplitter" name="splitter_9">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <widget class="QLabel" name="label_11">
+             <property name="maximumSize">
+              <size>
+               <width>431</width>
+               <height>19</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>New Container Description</string>
+             </property>
+            </widget>
+            <widget class="QTextEdit" name="commitmsgEdit_2">
+             <property name="maximumSize">
+              <size>
+               <width>431</width>
+               <height>54</height>
+              </size>
+             </property>
+            </widget>
+           </widget>
+           <widget class="QSplitter" name="splitter_7">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <widget class="QLabel" name="label_4">
+             <property name="maximumSize">
+              <size>
+               <width>431</width>
+               <height>19</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Commit Message</string>
+             </property>
+            </widget>
+            <widget class="QSplitter" name="splitter_6">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <widget class="QTextEdit" name="commitmsgEdit">
+              <property name="maximumSize">
+               <size>
+                <width>314</width>
+                <height>54</height>
+               </size>
+              </property>
+             </widget>
+             <widget class="QPushButton" name="commitBttn">
+              <property name="maximumSize">
+               <size>
+                <width>112</width>
+                <height>54</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Commit</string>
+              </property>
+             </widget>
+            </widget>
+           </widget>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSplitter" name="splitter_16">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <widget class="QLabel" name="label_5">
+           <property name="maximumSize">
+            <size>
+             <width>211</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>16</pointsize>
+             <underline>true</underline>
+            </font>
+           </property>
+           <property name="text">
+            <string>Container Edit Options</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="inputFileButton_2">
+           <property name="maximumSize">
+            <size>
+             <width>271</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Add Input File from Reference</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="RequiredButton_2">
+           <property name="maximumSize">
+            <size>
+             <width>271</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Add Required File</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="outputFileButton_2">
+           <property name="maximumSize">
+            <size>
+             <width>271</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Add Output File</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="removeFileButton_2">
+           <property name="maximumSize">
+            <size>
+             <width>271</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Remove File</string>
+           </property>
+          </widget>
+          <widget class="QSplitter" name="splitter_15">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <widget class="QLabel" name="label">
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Currently Selected: </string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="selectedFileHeader">
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSplitter" name="splitter_14">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <widget class="QTextBrowser" name="frametextBrowser">
+           <property name="maximumSize">
+            <size>
+             <width>591</width>
+             <height>51</height>
+            </size>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_2">
+           <property name="font">
+            <font>
+             <pointsize>17</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Container Commit History</string>
+           </property>
+          </widget>
+          <widget class="QTableView" name="commithisttable">
+           <attribute name="horizontalHeaderDefaultSectionSize">
+            <number>80</number>
+           </attribute>
+           <attribute name="verticalHeaderDefaultSectionSize">
+            <number>24</number>
+           </attribute>
+           <attribute name="verticalHeaderMinimumSectionSize">
+            <number>12</number>
+           </attribute>
+          </widget>
+          <widget class="QSplitter" name="splitter_13">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <widget class="QSplitter" name="splitter_12">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <widget class="QPushButton" name="revertbttn">
+             <property name="text">
+              <string>Revert</string>
+             </property>
+            </widget>
+            <widget class="QPushButton" name="fileHistoryBttn">
+             <property name="text">
+              <string>File History</string>
+             </property>
+            </widget>
+           </widget>
+           <widget class="QPushButton" name="refreshBttn_4">
+            <property name="text">
+             <string>Refresh Container</string>
+            </property>
+           </widget>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
-     <widget class="QPushButton" name="testbttn">
-      <property name="geometry">
-       <rect>
-        <x>770</x>
-        <y>640</y>
-        <width>211</width>
-        <height>71</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Test Generate</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="testremovebttn">
-      <property name="geometry">
-       <rect>
-        <x>990</x>
-        <y>640</y>
-        <width>211</width>
-        <height>71</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Test Remove</string>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="NewContainerTab">
-     <attribute name="title">
-      <string>New</string>
-     </attribute>
-     <widget class="QGraphicsView" name="refContainerView">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>70</y>
-        <width>371</width>
-        <height>291</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QGraphicsView" name="curContainerView">
-      <property name="geometry">
-       <rect>
-        <x>720</x>
-        <y>70</y>
-        <width>371</width>
-        <height>291</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_6">
-      <property name="geometry">
-       <rect>
-        <x>730</x>
-        <y>30</y>
-        <width>281</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>14</pointsize>
-        <weight>50</weight>
-        <bold>false</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Current Container</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_7">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>40</y>
-        <width>311</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>14</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Reference Container</string>
-      </property>
-     </widget>
-     <widget class="QTableView" name="containerlisttable_2">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>370</y>
-        <width>371</width>
-        <height>131</height>
-       </rect>
-      </property>
-      <attribute name="horizontalHeaderDefaultSectionSize">
-       <number>80</number>
-      </attribute>
-      <attribute name="verticalHeaderDefaultSectionSize">
-       <number>24</number>
-      </attribute>
-      <attribute name="verticalHeaderMinimumSectionSize">
-       <number>12</number>
-      </attribute>
-     </widget>
-     <widget class="QPushButton" name="returncontlist_2">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>510</y>
-        <width>271</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Return List of Available Containers</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="commitNewButton">
-      <property name="geometry">
-       <rect>
-        <x>610</x>
-        <y>560</y>
-        <width>211</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Commit New Container</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="containerName_lineEdit">
-      <property name="geometry">
-       <rect>
-        <x>720</x>
-        <y>370</y>
-        <width>113</width>
-        <height>22</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_8">
-      <property name="geometry">
-       <rect>
-        <x>570</x>
-        <y>370</y>
-        <width>121</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Container Name</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_9">
-      <property name="geometry">
-       <rect>
-        <x>570</x>
-        <y>400</y>
-        <width>161</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Container Description</string>
-      </property>
-     </widget>
-     <widget class="QPlainTextEdit" name="messageText">
-      <property name="geometry">
-       <rect>
-        <x>720</x>
-        <y>476</y>
-        <width>391</width>
-        <height>71</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QPlainTextEdit" name="descriptionText">
-      <property name="geometry">
-       <rect>
-        <x>720</x>
-        <y>400</y>
-        <width>391</width>
-        <height>71</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_10">
-      <property name="geometry">
-       <rect>
-        <x>570</x>
-        <y>480</y>
-        <width>181</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Commit Message</string>
-      </property>
-     </widget>
-     <widget class="QWidget" name="layoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>490</x>
-        <y>70</y>
-        <width>224</width>
-        <height>221</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QPushButton" name="inputFileButton">
-         <property name="text">
-          <string>Add Input File from Reference</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="RequiredButton">
-         <property name="text">
-          <string>Add Required File</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="outputFileButton">
-         <property name="text">
-          <string>Add Output File</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="removeFileButton">
-         <property name="text">
-          <string>Remove File</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QGraphicsView" name="indexView2">
-      <property name="geometry">
-       <rect>
-        <x>490</x>
-        <y>0</y>
-        <width>221</width>
-        <height>61</height>
-       </rect>
-      </property>
-     </widget>
-    </widget>
-   </widget>
+    </item>
+   </layout>
    <widget class="QLabel" name="userstatuslbl">
     <property name="geometry">
      <rect>
@@ -688,7 +494,7 @@
      <x>0</x>
      <y>0</y>
      <width>1463</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProfile">

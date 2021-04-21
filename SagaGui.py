@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import *
-from PyQt5 import uic, QtWidgets
+from PyQt5 import uic, QtWidgets, QtCore
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
@@ -55,8 +55,8 @@ class UI(QMainWindow):
 
 
         ## newcontainertab handles all the QT features on the new container tab, Initiates to false
-        self.newcontainertab = NewContainerTab(self)
-        self.newcontainertab.setTab(False)
+        # self.newcontainertab = NewContainerTab(self)
+        # self.newcontainertab.setTab(False)
         ## maincontainer tab is the active container the user is working on
         self.maincontainertab = MainContainerTab(self)
         self.maincontainertab.setTab(False)
@@ -73,11 +73,11 @@ class UI(QMainWindow):
         ###########Tray Actions #############
         self.actionSign_In.triggered.connect(partial(SignIn, self))
         self.actionSign_Out.triggered.connect(partial(SignOut, self))
-        self.actionNew_Container.triggered.connect(partial(newContainer, self,self.newcontainertab))
+        self.actionNew_Container.triggered.connect(partial(newContainer, self,self.maincontainertab))
         self.actionFind_Local_Container.triggered.connect(partial(find_Local_Container, self, self.maincontainertab))
         self.actionNew_Section.triggered.connect(partial(newSection, self))
         self.actionEnter_Section.triggered.connect(partial(enterSection, self))
-
+        self.maincontainerview.installEventFilter(self)
 
         self.checkUserStatus()
         self.startingcheck = False
@@ -97,6 +97,14 @@ class UI(QMainWindow):
 
 
 
+    def eventFilter(self, source, event):
+        if (event.type() == QtCore.QEvent.FocusIn and
+            source is self.maincontainerview):
+            print('eventFilter: focus in')
+            self.maincontainertab.checkdelta()
+            self.maincontainertab.checkUpstream()
+            # return true here to bypass default behaviour
+        return super(UI, self).eventFilter(source, event)
 
     def getWorldContainers(self):
         response = requests.get(BASE + 'CONTAINERS/List',headers={"Authorization": 'Bearer ' + self.authtoken['auth_token']})

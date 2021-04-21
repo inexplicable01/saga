@@ -11,7 +11,7 @@ import time
 import requests
 import json
 import warnings
-from Config import typeInput,typeOutput,typeRequired
+from Config import typeInput,typeOutput,typeRequired, sagaGuiDir
 from hackpatch import workingdir
 from SagaApp.SagaUtil import FrameNumInBranch
 from datetime import datetime
@@ -38,9 +38,9 @@ class Container:
 
 
     @classmethod
-    def InitiateContainer(cls):
-        newcontainer = cls(containerworkingfolder=workingdir,
-                           containerName="",
+    def InitiateContainer(cls, containerName = '', directory = sagaGuiDir):
+        newcontainer = cls(containerworkingfolder=directory,
+                           containerName=containerName,
                            containerId="",
                            FileHeaders={},
                            allowedUser=[],

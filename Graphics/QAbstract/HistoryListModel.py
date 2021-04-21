@@ -7,17 +7,20 @@ import time
 headers = ['Rev', 'Commit Msg', 'Time']
 
 class HistoryListModel(QAbstractTableModel):
-    def __init__(self, historyinfolist):
+    def __init__(self, historyinfodict):
         super(HistoryListModel, self).__init__()
         containdata=[]
         sortdict={}
-        for rev, revdetails in historyinfolist.items():
-            row = [rev, revdetails['commitmessage'] , time.ctime(revdetails['timestamp'])]
-            sortdict[rev] = revdetails['timestamp']
-            containdata.append(row)
-        def mysort(element):
-            return sortdict[element[0]]
-        containdata.sort(key=mysort)
+        if len(historyinfodict.keys()) == 0:
+            containdata.append(['Rev0', 'Container Not Yet Committed', ''])
+        else:
+            for rev, revdetails in historyinfodict.items():
+                row = [rev, revdetails['commitmessage'] , time.ctime(revdetails['timestamp'])]
+                sortdict[rev] = revdetails['timestamp']
+                containdata.append(row)
+            def mysort(element):
+                return sortdict[element[0]]
+            containdata.sort(key=mysort)
 
         self.containdata = containdata
 

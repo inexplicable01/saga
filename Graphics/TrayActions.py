@@ -116,12 +116,12 @@ class InputDialog(QDialog):
         self.MainGuiHandle.checkUserStatus()
         self.close()
 
-def newContainer(MainGuiHandle,newcontainertab):
+def newContainer(MainGuiHandle,maincontainertab):
     newcontainergui = newContainerDialog("Select a local location for building your container")
     inputs = newcontainergui.getInputs()
     if inputs:
-        newcontainertab.initiate(inputs)
-        MainGuiHandle.tabWidget.setCurrentIndex(newcontainertab.index)
+        maincontainertab.initiate(inputs)
+        MainGuiHandle.tabWidget.setCurrentIndex(maincontainertab.index)
 
     # dialog = QFileDialog()
     # foo_dir = dialog.getExistingDirectory(MainGuiHandle, 'Select an awesome directory')
