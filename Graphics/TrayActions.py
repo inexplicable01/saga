@@ -11,7 +11,7 @@ import os
 import sys
 import requests
 import json
-from Config import BASE
+from Config import BASE,testerlogin
 
 # from PyQtTesting import BASE
 
@@ -46,9 +46,9 @@ class InputDialog(QDialog):
         self.username = QLineEdit(self)
         self.email = QLineEdit(self)
         self.password = QLineEdit(self)
-        self.username.setText('UserC')
-        self.email.setText('usercemail@gmail.com')
-        self.password.setText('passwordC')
+        self.username.setText(testerlogin['first_name'])
+        self.email.setText(testerlogin['email'])
+        self.password.setText(testerlogin['password'])
 
         buttonBox = QDialogButtonBox(self)
         signinbttn = buttonBox.addButton('Sign In', QDialogButtonBox.ActionRole)
