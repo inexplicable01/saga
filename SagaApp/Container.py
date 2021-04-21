@@ -312,51 +312,5 @@ class Container:
 
             open(os.path.join(refpath,branch, rev), 'wb').write(revyaml.content)
 
-    @staticmethod
-    def compare(cont1,cont2):
-        return recursivecompare(cont1.dictify(), cont2.dictify())
-
-    # @staticmethod
-    # def compareFileHeaders(curcont:'Container', newcont:'Container'):
-    #     newcont2keys = list(newcont.keys())
-    #     diff={}
-    #     for fileheader, filevalue in curcont.FileHeaders.items():
-    #         if fileheader not in newcont.FileHeaders.keys:
-    #             diff[fileheader] = 'MissingInDict2'
-    #             continue
-    #         else:
-    #             newcont2keys.remove(key)
-    #         if dict2[key] != value:
-    #             identical = False
-    #             diff[key] = [value, dict2[key]]
-
-
-def recursivecompare(dict1, dict2):
-    diff = {}
-    identical = True
-    dict2keys = list(dict2.keys())
-    for key, value in dict1.items():
-        if key not in dict2.keys():
-            # catches the keys missing in dict2 which is the new cont which means its something deleted
-            diff[key]='MissingInDict2'
-            identical=False
-            continue
-        else:
-            dict2keys.remove(key)
-        if type(value) is not dict:
-            if dict2[key] != value:
-                identical = False
-                diff[key] = [value, dict2[key]]
-        else:
-            iden, difference = recursivecompare(value, dict2[key])
-            identical = identical if iden else iden
-            diff[key] = difference
-    for remainingkey in dict2keys:
-        diff[remainingkey]='MissingInDict1'
-        # catches the keys missing in dict1 whic means the new cont has fileheaders curcont doesnt which means user added new fileheader
-    return identical, diff
-
-
-
 
 

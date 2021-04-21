@@ -237,8 +237,8 @@ class containerLine(QGraphicsLineItem):
         p2 = self.line().center() + QPointF(5*math.cos(b),-5*math.sin(b))
         c = self.line().angle()/180.0*pi
         p3 = self.line().center() + QPointF(10 * math.cos(c), -10 * math.sin(c))
-        # if 'ContainerC_WaichakContainer'==self.lineid:
-            # print(self.lineid, self.line().angle())
+        if 'ContainerC_WaichakContainer'==self.lineid:
+            print(self.lineid, self.line().angle())
         # arrowP1 = self.line().center() + QPointF(sin(angle + M_PI / 3) * arrowSize,
         #                                 cos(angle + M_PI / 3) * arrowSize);
         # QPointF

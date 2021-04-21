@@ -20,8 +20,6 @@ from os import listdir
 import shutil
 # import threading
 # import time
-import random
-import string
 
 
 class MainContainerTab():
@@ -35,7 +33,7 @@ class MainContainerTab():
         self.refreshBttn = mainguihandle.refreshBttn
         self.refreshBttnUpstream = mainguihandle.refreshBttn_2
         self.downloadUpstreamBttn = mainguihandle.refreshBttn_3
-        # self.refreshContainerBttn = mainguihandle.refreshBttn_4
+        self.refreshContainerBttn = mainguihandle.refreshBttn_4
         self.downloadUpstreamBttn.setDisabled(True)
         # self.refreshContainerBttn.setDisabled(True)
         self.framelabel = mainguihandle.framelabel
@@ -50,8 +48,6 @@ class MainContainerTab():
         self.selectedFileHeader = mainguihandle.selectedFileHeader
         # self.editFileButton_2 = mainguihandle.editFileButton_2
         self.removeFileButton_2 = mainguihandle.removeFileButton_2
-        self.testbttn= mainguihandle.testbttn
-        self.testremovebttn = mainguihandle.testremovebttn
         # self.fileHistoryBttn = mainguihandle.fileHistoryBttn
         self.descriptionText = mainguihandle.commitmsgEdit_2
 
@@ -75,9 +71,7 @@ class MainContainerTab():
         self.refreshBttn.clicked.connect(self.checkdelta)
         self.refreshBttnUpstream.clicked.connect(self.checkUpstream)
         self.downloadUpstreamBttn.clicked.connect(self.downloadUpstream)
-        # self.refreshContainerBttn.clicked.connect(self.refreshContainer)
-        self.testbttn.clicked.connect(self.numeroustest)
-        self.testremovebttn.clicked.connect(self.removenumeroustest)
+        self.refreshContainerBttn.clicked.connect(self.refreshContainer)
         # self.resetbutton.clicked.connect(self.resetrequest)
         # self.rebasebutton.clicked.connect(self.rebaserequest)
         self.commitBttn.clicked.connect(self.commit)
@@ -209,7 +203,7 @@ class MainContainerTab():
 
     def compareToUpstream(self, authToken):
         workingFrame = self.mainContainer.workingFrame
-        # refframe = Frame(workingFrame.refframefn, None, workingFrame.localfilepath)
+        refframe = Frame(workingFrame.refframefn, None, workingFrame.localfilepath)
         changes = {}
         for fileheader in self.mainContainer.filestomonitor().keys():
             if workingFrame.filestrack[fileheader].connection is not None:
@@ -238,16 +232,7 @@ class MainContainerTab():
         fixInput = False
         # allowCommit, changes, fixInput , self.alterfiletracks= self.mainContainer.checkFrame(self.mainContainer.workingFrame)
         self.changes, self.alterfiletracks = self.mainContainer.workingFrame.compareToRefFrame(self.mainContainer.filestomonitor())
-        for fileheader, changedetails in self.changes.items():
-            if fileheader in self.mainContainer.filestomonitor().keys():
-                # only set allowCommit to true if the changes involve what is in the Container's need to monitor
-                allowCommit = True
-        refContainer = Container.LoadContainerFromYaml(self.mainContainerpath)
-
-        identical, diff =Container.compare(refContainer,self.mainContainer)
-        ## This primarily checks for differences (adding or removing ) filehandles.
-        # There could be scenarios that filetracks are difffrerent but the filehandles did not change
-        if not identical:
+        if len(self.changes) > 0:
             allowCommit = True
 
         self.commitBttn.setEnabled(allowCommit)
@@ -328,7 +313,6 @@ class MainContainerTab():
 
     def readcontainer(self,path):
         # path = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
-        self.mainContainerpath = path
         self.mainContainer = Container.LoadContainerFromYaml(path, revnum=None)
         [self.workingdir, file_name] = os.path.split(path)
         self.containerlabel.setText('Container Name : ' + self.mainContainer.containerName)
@@ -351,7 +335,7 @@ class MainContainerTab():
         self.curfiletype = type
         self.selectedFileHeader.setText(fileheader)
 
-        if fileheader in self.mainContainer.filestomonitor().keys():
+        if fileheader in self.mainContainer.filestomonitor():
             self.removeFileButton_2.setEnabled(True)
         else:
             self.removeFileButton_2.setEnabled(False)
@@ -392,7 +376,6 @@ class MainContainerTab():
         self.revertbttn.setText('Revert back to ' + self.reverttorev)
         self.revertbttn.setEnabled(True)
 
-
     def initiate(self, inputs):
         os.mkdir(inputs['dir'])
         os.mkdir(os.path.join(inputs['dir'], 'Main'))
@@ -419,84 +402,3 @@ class MainContainerTab():
         self.newContainerStatus = True
         self.descriptionText.setEnabled(True)
         self.setTab(True)
-
-    def numeroustest(self):
-        maxinputadder=2
-        counter = 0
-        for ifile in range(0,20):
-            fileheader = ''.join(random.choices(string.ascii_uppercase +
-                                         string.digits, k=7))
-            filepath = os.path.join(self.mainContainer.containerworkingfolder, 'Test' + fileheader + '.txt')
-            with open(filepath, 'w') as newfile:
-                newfile.write(''.join(random.choices(string.ascii_uppercase +string.digits, k=90)))
-            fileType = random.choice([typeInput,typeRequired, typeOutput])
-            # fileType=typeInput
-            if fileType == typeInput and counter<maxinputadder:
-                availablecontainers = os.listdir(os.path.join(self.mainguihandle.guiworkingdir, 'ContainerMapWorkDir'))
-                print(availablecontainers)
-
-                outputfile = []
-                while len(outputfile)==0:
-                    # print(random.choice(availablecontainers))
-                    containerId = random.choice(availablecontainers)
-                    refcontainerpath = os.path.join('ContainerMapWorkDir', containerId, 'containerstate.yaml')
-                    refcontainer = Container.LoadContainerFromYaml(refcontainerpath)
-                    for fileheader, containerdetails in refcontainer.FileHeaders.items():
-                        if containerdetails['type']==typeOutput:
-                            outputfile.append(fileheader)
-                print(containerId)
-                print(outputfile)
-                upstreaminfo={'fileheader': random.choice(outputfile), 'type': fileType,
-                              'UpstreamContainer': refcontainer}
-                upstreamcontainer = upstreaminfo['UpstreamContainer']
-                branch = 'Main'
-                fullpath, filetrack = upstreamcontainer.workingFrame.downloadInputFile(upstreaminfo['fileheader'],
-                                                                                       self.workingdir)
-                self.mainContainer.addInputFileObject(fileheader=upstreaminfo['fileheader'],
-                                                      reffiletrack=filetrack,
-                                                      fullpath=fullpath,
-                                                      refContainerId=upstreamcontainer.containerId,
-                                                      branch=branch,
-                                                      rev='Rev' + str(upstreamcontainer.revnum))
-                counter +=1
-            if fileType==typeRequired:
-                containerFileInfo = {'Container': 'here', 'type': fileType}
-                fileInfo = {'fileheader': fileheader, 'FilePath': filepath,
-                            'Owner': 'owner', 'Description': 'descrip',
-                            'ContainerFileInfo': containerFileInfo}
-                self.mainContainer.addFileObject(fileheader, containerFileInfo, fileType)
-                self.mainContainer.workingFrame.addFileTotrack(filepath, fileheader, fileType)
-            if fileType==typeOutput:
-                containerFileInfo = {'Container': [], 'type': fileType}
-                fileInfo = {'fileheader': fileheader, 'FilePath': filepath,
-                            'Owner': 'owner', 'Description': 'descrip',
-                            'ContainerFileInfo': containerFileInfo}
-                self.mainContainer.addFileObject(fileheader, containerFileInfo, fileType)
-                self.mainContainer.workingFrame.addOutputFileTotrack(fileInfo, fileType)
-
-        self.maincontainerplot.plot(self.changes)
-
-    def removenumeroustest(self):
-        for ifile in range(0, 5):
-            remheader = random.choice(list(self.mainContainer.filestomonitor().keys()))
-            wmap = WorldMap()
-            candelete, candeletemesssage = wmap.CheckContainerCanDeleteOutput(
-                curcontainerid=self.mainContainer.containerId, fileheader=remheader,
-                guiworkingdir=self.mainguihandle.guiworkingdir, authtoken=self.mainguihandle.authtoken)
-            if candelete:
-                if remheader in self.mainContainer.workingFrame.filestrack.keys():
-                    del self.mainContainer.workingFrame.filestrack[remheader]
-                if remheader in self.mainContainer.FileHeaders.keys():
-                    del self.mainContainer.FileHeaders[remheader]
-                print('delete File' + remheader)
-            else:
-                print('dont delete File' + remheader)
-        self.maincontainerplot.plot({})
-        # if fileheader:
-        #     if self.curfileheader in self.mainContainer.workingFrame.filestrack.keys():
-        #         del self.mainContainer.workingFrame.filestrack[self.curfileheader]
-        #     if self.curfileheader in self.mainContainer.FileHeaders.keys():
-        #         del self.mainContainer.FileHeaders[self.curfileheader]
-        #     self.maincontainerplot.plot(self.changes)
-        #     self.removeFileButton_2.setEnabled(False)
-
