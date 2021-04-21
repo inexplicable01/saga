@@ -37,8 +37,7 @@ class ContainerPlot():
         self.curContainer = newcontainer
 
     def plot(self, changes):
-        if self.scene is None:
-            self.scene = QGraphicsScene()
+        self.scene.clear()
         typecounter = {typeInput: 0, typeOutput: 0, typeRequired: 0}
         for fileheader, fileinfo in self.curContainer.FileHeaders.items():
             type = fileinfo['type']
@@ -53,10 +52,10 @@ class ContainerPlot():
                                                        self.curContainer.workingFrame.filestrack[fileheader].file_name)
             self.RectBox[fileheader].setPen(QPen(colorscheme[type]))
             self.RectBox[fileheader].text = fileheader
-
             self.scene.addItem(self.RectBox[fileheader])
-            # self.scene.addItem(self.title[fileheader])
             typecounter[type] += 1
+
+
         self.view.setScene(self.scene)
 
     def removeRect(self, header):
