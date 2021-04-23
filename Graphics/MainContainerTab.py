@@ -50,9 +50,10 @@ class MainContainerTab():
         self.selectedFileHeader = mainguihandle.selectedFileHeader
         # self.editFileButton_2 = mainguihandle.editFileButton_2
         self.removeFileButton_2 = mainguihandle.removeFileButton_2
-        self.testbttn= mainguihandle.testbttn
-        self.testremovebttn = mainguihandle.testremovebttn
-        # self.fileHistoryBttn = mainguihandle.fileHistoryBttn
+        # self.testbttn= mainguihandle.testbttn
+        # self.testremovebttn = mainguihandle.testremovebttn
+        self.fileHistoryBttn = mainguihandle.fileHistoryBttn
+        self.fileHistoryBttn.setDisabled(True)
         self.descriptionText = mainguihandle.commitmsgEdit_2
 
         self.index=1
@@ -76,8 +77,8 @@ class MainContainerTab():
         self.refreshBttnUpstream.clicked.connect(self.checkUpstream)
         self.downloadUpstreamBttn.clicked.connect(self.downloadUpstream)
         # self.refreshContainerBttn.clicked.connect(self.refreshContainer)
-        self.testbttn.clicked.connect(self.numeroustest)
-        self.testremovebttn.clicked.connect(self.removenumeroustest)
+        # self.testbttn.clicked.connect(self.numeroustest)
+        # self.testremovebttn.clicked.connect(self.removenumeroustest)
         # self.resetbutton.clicked.connect(self.resetrequest)
         # self.rebasebutton.clicked.connect(self.rebaserequest)
         self.commitBttn.clicked.connect(self.commit)
@@ -172,6 +173,7 @@ class MainContainerTab():
                 self.mainContainer.workingFrame.localfilepath + '/' + self.mainContainer.workingFrame.filestrack[fileheader].file_name)
             fileb = open(fileEditPath, 'rb')
             self.mainContainer.workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
+            self.mainContainer.workingFrame.filestrack[fileheader].file_id = change['file_id']
             self.mainContainer.workingFrame.filestrack[fileheader].connection.Rev = change['revision']
             chgstr = chgstr + fileheader + '\t' + 'File Updated From Upstream' + '\n'
         self.changes = self.compareToUpstream(self.mainguihandle.authtoken)
@@ -230,7 +232,8 @@ class MainContainerTab():
                         workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
                         # calculate md5 of file, if md5 has changed, update md5
                         if workingFrame.filestrack[fileheader].md5 != inputFrame.filestrack[fileheader].md5:
-                            changes[fileheader] = {'reason': 'MD5 Updated Upstream', 'revision': inputFrame.filestrack[fileheader].connection.Rev, 'inputframe': inputFrame}
+                            changes[fileheader] = {'reason': 'MD5 Updated Upstream', 'revision': inputFrame.filestrack[fileheader].connection.Rev, 'file_id': inputFrame.filestrack[fileheader].file_id,
+                                                   'inputframe': inputFrame}
         return changes
 
     def checkdelta(self):

@@ -43,28 +43,28 @@ class InputDialog(QDialog):
         self.MainGuiHandle=MainGuiHandle
         self.setWindowTitle('File Information')
         self.setMinimumSize(600,300)
-        self.username = QLineEdit(self)
+        # self.username = QLineEdit(self)
         self.email = QLineEdit(self)
         self.password = QLineEdit(self)
-        self.username.setText('UserC')
-        self.email.setText('usercemail@gmail.com')
-        self.password.setText('passwordC')
+        # self.username.setText('UserC')
+        self.email.setText('happyfamilylee@gmail.com')
+        self.password.setText('Password1234')
 
         buttonBox = QDialogButtonBox(self)
         signinbttn = buttonBox.addButton('Sign In', QDialogButtonBox.ActionRole)
-        genbttn = buttonBox.addButton('Generate new User', QDialogButtonBox.ActionRole)
-        signupbttn = buttonBox.addButton('Sign Up', QDialogButtonBox.ActionRole)
+        # genbttn = buttonBox.addButton('Generate new User', QDialogButtonBox.ActionRole)
+        # signupbttn = buttonBox.addButton('Sign Up', QDialogButtonBox.ActionRole)
         cancelbttn = buttonBox.addButton('Cancel', QDialogButtonBox.AcceptRole)
 
-        genbttn.clicked.connect(self.gen)
+        # genbttn.clicked.connect(self.gen)
         cancelbttn.clicked.connect(self.close)
-        signupbttn.clicked.connect(self.signup)
+        # signupbttn.clicked.connect(self.signup)
         signinbttn.clicked.connect(self.signin)
 
 
 
         layout = QFormLayout(self)
-        layout.addRow("username", self.username)
+        # layout.addRow("username", self.username)
         layout.addRow("Email", self.email)
         layout.addRow("Password", self.password)
         # layout.addRow("Owner", self.third)

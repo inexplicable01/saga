@@ -466,16 +466,6 @@
              <string>Refresh Container</string>
             </property>
            </widget>
-           <widget class="QPushButton" name="testbttn">
-            <property name="text">
-             <string>Test Button</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="testremovebttn">
-            <property name="text">
-             <string>Test Remove Button</string>
-            </property>
-           </widget>
           </widget>
          </widget>
         </item>
