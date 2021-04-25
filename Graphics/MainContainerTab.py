@@ -50,8 +50,8 @@ class MainContainerTab():
         self.selectedFileHeader = mainguihandle.selectedFileHeader
         # self.editFileButton_2 = mainguihandle.editFileButton_2
         self.removeFileButton_2 = mainguihandle.removeFileButton_2
-        self.testbttn= mainguihandle.testbttn
-        self.testremovebttn = mainguihandle.testremovebttn
+        # self.testbttn= mainguihandle.testbttn
+        # self.testremovebttn = mainguihandle.testremovebttn
         # self.fileHistoryBttn = mainguihandle.fileHistoryBttn
         self.descriptionText = mainguihandle.commitmsgEdit_2
 
@@ -76,8 +76,8 @@ class MainContainerTab():
         self.refreshBttnUpstream.clicked.connect(self.checkUpstream)
         self.downloadUpstreamBttn.clicked.connect(self.downloadUpstream)
         # self.refreshContainerBttn.clicked.connect(self.refreshContainer)
-        self.testbttn.clicked.connect(self.numeroustest)
-        self.testremovebttn.clicked.connect(self.removenumeroustest)
+        # self.testbttn.clicked.connect(self.numeroustest)
+        # self.testremovebttn.clicked.connect(self.removenumeroustest)
         # self.resetbutton.clicked.connect(self.resetrequest)
         # self.rebasebutton.clicked.connect(self.rebaserequest)
         self.commitBttn.clicked.connect(self.commit)
@@ -330,6 +330,7 @@ class MainContainerTab():
         # path = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
         self.mainContainerpath = path
         self.mainContainer = Container.LoadContainerFromYaml(path, revnum=None)
+
         [self.workingdir, file_name] = os.path.split(path)
         self.containerlabel.setText('Container Name : ' + self.mainContainer.containerName)
 
@@ -341,6 +342,10 @@ class MainContainerTab():
         self.commithisttable.setColumnWidth(2, self.commithisttable.width() * 0.29)
         self.maincontainerplot=ContainerPlot(self, self.maincontainerview, container=self.mainContainer)
         self.maincontainerplot.plot(self.changes)
+        ## Grab container history
+        changesbyfile=self.mainContainer.commithistorybyfile()
+        self.histModel.individualfilehistory(changesbyfile)
+
         # if self.menuContainer.isEnabled() and self.mainguihandle.authtoken:
         #     self.tabWidget.setEnabled(True)
         self.setTab(True)
@@ -350,6 +355,9 @@ class MainContainerTab():
         self.curfileheader = fileheader
         self.curfiletype = type
         self.selectedFileHeader.setText(fileheader)
+        self.histModel.edithighlight(fileheader,type)
+        # self.histModel.dataChanged()
+        self.histModel.layoutChanged.emit()
 
         if fileheader in self.mainContainer.filestomonitor().keys():
             self.removeFileButton_2.setEnabled(True)

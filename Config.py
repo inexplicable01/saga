@@ -1,7 +1,7 @@
 from PyQt5.QtCore import *
 
-BASE = "http://fatpanda1985.pythonanywhere.com/"
-# BASE = "http://127.0.0.1:5000/"
+# BASE = "http://fatpanda1985.pythonanywhere.com/"
+BASE = "http://127.0.0.1:5000/"
 import os
 WorldMapDir = 'ContainerMapWorkDir'
 sagaGuiDir = os.getcwd()
@@ -31,7 +31,19 @@ mechuser2login = {'first_name':'Jane',
                     'password':'user2password',
 }
 
-testerlogin=mechuser2login
+userclogin = {'first_name':'default',
+                   'last_name':'lee',
+                   'email':'usercemail@gmail.com',
+                    'password':'passwordC',
+}
+
+oleglogin = {'first_name':'o',
+                   'last_name':'oleg',
+                   'email':'o.petrenko@gmail.com',
+                    'password':'password',
+}
+
+testerlogin=userclogin
 
 colorscheme = {typeInput: Qt.yellow, typeOutput: Qt.green, typeRequired: Qt.blue, changedate: Qt.cyan,\
                changemd5: Qt.red, changenewfile: Qt.black, changeremoved: Qt.darkCyan}

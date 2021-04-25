@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1463</width>
-    <height>925</height>
+    <width>1219</width>
+    <height>855</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,7 +28,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="Map">
        <attribute name="title">
@@ -83,6 +83,13 @@
           </property>
          </widget>
         </item>
+        <item row="4" column="1">
+         <widget class="QPushButton" name="ganttbttn">
+          <property name="text">
+           <string>Gantt Chart</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="ContainerTab">
@@ -109,7 +116,7 @@
             <property name="maximumSize">
              <size>
               <width>431</width>
-              <height>91</height>
+              <height>92</height>
              </size>
             </property>
             <property name="font">
@@ -236,7 +243,7 @@
            <property name="maximumSize">
             <size>
              <width>431</width>
-             <height>161</height>
+             <height>164</height>
             </size>
            </property>
            <property name="orientation">
@@ -493,7 +500,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1463</width>
+     <width>1219</width>
      <height>21</height>
     </rect>
    </property>

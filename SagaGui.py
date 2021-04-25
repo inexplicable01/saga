@@ -53,7 +53,6 @@ class UI(QMainWindow):
         if not os.path.exists(os.path.join(self.guiworkingdir, 'SagaGuiData')):
             os.mkdir(os.path.join(self.guiworkingdir, 'SagaGuiData'))
 
-
         ## newcontainertab handles all the QT features on the new container tab, Initiates to false
         # self.newcontainertab = NewContainerTab(self)
         # self.newcontainertab.setTab(False)
@@ -66,9 +65,6 @@ class UI(QMainWindow):
         self.authtoken = None
         self.tabWidget.setEnabled(False)
         self.menuContainer.setEnabled(False)
-
-
-
 
         ###########Tray Actions #############
         self.actionSign_In.triggered.connect(partial(SignIn, self))
