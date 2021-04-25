@@ -46,7 +46,7 @@ class ContainerPlot():
             change=None
             if fileheader in changes.keys():
                 change = changes[fileheader]
-            self.RectBox[fileheader] = coolerRectangle(100*typeindex[type] , 200 + 100*typecounter[type],  \
+            self.RectBox[fileheader] = coolerRectangle(150*typeindex[type] , 200 + 100*typecounter[type],  \
                                                        containerBoxWidth, containerBoxHeight,
                                                             type,self.curContainer , fileheader, self.guiHandle, self.view, change,\
                                                        self.curContainer.workingFrame.filestrack[fileheader].file_name)
@@ -119,7 +119,7 @@ class coolerRectangle(QGraphicsRectItem):
         painter.drawRect(rect)
         # Draw text
         painter.setPen(QPen(QBrush(Qt.black), 6))
-        painter.drawText(textRect, Qt.AlignCenter, self.fileheader)
+        painter.drawText(textRect, Qt.AlignCenter, self.filename)
         # Draw Picture
         filename, file_extension = os.path.splitext(self.filename)
 

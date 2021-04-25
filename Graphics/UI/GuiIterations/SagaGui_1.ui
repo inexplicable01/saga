@@ -40,10 +40,6 @@ QMenuBar::item {
     border-radius: 5px;
 }
 
- QMenuBar::item:selected, QMenu::item:hover{
- background-color: #5c55e9;
- }
-
 QMenu {
     background-color: #ABABAB; /* sets background of the menu */
     border: 1px solid black;
@@ -54,8 +50,8 @@ QMenu {
  color: #ffffff;
  }
 
- QMenu::item:selected, QMenu::item:hover{
- background-color: #5c55e9;
+ QMenu::item:selected{
+ background-color:transparent #5c55e9;
  }
 
 
@@ -81,24 +77,21 @@ QMenu {
    <widget class="QLabel" name="userstatuslbl">
     <property name="geometry">
      <rect>
-      <x>780</x>
+      <x>920</x>
       <y>0</y>
-      <width>481</width>
+      <width>171</width>
       <height>41</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>10</pointsize>
+      <pointsize>14</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
     </property>
     <property name="text">
      <string>User Status</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLabel" name="revlabel">
@@ -125,12 +118,9 @@ QMenu {
     </property>
     <property name="font">
      <font>
-      <family>Open Sans</family>
-      <pointsize>16</pointsize>
+      <pointsize>20</pointsize>
       <weight>75</weight>
-      <italic>false</italic>
       <bold>true</bold>
-      <kerning>true</kerning>
      </font>
     </property>
     <property name="styleSheet">
@@ -138,8 +128,8 @@ QMenu {
     background: rgb(61, 61, 61);
 	color: White;
 	border: 1px solid rgb(20, 20, 20);
-	border-radius: 3px;
-	padding: 3px;
+	border-radius: 2px;
+	padding: 5px;
 
 }
 
@@ -152,13 +142,13 @@ background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3d3d3d, stop: 0
 }
 
 QTabBar::tab:!selected {
-margin-top: 4px; /* make non-selected tabs look smaller */
+margin-top: 5px; /* make non-selected tabs look smaller */
 }
 
 QTabBar::tab:selected {
 /* expand/overlap to the left and right by 4px */
-margin-left: -3px;
-margin-right: -3px;
+margin-left: -6px;
+margin-right: -6px;
 }
 QTabBar::tab:first:selected {
 margin-left: 0; /* the first selected tab has nothing to overlap with on the left */
@@ -188,12 +178,9 @@ QLabel
 	font-size: 16px;
 
 }
-#mapTitle {
-	font-size: 24px
-}
 
 #containerlabel {
-	font-size: 24px
+	font-size: 20px
 }
 
 /*-----QPushButton-----*/
@@ -435,15 +422,6 @@ QTreeView::branch:open:has-children:has-siblings
 
 }
 
-QTextEdit
-{
-	color: black;
-}
-
-QTextBrowser
-{
-	color: #ffb113;
-}
 
 /*-----QTableView &amp; QTableWidget-----*/
 QTableView
@@ -621,7 +599,7 @@ QScrollBar::sub-page:vertical
      <attribute name="title">
       <string>Map</string>
      </attribute>
-     <widget class="QLabel" name="mapTitle">
+     <widget class="QLabel" name="label_3">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -655,7 +633,7 @@ QScrollBar::sub-page:vertical
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>60</y>
+        <y>57</y>
         <width>591</width>
         <height>511</height>
        </rect>
@@ -665,7 +643,7 @@ QScrollBar::sub-page:vertical
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>570</y>
+        <y>567</y>
         <width>178</width>
         <height>36</height>
        </rect>
@@ -679,7 +657,7 @@ QScrollBar::sub-page:vertical
        <rect>
         <x>630</x>
         <y>370</y>
-        <width>431</width>
+        <width>371</width>
         <height>201</height>
        </rect>
       </property>
@@ -701,7 +679,7 @@ QScrollBar::sub-page:vertical
        <rect>
         <x>630</x>
         <y>570</y>
-        <width>441</width>
+        <width>197</width>
         <height>36</height>
        </rect>
       </property>
@@ -930,7 +908,7 @@ QScrollBar::sub-page:vertical
        <rect>
         <x>440</x>
         <y>-10</y>
-        <width>391</width>
+        <width>241</width>
         <height>51</height>
        </rect>
       </property>
@@ -1000,7 +978,7 @@ QScrollBar::sub-page:vertical
          </font>
         </property>
         <property name="text">
-         <string>Rev</string>
+         <string>TextLabel</string>
         </property>
        </widget>
       </widget>
@@ -1115,45 +1093,48 @@ QScrollBar::sub-page:vertical
        <string>Remove File</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label">
+     <widget class="QSplitter" name="splitter_15">
       <property name="geometry">
        <rect>
         <x>860</x>
         <y>570</y>
-        <width>162</width>
+        <width>170</width>
         <height>19</height>
        </rect>
       </property>
-      <property name="font">
-       <font>
-        <pointsize>-1</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>16777215</height>
+       </size>
       </property>
-      <property name="text">
-       <string>Currently Selected: </string>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
       </property>
-     </widget>
-     <widget class="QLabel" name="selectedFileHeader">
-      <property name="geometry">
-       <rect>
-        <x>1020</x>
-        <y>570</y>
-        <width>251</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>-1</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>FileName</string>
-      </property>
+      <widget class="QLabel" name="label">
+       <property name="font">
+        <font>
+         <pointsize>-1</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Currently Selected: </string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="selectedFileHeader">
+       <property name="font">
+        <font>
+         <pointsize>-1</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
      </widget>
     </widget>
    </widget>
