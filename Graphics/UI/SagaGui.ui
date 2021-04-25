@@ -40,6 +40,10 @@ QMenuBar::item {
     border-radius: 5px;
 }
 
+QMenuBar::item:disabled {
+	color:rgb(139, 139, 139)
+}
+
  QMenuBar::item:selected, QMenu::item:hover{
  background-color: #5c55e9;
  }
@@ -147,6 +151,11 @@ QTabWidget::pane &gt; QWidget { /* The tab widget frame */
     background: rgb(61, 61, 61);
 }
 
+QTabBar::tab:disabled {
+	color: rgb(139, 139, 139)
+}
+
+
 QTabBar::tab:selected, QTabBar::tab:hover {
 background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3d3d3d, stop: 0.4 rgb(141, 141, 141), stop: 0.5 rgb(141, 141, 141), stop: 1.0 #3d3d3d);
 }
@@ -215,6 +224,7 @@ QPushButton
 QPushButton::disabled
 {
 	background-color: #5c5c5c;
+	color: rgb(158, 158, 158)
 
 }
 
