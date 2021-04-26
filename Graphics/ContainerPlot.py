@@ -107,7 +107,7 @@ class coolerRectangle(QGraphicsRectItem):
         rect = self.boundingRect()
         additionalwidth = 100
         textRect = QRectF(rect.topLeft().x()-additionalwidth/2, rect.topLeft().y()+50, fileboxWidth+additionalwidth,20)
-        picRect = QRectF(rect.topLeft().x(), rect.topLeft().y(), rect.width() / 2,rect.height() / 2)
+        picRect = QRectF(rect.topLeft().x(), rect.topLeft().y(), rect.width() / 1.4,rect.height() / 1.4)
         picRect.moveCenter(rect.center())
 
         # Draw type Background color
