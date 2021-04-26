@@ -91,9 +91,9 @@ class coolerRectangle(QGraphicsRectItem):
         self.filename = filename
 
     def mousePressEvent(self,event):
-        print('pressed huh' + self.type)
+        # print('pressed huh' + self.type)
         self.guiHandle.coolerRectangleFeedback(self.type, self.view, self.fileheader , self.curContainer)
-        print('filename ', self.filename)
+        # print('filename ', self.filename)
         self.update()
 
     def boundingRect(self):

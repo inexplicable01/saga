@@ -11,7 +11,7 @@ import os
 import sys
 import requests
 import json
-from Config import BASE
+from Config import BASE,testerlogin
 
 # from PyQtTesting import BASE
 

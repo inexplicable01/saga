@@ -333,6 +333,7 @@ class MainContainerTab():
         # path = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
         self.mainContainerpath = path
         self.mainContainer = Container.LoadContainerFromYaml(path, revnum=None)
+
         [self.workingdir, file_name] = os.path.split(path)
         self.containerlabel.setText('Container Name : ' + self.mainContainer.containerName)
 
@@ -344,6 +345,10 @@ class MainContainerTab():
         self.commithisttable.setColumnWidth(2, self.commithisttable.width() * 0.29)
         self.maincontainerplot=ContainerPlot(self, self.maincontainerview, container=self.mainContainer)
         self.maincontainerplot.plot(self.changes)
+        ## Grab container history
+        changesbyfile=self.mainContainer.commithistorybyfile()
+        self.histModel.individualfilehistory(changesbyfile)
+
         # if self.menuContainer.isEnabled() and self.mainguihandle.authtoken:
         #     self.tabWidget.setEnabled(True)
         self.setTab(True)
@@ -353,6 +358,9 @@ class MainContainerTab():
         self.curfileheader = fileheader
         self.curfiletype = type
         self.selectedFileHeader.setText(fileheader)
+        self.histModel.edithighlight(fileheader,type)
+        # self.histModel.dataChanged()
+        self.histModel.layoutChanged.emit()
 
         if fileheader in self.mainContainer.filestomonitor().keys():
             self.removeFileButton_2.setEnabled(True)
@@ -396,6 +404,7 @@ class MainContainerTab():
         self.revertbttn.setEnabled(True)
 
 
+
     def initiate(self, inputs):
         os.mkdir(inputs['dir'])
         os.mkdir(os.path.join(inputs['dir'], 'Main'))
@@ -422,6 +431,7 @@ class MainContainerTab():
         self.newContainerStatus = True
         self.descriptionText.setEnabled(True)
         self.setTab(True)
+
 
     def numeroustest(self):
         maxinputadder=2
@@ -502,4 +512,34 @@ class MainContainerTab():
         #         del self.mainContainer.FileHeaders[self.curfileheader]
         #     self.maincontainerplot.plot(self.changes)
         #     self.removeFileButton_2.setEnabled(False)
+
+
+
+    def initiate(self, inputs):
+        os.mkdir(inputs['dir'])
+        os.mkdir(os.path.join(inputs['dir'], 'Main'))
+
+        self.mainContainer = Container.InitiateContainer(inputs['containername'], inputs['dir'])
+        self.mainContainer.containerName = inputs['containername']
+        self.mainContainer.containerworkingfolder = inputs['dir']
+        self.mainContainer.save()
+        self.containerlabel.setText(inputs['containername'])
+
+        self.workingdir = inputs['dir']
+
+        self.mainContainer.workingFrame = Frame(localfilepath = inputs['dir'])
+        self.mainContainer.workingFrame.parentcontainerid = inputs['containername']
+        self.mainContainer.workingFrame.FrameName = 'Rev1'
+        self.mainContainer.workingFrame.writeoutFrameYaml(os.path.join(inputs['dir'], 'Main', 'Rev1.yaml'))
+        self.maincontainerplot = ContainerPlot(self, self.maincontainerview, self.mainContainer) #Edit to use refContainer
+        # self.histModel.beginResetModel()
+        # self.histModel.removeRows(0, self.histModel.rowCount(0))
+        # self.histModel.endResetModel()
+        self.histModel = HistoryListModel({})
+        self.commithisttable.setModel(self.histModel)
+        self.framelabel.setText('Revision 0 (New Container)')
+        self.newContainerStatus = True
+        self.descriptionText.setEnabled(True)
+        self.setTab(True)
+
 

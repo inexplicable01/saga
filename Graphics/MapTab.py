@@ -10,8 +10,7 @@ import shutil
 import json
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
 import os
-from functools import partial
-from SagaApp.FrameStruct import Frame
+from Graphics.PopUps.GanttChartPopUp import GanttChartPopUp
 from SagaApp.Container import Container
 from Graphics.Dialogs import ganttChartProject
 
@@ -26,12 +25,14 @@ class MapTab():
         self.generateContainerBttn = mainguihandle.generateContainerBttn
         self.mainguihandle = mainguihandle
         self.dlContainerBttn = mainguihandle.dlContainerBttn
+        self.ganttbttn=mainguihandle.ganttbttn
         # self.ganttChartBttn = mainguihandle.ganttChartBttn
 
         # self.ganttChartBttn.clicked.connect(self.showGanttChart)
         self.generateContainerBttn.clicked.connect(self.generateContainerMap)
         self.containerlisttable.clicked.connect(self.updatecontainertodl)
         self.dlContainerBttn.clicked.connect(self.downloadcontainer)
+        self.ganttbttn.clicked.connect(self.showGanttChart)
 
         self.selecteddetail = {'selectedobjname': None}
         # self.returncontlist.clicked.connect(partial( mainguihandle.getContainerInfo,self.containerlisttable))
@@ -47,8 +48,8 @@ class MapTab():
     #     if self.mainguihandle.tabWidget.currentIndex() == self.mainguihandle.tabWidget.indexOf(self.mainguihandle.Map):
 
     def showGanttChart(self):
-        self.ganttChart = ganttChartProject()
-        self.ganttChart.showChart()
+        self.ganttChart  = GanttChartPopUp(mainguihandle=self.mainguihandle)
+        # self.ganttChart.showChart()
 
     def generateContainerMap(self):
         containeridlist = self.mainguihandle.worldlist
@@ -64,7 +65,6 @@ class MapTab():
     def updateContainerMap(self):
         self.mainguihandle.getContainerInfo(self.containerlisttable)
         self.mainguihandle.getWorldContainers()
-
 
     def updatecontainertodl(self, listtable):
         rownumber = listtable.row()

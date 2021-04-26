@@ -242,6 +242,34 @@ class Container:
                                                'timestamp':pastframe.commitUTCdatetime }
         return historydict
 
+    def commithistorybyfile(self):
+        changesbyfile = {}
+
+        for fileheader in self.workingFrame.filestrack.keys():
+            changesbyfile[fileheader] =[]
+        containerframes={}
+        # glob.glob() +'/'+ Rev + revnum + ".yaml"
+        yamllist = glob.glob(os.path.join(self.containerworkingfolder, self.currentbranch , '*.yaml'))
+        for yamlfn in yamllist:
+            pastframe = Frame(yamlfn, None, self.containerworkingfolder)
+            containerframes[pastframe.commitUTCdatetime]= pastframe
+        for revi, timestamp in enumerate(sorted(containerframes)):
+            pastframe = containerframes[timestamp]
+            for fileheader in changesbyfile.keys():
+                if fileheader not in pastframe.filestrack.keys():
+                    changesbyfile[fileheader].append({'rev':revi, 'md5':'missing'})
+                    continue
+                changesbyfile[fileheader].append({'rev':revi, 'md5':pastframe.filestrack[fileheader].md5})
+                        # changesbyfile[fileheader].append(revi)
+
+            # self.historydict[containerid].append({'commitmessage': pastframe.commitMessage,
+            #                                     'timestamp': pastframe.commitUTCdatetime})
+            #
+            #
+            # for fileheader, filetrack in self.workingFrame.filestrack.items():
+
+        return changesbyfile
+
     def save(self):
         # if self.containerfn == 'Default':
         #     self.containerfn = containerName
