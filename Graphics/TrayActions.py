@@ -4,15 +4,14 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-from Graphics.QAbstract.ContainerListModel import ContainerListModel
-
-
 import os
 import sys
 import requests
 import json
 from Config import BASE,testerlogin
-
+from Graphics.PopUps.NewContainerDialog import newContainerDialog
+from Graphics.PopUps.InputDialog import InputDialog
+from Graphics.PopUps.permissionsDialog import permissionsDialog
 # from PyQtTesting import BASE
 
 import random
@@ -37,84 +36,6 @@ def SignOut(MainGuiHandle):
     MainGuiHandle.checkUserStatus()
     print('sign out' + BASE)
 
-class InputDialog(QDialog):
-    def __init__(self, MainGuiHandle, parent=None):
-        super().__init__(parent)
-        self.MainGuiHandle=MainGuiHandle
-        self.setWindowTitle('File Information')
-        self.setMinimumSize(600,300)
-        self.username = QLineEdit(self)
-        self.email = QLineEdit(self)
-        self.password = QLineEdit(self)
-        self.username.setText(testerlogin['first_name'])
-        self.email.setText(testerlogin['email'])
-        self.password.setText(testerlogin['password'])
-
-        buttonBox = QDialogButtonBox(self)
-        signinbttn = buttonBox.addButton('Sign In', QDialogButtonBox.ActionRole)
-        genbttn = buttonBox.addButton('Generate new User', QDialogButtonBox.ActionRole)
-        signupbttn = buttonBox.addButton('Sign Up', QDialogButtonBox.ActionRole)
-        cancelbttn = buttonBox.addButton('Cancel', QDialogButtonBox.AcceptRole)
-
-        genbttn.clicked.connect(self.gen)
-        cancelbttn.clicked.connect(self.close)
-        signupbttn.clicked.connect(self.signup)
-        signinbttn.clicked.connect(self.signin)
-
-
-
-        layout = QFormLayout(self)
-        layout.addRow("username", self.username)
-        layout.addRow("Email", self.email)
-        layout.addRow("Password", self.password)
-        # layout.addRow("Owner", self.third)
-        # layout.addRow("Description", self.fourth)
-        layout.addWidget(buttonBox)
-
-        # self.signupBttn.connect(self.signup)
-        # self.signinBttn.connect(self.signin)
-        # self.cancelBttn.connect(self.cancel)
-
-    def getInputs(self):
-        if self.exec_() == QDialog.Accepted:
-            return (self.first.text(), self.second.text(), self.third.text(), self.fourth.text())
-
-    def gen(self):
-        self.username.setText(random_char(7))
-        self.email.setText(random_char(7)+"@gmail.com")
-        self.password.setText(random_char(7))
-
-    def signin(self):
-        print(self.email.text())
-        response = requests.post(BASE + 'auth/login',
-            json={"email":self.email.text(),
-            "password":self.password.text()},
-        )
-        authtoken = response.json()
-        print('usertoken[status] ' + authtoken['status'] )
-        with open('token.txt', 'w') as tokenfile:
-            json.dump(authtoken, tokenfile)
-        # else:
-
-        self.MainGuiHandle.checkUserStatus()
-        if authtoken['status']=='success':
-            self.MainGuiHandle.maptab.updateContainerMap()
-        self.close()
-
-
-    def signup(self):
-        response = requests.post(BASE + 'auth/register',
-                                 json={"email": self.email.text(),
-                                       "password": self.password.text()},
-                                 )
-        authtoken = response.json()
-        print('usertoken[status] ' + authtoken['status'])
-        with open('token.txt', 'w') as tokenfile:
-            json.dump(authtoken, tokenfile)
-        # else:
-
-        self.MainGuiHandle.checkUserStatus()
-        self.close()
 
 def newContainer(MainGuiHandle,maincontainertab):
     newcontainergui = newContainerDialog("Select a local location for building your container")
@@ -129,51 +50,18 @@ def newContainer(MainGuiHandle,maincontainertab):
 
 def find_Local_Container(MainGuiHandle,maincontainertab):
     # inputwindow = InputDialog(MainGuiHandle=MainGuiHandle)
-    (fname,fil) = QFileDialog.getOpenFileName(MainGuiHandle, 'Open container file','.', "Container (containerstate.yaml)")
+    (fname,fil) = QFileDialog.getOpenFileName(MainGuiHandle, 'Open container file','.', "Container (*containerstate.yaml)")
     if fname:
         # print(fname)
         maincontainertab.readcontainer(fname)
         MainGuiHandle.tabWidget.setCurrentIndex(maincontainertab.index)
 
-class newContainerDialog(QDialog):
-    def __init__(self, path):
-        super().__init__()
-        uic.loadUi("Graphics/UI/newContainer.ui", self)
-        self.containerpathlbl.setText(path)
-        self.dir=''
-        self.openDirButton.clicked.connect(self.openDirectory)
-        # self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
-
-        res = ''.join(random.choices(string.ascii_uppercase +
-                                     string.digits, k=7))
-        self.containernameEdit.setText(res)
-        # self.containerpathlbl.setText(os.path.join(self.dir, res))
-        self.containernameEdit.textChanged[str].connect(self.textChanged)
-
-    def openDirectory(self):
-        dialog = QFileDialog()
-        self.dir = os.path.normpath(dialog.getExistingDirectory(self, 'Select a dir to making your container'))
-        if os.path.exists(self.dir):
-            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
-            self.containernameEdit.setEnabled(True)
-            self.containerpathlbl.setText(os.path.join(self.dir,self.containernameEdit.text()))
-
-    def textChanged(self,containername):
-        # print(ttext)
-        if len(containername)>4:
-            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
-            self.containerpathlbl.setText(os.path.join(self.dir,containername))
-        else:
-            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
-            self.containerpathlbl.setText(self.dir)
-            self.advicelabel.setText('Container Name needs to be at least 4 charaters long')
+def containerPermission(mainguihandle, maincontainertab):
+    permissiongui = permissionsDialog(maincontainertab.mainContainer)
+    inputs = permissiongui.getInputs()
+    if inputs:
+        maincontainertab.mainContainer.editusers(inputs['userlist'])
+        # MainGuiHandle.tabWidget.setCurrentIndex(maincontainertab.index)
 
 
-    def getInputs(self):
-        if self.exec_() == QDialog.Accepted:
-            return {'dir':self.containerpathlbl.text(), 'containername':self.containernameEdit.text()}
-            # print()
-        else:
-            return None
 

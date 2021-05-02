@@ -224,7 +224,7 @@ class containerLine(QGraphicsLineItem):
 
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget = None):
-        painter.setPen(QPen(QBrush(Qt.blue), 3))
+        painter.setPen(QPen(QBrush(QColor(92, 85, 233)), 3))
         painter.drawLine(self.line())
         # p1 = self.line().center()
         # p2 = p1 + QPointF(0,10)
