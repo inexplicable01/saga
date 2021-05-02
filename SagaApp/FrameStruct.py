@@ -245,6 +245,8 @@ class Frame:
 
     def compareToRefFrame(self, refframefullpath, filestomonitor):
         alterfiletracks=[]
+        if NEWFRAMEFN == os.path.basename(refframefullpath):
+            return {'NewContainer':{'reason': 'NewContainer'}},[]  ### this might not be final as alternating input files can bring in new difficulties
         refframe = Frame.loadRefFramefromYaml(refframefullpath,self.containerworkingfolder)
         changes = {}
         refframefileheaders = list(refframe.filestrack.keys())

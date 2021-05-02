@@ -11,9 +11,10 @@ def latestFrameInBranch(path):
     try:
         for fn in os.listdir(path):
             m = re.search('Rev(\d+).yaml', fn)
-            if int(m.group(1)) > revnum:
-                revnum = int(m.group(1))
-                latestrev = fn
+            if m:
+                if int(m.group(1)) > revnum:
+                    revnum = int(m.group(1))
+                    latestrev = fn
         return latestrev, revnum
     except:
         return latestrev, revnum
