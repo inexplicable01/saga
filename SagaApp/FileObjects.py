@@ -5,16 +5,16 @@ from datetime import datetime
 from SagaApp.Connection import FileConnection
 
 class FileTrack:
-    def __init__(self, FileHeader, localfilepath, \
+    def __init__(self, FileHeader, containerworkingfolder, \
                  file_name, connection:FileConnection=None, style=None, lastEdited=None, committedby='waichak', \
                  md5=None, file_id=None, commitUTCdatetime=None,persist: bool = True
                  ):
         self.FileHeader = FileHeader
         self.file_name = file_name
         if md5 is None:
-            fileb = open(os.path.join(localfilepath, file_name) , 'rb')
+            fileb = open(os.path.join(containerworkingfolder, file_name) , 'rb')
             md5=hashlib.md5(fileb.read()).hexdigest()
-        self.lastEdited= os.path.getmtime(os.path.join(localfilepath, file_name)) if lastEdited is None else lastEdited
+        self.lastEdited= os.path.getmtime(os.path.join(containerworkingfolder, file_name)) if lastEdited is None else lastEdited
         self.committedby = committedby
         self.md5 = md5
         self.style = style

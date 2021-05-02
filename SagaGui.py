@@ -5,7 +5,7 @@ from PyQt5.QtCore import *
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
 from Graphics.QAbstract.HistoryListModel import HistoryListModel
 
-from Graphics.TrayActions import SignIn, SignOut, newContainer, find_Local_Container
+from Graphics.TrayActions import SignIn, SignOut, newContainer, find_Local_Container , containerPermission
 
 from Graphics.NewContainerTab import NewContainerTab
 from Graphics.MainContainerTab import MainContainerTab
@@ -73,6 +73,8 @@ class UI(QMainWindow):
         self.actionFind_Local_Container.triggered.connect(partial(find_Local_Container, self, self.maincontainertab))
         self.actionNew_Section.triggered.connect(partial(newSection, self))
         self.actionEnter_Section.triggered.connect(partial(enterSection, self))
+        self.actionContainer_Permission.triggered.connect(partial(containerPermission, self, self.maincontainertab))
+
         self.maincontainerview.installEventFilter(self)
 
         self.checkUserStatus()
@@ -112,7 +114,7 @@ class UI(QMainWindow):
             if not os.path.exists(os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID)):
                 os.mkdir(os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID))
             open(os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']), 'wb').write(response.content)
-            cont = Container.LoadContainerFromYaml( os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']))
+            cont = Container.LoadContainerFromYaml( os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']), fullload=False)
             cont.downloadbranch('Main', BASE, self.authtoken,os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID))
         self.worldlist = containerinfolist.keys()
         if not os.path.exists(os.path.join(self.guiworkingdir, 'SagaGuiData', self.userdata['sectionid'])):

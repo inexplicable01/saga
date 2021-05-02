@@ -7,7 +7,7 @@ from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
 from Graphics.ContainerPlot import ContainerPlot
 from SagaApp.FileObjects import FileTrack
-from Config import typeInput,typeRequired,typeOutput
+from Config import typeInput,typeRequired,typeOutput, TEMPCONTAINERFN, TEMPFRAMEFN, CONTAINERFN
 import os
 import sys
 import requests
@@ -22,7 +22,7 @@ class AddInputPopUp(QDialog):
         mainguihandle.getContainerInfo(self.containerlisttable)
         self.containerlisttable.clicked.connect(self.showContainerFromList)
 
-        self.refContainerPlot = ContainerPlot(self, self.refContainerView, container=Container.InitiateContainer())
+        self.refContainerPlot = ContainerPlot(self, self.refContainerView)
         self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(False)
         self.buttonBox1.button(QDialogButtonBox.Cancel).clicked.connect(self.close)
         self.buttonBox1.button(QDialogButtonBox.Ok).clicked.connect(self.accept)
@@ -50,7 +50,7 @@ class AddInputPopUp(QDialog):
         rownumber = containerList.row()
         index = containerList.model().index(rownumber, 0)
         containerId = containerList.model().data(index, 0)
-        refcontainerpath = os.path.join('ContainerMapWorkDir', containerId , 'containerstate.yaml')
+        refcontainerpath = os.path.join('ContainerMapWorkDir', containerId , CONTAINERFN)
         if os.path.exists(refcontainerpath):
             self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         else:

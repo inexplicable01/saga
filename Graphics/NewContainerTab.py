@@ -190,24 +190,4 @@ class NewContainerTab():
             self.tempContainer.workingFrame = newTempFrame
             self.curContainerPlot.removeRect(fileheader)
 
-    def commitNewContainer(self):
-        if '' not in [self.containerName_lineEdit.text(), self.descriptionText.toPlainText(),
-                      self.messageText.toPlainText()]:
-            commitCheck = commitDialog(self.containerName_lineEdit.text(), self.descriptionText.toPlainText(),
-                                       self.messageText.toPlainText())
-            commited = commitCheck.commit()
-            if commited:
-                containerName=self.containerName_lineEdit.text()
-                commitmessage= self.messageText.toPlainText()
-                success = self.tempContainer.CommitNewContainer(containerName,commitmessage,self.mainguihandle.authtoken,BASE)
-                if success:
-                    self.setTab(False)
-                    containeryaml = os.path.join(self.tempContainer.containerworkingfolder, 'containerstate.yaml')
-                    self.mainguihandle.maincontainertab.readcontainer(containeryaml)
-                    self.mainguihandle.tabWidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
-                    self.mainguihandle.maptab.updateContainerMap()
-                else:
-                    print('Commit failed')
-        else:
-            self.errorMessage = ErrorMessage()
-            self.errorMessage.showError()
+
