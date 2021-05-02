@@ -186,20 +186,7 @@ class MainContainerTab():
         self.downloadUpstreamBttn.setDisabled(True)
         self.maincontainerplot.plot(self.changes)
 
-    def AddInputFile(self):
-        addinputwindow = AddInputPopUp(mainguihandle=self.mainguihandle)
-        upstreaminfo = addinputwindow.getInputs()
-        if upstreaminfo:
-            upstreamcontainer = upstreaminfo['UpstreamContainer']
-            branch='Main'
-            fullpath, filetrack = upstreamcontainer.workingFrame.downloadInputFile(upstreaminfo['fileheader'],self.workingdir)
-            self.mainContainer.addInputFileObject(fileheader=upstreaminfo['fileheader'],
-                                                  reffiletrack = filetrack,
-                                                  fullpath=fullpath,
-                                                  refContainerId=upstreamcontainer.containerId,
-                                                  branch=branch,
-                                                  rev='Rev' + str(upstreamcontainer.revnum))
-            self.maincontainerplot.plot(self.changes)
+
 
     def checkUpstream(self):
         self.changes = self.compareToUpstream(self.mainguihandle.authtoken)
@@ -376,15 +363,28 @@ class MainContainerTab():
             self.removeFileButton_2.setEnabled(False)
         # print(type)
         # print(fileheader)
+    def AddInputFile(self):
+        addinputwindow = AddInputPopUp(mainguihandle=self.mainguihandle)
+        upstreaminfo = addinputwindow.getInputs()
+        if upstreaminfo:
+            upstreamcontainer = upstreaminfo['UpstreamContainer']
+            branch='Main'
+            fullpath, filetrack = upstreamcontainer.workingFrame.downloadInputFile(upstreaminfo['fileheader'],self.workingdir)
+            self.mainContainer.addInputFileObject(fileheader=upstreaminfo['fileheader'],
+                                                  reffiletrack = filetrack,
+                                                  fullpath=fullpath,
+                                                  refContainerId=upstreamcontainer.containerId,
+                                                  branch=branch,
+                                                  rev='Rev' + str(upstreamcontainer.revnum))
+            self.maincontainerplot.plot(self.changes)
 
     def AddToTempContainer(self, fileType: str):
         # self.inputFileButton_2.setEnabled(False)
         fileInfoDialog = selectFileDialog(fileType, self.mainContainer.containerworkingfolder, self.mainguihandle.worldlist)
         fileInfo = fileInfoDialog.getInputs()
         if fileInfo:
-            self.mainContainer.addFileObject(fileInfo['fileheader'], fileInfo['ContainerFileInfo'], fileType)
-            if fileType =='Required' or fileType=='Output':
-                self.mainContainer.workingFrame.addFileTotrack(fileInfo, fileType)
+            if fileType == 'Required' or fileType == 'Output':
+                self.mainContainer.addFileObject(fileInfo['fileheader'], fileInfo['ContainerFileInfo'], fileInfo['FilePath'], fileType)
             self.maincontainerplot.plot(self.changes)
 
     def removeFileInfo(self):

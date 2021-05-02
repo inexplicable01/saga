@@ -18,7 +18,7 @@ from SagaApp.SagaUtil import FrameNumInBranch
 from Config import BASE,changenewfile, changemd5,changedate , changeremoved, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
 
 blankFrame = {'parentcontainerid':"",'FrameName': NEWFRAMEFN, 'FrameInstanceId': "",'commitMessage': "",'inlinks': "",'outlinks': "",'AttachedFiles': "", 'commitUTCdatetime': "",'filestrack': ""}
-
+import shutil
 
 class Frame:
 
@@ -28,6 +28,7 @@ class Frame:
         framefullpath = os.path.join(containerworkingfolder, 'Main', workingyamlfn)
         if not os.path.exists(framefullpath):
             framefullpath, revnum = FrameNumInBranch(os.path.join(containerworkingfolder, 'Main'), None)
+            shutil.copy(framefullpath,os.path.join(containerworkingfolder, 'Main',TEMPFRAMEFN))
 
         with open(framefullpath,'r') as file:
             framedict = yaml.load(file, Loader=yaml.FullLoader)
@@ -164,28 +165,28 @@ class Frame:
         os.utime(fn, (lastEdited, lastEdited))
 
 
-    def addFileTotrack(self, fileinfo, fileType):
+    def addFileTotrack(self, fileheader,filefullpath, fileType):
         branch = 'Main'
-        fullpath=fileinfo['FilePath']
-        [path, file_name] = os.path.split(fullpath)
-        FileHeader=fileinfo['fileheader']
+        # fullpath=fileinfo['FilePath']
+        [path, file_name] = os.path.split(filefullpath)
+        # FileHeader=fileinfo['fileheader']
         if fileType =='Required':
             conn=None
         elif fileType=='Output':
             conn = FileConnection([],
                                   connectionType=ConnectionTypes.Output,
                                   branch=branch)
-        if os.path.exists(fileinfo['FilePath']):
+        if os.path.exists(filefullpath):
             newfiletrackobj = FileTrack(file_name=file_name,
-                                        FileHeader=FileHeader,
+                                        FileHeader=fileheader,
                                         connection=conn,
                                         containerworkingfolder=path,
                                         style=fileType,
-                                        lastEdited=os.path.getmtime(fullpath))
-            self.filestrack[FileHeader] = newfiletrackobj
+                                        lastEdited=os.path.getmtime(filefullpath))
+            self.filestrack[fileheader] = newfiletrackobj
             self.writeoutFrameYaml()
         else:
-            raise(fullpath + ' does not exist')
+            raise(filefullpath + ' does not exist')
 
 
     def addfromOutputtoInputFileTotrack(self, fullpath, fileheader, reffiletrack:FileTrack,style,refContainerId,branch,rev):
@@ -205,9 +206,8 @@ class Frame:
                                         connection=conn,
                                         containerworkingfolder=path,
                                         lastEdited=os.path.getmtime(fullpath))
-
-
             self.filestrack[fileheader] = newfiletrackobj
+            self.writeoutFrameYaml()
         else:
             raise(fullpath + ' does not exist')
 

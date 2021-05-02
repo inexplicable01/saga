@@ -177,11 +177,12 @@ class Container:
             self.workingFrame = Frame.LoadFrameFromDict(returnframedict,self.containerworkingfolder)
             ### Maybe put a compare function here to compare the workingFrame before the commit and the Frame that was sent back.
             ## they should be identical.
-            self.workingFrame.writeoutFrameYaml()# writes out TEMPFRAME
+            self.workingFrame.writeoutFrameYaml(fn=TEMPFRAMEFN)# writes out TEMPFRAME
             self.workingFrame.writeoutFrameYaml(returnframedict['FrameName'] + '.yaml')# writes out REVX.yaml
             self.save(fn=CONTAINERFN)
-            self.save(fn=TEMPCONTAINERFN)
             self.yamlfn = TEMPCONTAINERFN
+            self.save()
+
             try:
                 os.remove(self.containerworkingfolder, NEWCONTAINERFN)
                 os.remove(self.containerworkingfolder, 'Main',NEWFRAMEFN)
@@ -270,13 +271,6 @@ class Container:
                     changesbyfile[fileheader].append({'rev':revi, 'md5':'missing'})
                     continue
                 changesbyfile[fileheader].append({'rev':revi, 'md5':pastframe.filestrack[fileheader].md5})
-                        # changesbyfile[fileheader].append(revi)
-
-            # self.historydict[containerid].append({'commitmessage': pastframe.commitMessage,
-            #                                     'timestamp': pastframe.commitUTCdatetime})
-            #
-            #
-            # for fileheader, filetrack in self.workingFrame.filestrack.items():
 
         return changesbyfile
 
@@ -300,22 +294,23 @@ class Container:
     def __repr__(self):
         return json.dumps(self.dictify())
 
-    def addFileObject(self, fileheader, fileInfo, fileType:str):
+    def addFileObject(self, fileheader, ContainerFileInfo, filepath, fileType:str):
         # print(fileType)
         if fileType ==typeInput:
-            self.FileHeaders[fileheader] = fileInfo
+            self.FileHeaders[fileheader] = ContainerFileInfo
             # print(self.FileHeaders)
             # self.workingFrame.addfromOutputtoInputFileTotrack(fileheader, fileInfo, fileType,refContainerId,branch,rev)
         elif fileType == typeRequired:
-            self.FileHeaders[fileheader] = fileInfo
-            # print(self.FileHeaders)
+            self.FileHeaders[fileheader] = ContainerFileInfo
+            self.workingFrame.addFileTotrack(fileheader, filepath,fileType)
         elif fileType == typeOutput:
-            self.FileHeaders[fileheader] = fileInfo
+            self.FileHeaders[fileheader] = ContainerFileInfo
+            self.workingFrame.addFileTotrack(fileheader, filepath,fileType)
         self.workingFrame.writeoutFrameYaml()
         self.save(fn=self.yamlfn)
             # print(self.FileHeaders)
 
-    def removeFileheader(self, fileheader):
+    def removeFileHeader(self, fileheader):
         if fileheader in self.FileHeaders.keys():
             del self.FileHeaders[fileheader]
         else:
