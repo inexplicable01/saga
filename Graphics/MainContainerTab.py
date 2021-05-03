@@ -7,10 +7,11 @@ from Graphics.Dialogs import alteredinputFileDialog
 from Graphics.ContainerPlot import ContainerPlot
 from Graphics.Dialogs import ganttChartFiles, ErrorMessage, inputFileDialog, removeFileDialog, selectFileDialog, commitDialog,alteredinputFileDialog
 from functools import partial
+
 import requests
 import os
 import hashlib
-from Config import BASE, typeInput,typeOutput,typeRequired, boxwidth, boxheight, colorscheme
+from Config import BASE, typeInput,typeOutput,typeRequired, boxwidth, boxheight, colorscheme,TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
 from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
 from SagaApp.WorldMap import WorldMap
@@ -47,6 +48,7 @@ class MainContainerTab():
         self.inputFileButton_2 = mainguihandle.inputFileButton_2
         self.RequiredButton_2 = mainguihandle.RequiredButton_2
         self.outputFileButton_2 = mainguihandle.outputFileButton_2
+        self.commitmsgEdit_2=mainguihandle.commitmsgEdit_2
         self.selectedFileHeader = mainguihandle.selectedFileHeader
         # self.editFileButton_2 = mainguihandle.editFileButton_2
         self.removeFileButton_2 = mainguihandle.removeFileButton_2
@@ -54,6 +56,7 @@ class MainContainerTab():
         # self.testremovebttn = mainguihandle.testremovebttn
         self.fileHistoryBttn = mainguihandle.fileHistoryBttn
         self.fileHistoryBttn.setDisabled(True)
+
         self.descriptionText = mainguihandle.commitmsgEdit_2
 
         self.index=1
@@ -168,9 +171,9 @@ class MainContainerTab():
         revArr = [change['revision'] for fileheader,change in self.changes.items()]
         chgstr = ''
         for fileheader, change in self.changes.items():
-            self.changes[fileheader]['inputframe'].downloadInputFile(fileheader, self.mainContainer.workingFrame.localfilepath)
+            self.changes[fileheader]['inputframe'].downloadInputFile(fileheader, self.mainContainer.workingFrame.containerworkingfolder)
             fileEditPath = os.path.join(
-                self.mainContainer.workingFrame.localfilepath + '/' + self.mainContainer.workingFrame.filestrack[fileheader].file_name)
+                self.mainContainer.workingFrame.containerworkingfolder + '/' + self.mainContainer.workingFrame.filestrack[fileheader].file_name)
             fileb = open(fileEditPath, 'rb')
             self.mainContainer.workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
             self.mainContainer.workingFrame.filestrack[fileheader].file_id = change['file_id']
@@ -182,20 +185,7 @@ class MainContainerTab():
         self.downloadUpstreamBttn.setDisabled(True)
         self.maincontainerplot.plot(self.changes)
 
-    def AddInputFile(self):
-        addinputwindow = AddInputPopUp(mainguihandle=self.mainguihandle)
-        upstreaminfo = addinputwindow.getInputs()
-        if upstreaminfo:
-            upstreamcontainer = upstreaminfo['UpstreamContainer']
-            branch='Main'
-            fullpath, filetrack = upstreamcontainer.workingFrame.downloadInputFile(upstreaminfo['fileheader'],self.workingdir)
-            self.mainContainer.addInputFileObject(fileheader=upstreaminfo['fileheader'],
-                                                  reffiletrack = filetrack,
-                                                  fullpath=fullpath,
-                                                  refContainerId=upstreamcontainer.containerId,
-                                                  branch=branch,
-                                                  rev='Rev' + str(upstreamcontainer.revnum))
-            self.maincontainerplot.plot(self.changes)
+
 
     def checkUpstream(self):
         self.changes = self.compareToUpstream(self.mainguihandle.authtoken)
@@ -211,7 +201,7 @@ class MainContainerTab():
 
     def compareToUpstream(self, authToken):
         workingFrame = self.mainContainer.workingFrame
-        # refframe = Frame(workingFrame.refframefn, None, workingFrame.localfilepath)
+
         changes = {}
         for fileheader in self.mainContainer.filestomonitor().keys():
             if workingFrame.filestrack[fileheader].connection is not None:
@@ -225,9 +215,9 @@ class MainContainerTab():
                                                                             containerID)
                         dlcontainer = Container.LoadContainerFromYaml(containerfn=dlcontainyaml)
                         dlcontainer.downloadbranch('Main', BASE, authToken, inputContainerPathID)
-                        framePath = os.path.join(inputContainerPathID + '/Main/' + 'Rev' + str(dlcontainer.revnum) + '.yaml')
-                        inputFrame = Frame(framePath)
-                        fileCheckPath = os.path.join(workingFrame.localfilepath + '/' + workingFrame.filestrack[fileheader].file_name)
+                        framePath = os.path.join(inputContainerPathID,'Main','Rev' + str(dlcontainer.revnum) + '.yaml')
+                        inputFrame = Frame.loadRefFramefromYaml(framePath, dlcontainer.containerworkingfolder)
+                        fileCheckPath = os.path.join(workingFrame.containerworkingfolder,workingFrame.filestrack[fileheader].file_name)
                         fileb = open(fileCheckPath, 'rb')
                         workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
                         # calculate md5 of file, if md5 has changed, update md5
@@ -240,28 +230,26 @@ class MainContainerTab():
         allowCommit = False
         fixInput = False
         # allowCommit, changes, fixInput , self.alterfiletracks= self.mainContainer.checkFrame(self.mainContainer.workingFrame)
-        self.changes, self.alterfiletracks = self.mainContainer.workingFrame.compareToRefFrame(self.mainContainer.filestomonitor())
+        self.changes, self.alterfiletracks = self.mainContainer.workingFrame.compareToRefFrame(self.mainContainer.refframefullpath, self.mainContainer.filestomonitor())
         for fileheader, changedetails in self.changes.items():
             if fileheader in self.mainContainer.filestomonitor().keys():
                 # only set allowCommit to true if the changes involve what is in the Container's need to monitor
                 allowCommit = True
-        refContainer = Container.LoadContainerFromYaml(self.mainContainerpath)
+        refContainer = Container.LoadContainerFromYaml(self.mainContainer.yamlpath())
 
         identical, diff =Container.compare(refContainer,self.mainContainer)
         ## This primarily checks for differences (adding or removing ) filehandles.
         # There could be scenarios that filetracks are difffrerent but the filehandles did not change
         if not identical:
             allowCommit = True
+        if self.mainContainer.yamlfn==NEWCONTAINERFN:
+            allowCommit = True
+            self.commitmsgEdit_2.setDisabled(False)
 
         self.commitBttn.setEnabled(allowCommit)
         self.commitmsgEdit.setDisabled(not allowCommit)
         # refresh plot
         self.maincontainerplot.plot(self.changes)
-
-        # for fileheader in self.mainContainer.FileHeaders.keys():
-        #     if fileheader in changes.keys():
-        #         color = colorscheme[changes[fileheader]['reason']]
-        #         self.maincontainerplot.RectBox[fileheader].setPen(QPen(color, 3))
 
         chgstr = ''
         for fileheader, change in self.changes.items():
@@ -273,8 +261,8 @@ class MainContainerTab():
             dialogWindow = alteredinputFileDialog(alterfiletrack)
             alterinputfileinfo = dialogWindow.getInputs()
             if alterinputfileinfo:
-                self.mainContainer.workingFrame.dealwithalteredInput(alterinputfileinfo)
-        self.readcontainer(os.path.join(self.mainContainer.workingFrame.localfilepath + '/containerstate.yaml'))
+                self.mainContainer.workingFrame.dealwithalteredInput(alterinputfileinfo, self.mainContainer.refframefullpath)
+        self.readcontainer(os.path.join(self.mainContainer.containerworkingfolder ,TEMPCONTAINERFN))
         self.checkdelta()
 
 
@@ -302,7 +290,7 @@ class MainContainerTab():
                                                                     self.mainguihandle.authtoken, BASE)
                     if success:
                         self.newContainerStatus = False
-                        containeryaml = os.path.join(self.mainContainer.containerworkingfolder, 'containerstate.yaml')
+                        containeryaml = os.path.join(self.mainContainer.containerworkingfolder, TEMPCONTAINERFN)
                         self.mainguihandle.maincontainertab.readcontainer(containeryaml)
                         self.mainguihandle.tabWidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
                         self.mainguihandle.maptab.updateContainerMap()
@@ -318,7 +306,7 @@ class MainContainerTab():
                 error_dialog.exec_()
                 return
 
-            self.mainContainer.workingFrame, committed = self.mainContainer.commit(self.commitmsgEdit.toPlainText(), self.mainguihandle.authtoken, BASE)
+            committed = self.mainContainer.commit(self.commitmsgEdit.toPlainText(), self.mainguihandle.authtoken, BASE)
 
         if committed:
             self.mainContainer.save()
@@ -353,6 +341,12 @@ class MainContainerTab():
         #     self.tabWidget.setEnabled(True)
         self.setTab(True)
         self.containerLoaded = True
+        if self.mainContainer.yamlfn == NEWCONTAINERFN:
+            self.commitBttn.setText('Commit New Container')
+            self.newContainerStatus = True
+        else:
+            self.commitBttn.setText('Commit')
+            self.newContainerStatus = False
 
     def coolerRectangleFeedback(self, type, view, fileheader , curContainer):
         self.curfileheader = fileheader
@@ -368,17 +362,28 @@ class MainContainerTab():
             self.removeFileButton_2.setEnabled(False)
         # print(type)
         # print(fileheader)
+    def AddInputFile(self):
+        addinputwindow = AddInputPopUp(mainguihandle=self.mainguihandle)
+        upstreaminfo = addinputwindow.getInputs()
+        if upstreaminfo:
+            upstreamcontainer = upstreaminfo['UpstreamContainer']
+            branch='Main'
+            fullpath, filetrack = upstreamcontainer.workingFrame.downloadInputFile(upstreaminfo['fileheader'],self.workingdir)
+            self.mainContainer.addInputFileObject(fileheader=upstreaminfo['fileheader'],
+                                                  reffiletrack = filetrack,
+                                                  fullpath=fullpath,
+                                                  refContainerId=upstreamcontainer.containerId,
+                                                  branch=branch,
+                                                  rev='Rev' + str(upstreamcontainer.revnum))
+            self.maincontainerplot.plot(self.changes)
 
     def AddToTempContainer(self, fileType: str):
         # self.inputFileButton_2.setEnabled(False)
         fileInfoDialog = selectFileDialog(fileType, self.mainContainer.containerworkingfolder, self.mainguihandle.worldlist)
         fileInfo = fileInfoDialog.getInputs()
         if fileInfo:
-            self.mainContainer.addFileObject(fileInfo['fileheader'], fileInfo['ContainerFileInfo'], fileType)
-            if fileType =='Required':
-                self.mainContainer.workingFrame.addFileTotrack(fileInfo['FilePath'], fileInfo['fileheader'], fileType)
-            if fileType=='Output':
-                self.mainContainer.workingFrame.addOutputFileTotrack(fileInfo, fileType)
+            if fileType == 'Required' or fileType == 'Output':
+                self.mainContainer.addFileObject(fileInfo['fileheader'], fileInfo['ContainerFileInfo'], fileInfo['FilePath'], fileType)
             self.maincontainerplot.plot(self.changes)
 
     def removeFileInfo(self):
@@ -389,10 +394,7 @@ class MainContainerTab():
         fileheader = fileDialog.removeFile()
 
         if fileheader:
-            if self.curfileheader in self.mainContainer.workingFrame.filestrack.keys():
-                del self.mainContainer.workingFrame.filestrack[self.curfileheader]
-            if self.curfileheader in self.mainContainer.FileHeaders.keys():
-                del self.mainContainer.FileHeaders[self.curfileheader]
+            self.mainContainer.removeFileHeader(self.curfileheader)
             self.maincontainerplot.plot(self.changes)
             self.removeFileButton_2.setEnabled(False)
 
@@ -402,8 +404,6 @@ class MainContainerTab():
         self.reverttorev = histtable.model().data(index, 0)
         self.revertbttn.setText('Revert back to ' + self.reverttorev)
         self.revertbttn.setEnabled(True)
-
-
 
     def initiate(self, inputs):
         os.mkdir(inputs['dir'])
@@ -431,7 +431,6 @@ class MainContainerTab():
         self.newContainerStatus = True
         self.descriptionText.setEnabled(True)
         self.setTab(True)
-
 
     def numeroustest(self):
         maxinputadder=2
@@ -513,33 +512,5 @@ class MainContainerTab():
         #     self.maincontainerplot.plot(self.changes)
         #     self.removeFileButton_2.setEnabled(False)
 
-
-
-    def initiate(self, inputs):
-        os.mkdir(inputs['dir'])
-        os.mkdir(os.path.join(inputs['dir'], 'Main'))
-
-        self.mainContainer = Container.InitiateContainer(inputs['containername'], inputs['dir'])
-        self.mainContainer.containerName = inputs['containername']
-        self.mainContainer.containerworkingfolder = inputs['dir']
-        self.mainContainer.save()
-        self.containerlabel.setText(inputs['containername'])
-
-        self.workingdir = inputs['dir']
-
-        self.mainContainer.workingFrame = Frame(localfilepath = inputs['dir'])
-        self.mainContainer.workingFrame.parentcontainerid = inputs['containername']
-        self.mainContainer.workingFrame.FrameName = 'Rev1'
-        self.mainContainer.workingFrame.writeoutFrameYaml(os.path.join(inputs['dir'], 'Main', 'Rev1.yaml'))
-        self.maincontainerplot = ContainerPlot(self, self.maincontainerview, self.mainContainer) #Edit to use refContainer
-        # self.histModel.beginResetModel()
-        # self.histModel.removeRows(0, self.histModel.rowCount(0))
-        # self.histModel.endResetModel()
-        self.histModel = HistoryListModel({})
-        self.commithisttable.setModel(self.histModel)
-        self.framelabel.setText('Revision 0 (New Container)')
-        self.newContainerStatus = True
-        self.descriptionText.setEnabled(True)
-        self.setTab(True)
 
 

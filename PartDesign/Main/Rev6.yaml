@@ -1,0 +1,97 @@
+AttachedFiles: ''
+FrameInstanceId: fbff7c10-0fa2-4f93-a156-77ef3c596598
+FrameName: Rev6
+commitMessage: Updated Inputs
+commitUTCdatetime: 1618985640.964736
+filestrack:
+- FileHeader: DesignCalcs
+  commitUTCdatetime: 1615442590.056633
+  committedby: waichak
+  connection: null
+  file_id: 19447ebc-6864-4d1e-986c-3435a6426505
+  file_name: data_CalculationsDesign.xlsx
+  lastEdited: 1615441889.617689
+  localfilepath: default
+  md5: aecf48503dfd3c98ddb5193315f4ff37
+  persist: true
+  style: Required
+- FileHeader: EngineSketch
+  commitUTCdatetime: 1615442590.056633
+  committedby: waichak
+  connection:
+    Rev: null
+    branch: Main
+    connectionType: Output
+    refContainerId: []
+  file_id: 6b746060-c8da-47d7-b3e3-58b0dd5468e5
+  file_name: engineSketch.jpg
+  lastEdited: 1610432587.432772
+  localfilepath: default
+  md5: a136e17ec9bc768c156f2978593a289e
+  persist: true
+  style: Output
+- FileHeader: PartSketch
+  commitUTCdatetime: 1615442590.056633
+  committedby: waichak
+  connection:
+    Rev: null
+    branch: Main
+    connectionType: Output
+    refContainerId: []
+  file_id: cdc37276-d435-4727-bdbc-898161459d6b
+  file_name: partSketch.jpg
+  lastEdited: 1610432587.4985993
+  localfilepath: default
+  md5: cc581884dd36612d47a7552501a0bfba
+  persist: true
+  style: Output
+- FileHeader: CustomerReq
+  commitUTCdatetime: 1618985640.964736
+  committedby: jane@jane.com
+  connection:
+    Rev: null
+    branch: Main
+    connectionType: Input
+    refContainerId: CustomerRequirements
+  file_id: 7c05a1af-bd79-4b7b-bb63-11a233094467
+  file_name: CustomerRequirementsOverall.docx
+  lastEdited: 1618983633.8898268
+  localfilepath: default
+  md5: 8992adfcf7e21e8c5893664b1928f578
+  persist: true
+  style: Input
+- FileHeader: ManuSketches
+  commitUTCdatetime: 1615445422.004174
+  committedby: waichak
+  connection:
+    Rev: null
+    branch: Main
+    connectionType: Output
+    refContainerId: []
+  file_id: f0a3403f-e70b-48b2-8d4a-14462496c514
+  file_name: FinalOutput.pptx
+  lastEdited: 1615445395.0322175
+  localfilepath: default
+  md5: 8af55c1741c0bb0cd7cdb463a908ffd6
+  persist: true
+  style: Output
+- FileHeader: Life
+  commitUTCdatetime: 1618985640.964736
+  committedby: jane@jane.com
+  connection:
+    Rev: null
+    branch: Main
+    connectionType: Input
+    refContainerId: Structures
+  file_id: 56888b01-d736-4522-9004-21b0c626b31b
+  file_name: LifeNumbers.xlsx
+  lastEdited: 1616996162.4594743
+  localfilepath: default
+  md5: a3474e130abf223942dec76db3e14cb2
+  persist: true
+  style: Input
+inlinks: ''
+localfilepath: default
+outlinks: ''
+parentcontainerid: PartDesign
+parentcontainername: null

@@ -73,7 +73,11 @@ class HistoryListModel(QAbstractTableModel):
 
 
     def edithighlight(self, fileheader, type):
-        self.currow = self.filestatus[fileheader]
+
+        if fileheader not in self.filestatus.keys():
+            self.currow = []
+        else:
+            self.currow = self.filestatus[fileheader]
         self.filetype=type
 
 

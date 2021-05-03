@@ -1,0 +1,112 @@
+AttachedFiles: ''
+FrameInstanceId: bda1185c-ea41-4b44-838c-2865a686f33e
+FrameName: Rev3
+commitMessage: Adding new Output
+commitUTCdatetime: 1615445362.473032
+filestrack:
+- FileHeader: DesignCalcs
+  commitUTCdatetime: 1615442590.056633
+  committedby: waichak
+  connection: null
+  file_id: 19447ebc-6864-4d1e-986c-3435a6426505
+  file_name: data_CalculationsDesign.xlsx
+  lastEdited: 1615441889.617689
+  localfilepath: default
+  md5: aecf48503dfd3c98ddb5193315f4ff37
+  persist: true
+  style: Required
+- FileHeader: EngineSketch
+  commitUTCdatetime: 1615442590.056633
+  committedby: waichak
+  connection:
+    Rev: null
+    branch: Main
+    connectionType: Output
+    refContainerId: []
+  file_id: 6b746060-c8da-47d7-b3e3-58b0dd5468e5
+  file_name: engineSketch.jpg
+  lastEdited: 1610432587.432772
+  localfilepath: default
+  md5: a136e17ec9bc768c156f2978593a289e
+  persist: true
+  style: Output
+- FileHeader: PartSketch
+  commitUTCdatetime: 1615442590.056633
+  committedby: waichak
+  connection:
+    Rev: null
+    branch: Main
+    connectionType: Output
+    refContainerId: []
+  file_id: cdc37276-d435-4727-bdbc-898161459d6b
+  file_name: partSketch.jpg
+  lastEdited: 1610432587.4985993
+  localfilepath: default
+  md5: cc581884dd36612d47a7552501a0bfba
+  persist: true
+  style: Output
+- FileHeader: Data
+  commitUTCdatetime: 1615444488.200978
+  committedby: waichak
+  connection:
+    Rev: Rev1
+    branch: Main
+    connectionType: Input
+    refContainerId: CustomerRequirements
+  file_id: bae8df4a-6760-4505-b0fe-d1670d55ce4a
+  file_name: Data.xlsx
+  lastEdited: 1615444123.1650484
+  localfilepath: default
+  md5: aecf48503dfd3c98ddb5193315f4ff37
+  persist: true
+  style: Input
+- FileHeader: CustomerReq
+  commitUTCdatetime: 1615444488.200978
+  committedby: waichak
+  connection:
+    Rev: Rev1
+    branch: Main
+    connectionType: Input
+    refContainerId: CustomerRequirements
+  file_id: 270d374b-5d87-4d6e-b07f-17fa2eb1e392
+  file_name: CustomerRequirementsOverall.docx
+  lastEdited: 1615444108.5259578
+  localfilepath: default
+  md5: d41d8cd98f00b204e9800998ecf8427e
+  persist: true
+  style: Input
+- FileHeader: Directions
+  commitUTCdatetime: 1615444488.200978
+  committedby: waichak
+  connection:
+    Rev: Rev1
+    branch: Main
+    connectionType: Input
+    refContainerId: CustomerRequirements
+  file_id: 6ed1667f-a3ea-4be4-80a9-86c18e3a96d7
+  file_name: Directions.pptx
+  lastEdited: 1615444167.8360274
+  localfilepath: default
+  md5: d41d8cd98f00b204e9800998ecf8427e
+  persist: true
+  style: Input
+- FileHeader: ManuSketches
+  commitUTCdatetime: 1615445362.473032
+  committedby: usercemail@gmail.com
+  connection:
+    Rev: null
+    branch: Main
+    connectionType: Output
+    refContainerId: []
+  file_id: b2cb6024-7dbc-4d1a-ba0b-eb7146d1a2c0
+  file_name: FinalOutput.pptx
+  lastEdited: 1615445288.7211907
+  localfilepath: default
+  md5: d41d8cd98f00b204e9800998ecf8427e
+  persist: true
+  style: Output
+inlinks: ''
+localfilepath: default
+outlinks: ''
+parentcontainerid: PartDesign
+parentcontainername: null

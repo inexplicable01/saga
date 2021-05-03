@@ -4,15 +4,14 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-from Graphics.QAbstract.ContainerListModel import ContainerListModel
-
-
 import os
 import sys
 import requests
 import json
 from Config import BASE,testerlogin
-
+from Graphics.PopUps.NewContainerDialog import newContainerDialog
+from Graphics.PopUps.InputDialog import InputDialog
+from Graphics.PopUps.permissionsDialog import permissionsDialog
 # from PyQtTesting import BASE
 
 import random
@@ -116,6 +115,7 @@ class InputDialog(QDialog):
         self.MainGuiHandle.checkUserStatus()
         self.close()
 
+
 def newContainer(MainGuiHandle,maincontainertab):
     newcontainergui = newContainerDialog("Select a local location for building your container")
     inputs = newcontainergui.getInputs()
@@ -129,51 +129,18 @@ def newContainer(MainGuiHandle,maincontainertab):
 
 def find_Local_Container(MainGuiHandle,maincontainertab):
     # inputwindow = InputDialog(MainGuiHandle=MainGuiHandle)
-    (fname,fil) = QFileDialog.getOpenFileName(MainGuiHandle, 'Open container file','.', "Container (containerstate.yaml)")
+    (fname,fil) = QFileDialog.getOpenFileName(MainGuiHandle, 'Open container file','.', "Container (*containerstate.yaml)")
     if fname:
         # print(fname)
         maincontainertab.readcontainer(fname)
         MainGuiHandle.tabWidget.setCurrentIndex(maincontainertab.index)
 
-class newContainerDialog(QDialog):
-    def __init__(self, path):
-        super().__init__()
-        uic.loadUi("Graphics/UI/newContainer.ui", self)
-        self.containerpathlbl.setText(path)
-        self.dir=''
-        self.openDirButton.clicked.connect(self.openDirectory)
-        # self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
-
-        res = ''.join(random.choices(string.ascii_uppercase +
-                                     string.digits, k=7))
-        self.containernameEdit.setText(res)
-        # self.containerpathlbl.setText(os.path.join(self.dir, res))
-        self.containernameEdit.textChanged[str].connect(self.textChanged)
-
-    def openDirectory(self):
-        dialog = QFileDialog()
-        self.dir = os.path.normpath(dialog.getExistingDirectory(self, 'Select a dir to making your container'))
-        if os.path.exists(self.dir):
-            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
-            self.containernameEdit.setEnabled(True)
-            self.containerpathlbl.setText(os.path.join(self.dir,self.containernameEdit.text()))
-
-    def textChanged(self,containername):
-        # print(ttext)
-        if len(containername)>4:
-            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
-            self.containerpathlbl.setText(os.path.join(self.dir,containername))
-        else:
-            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
-            self.containerpathlbl.setText(self.dir)
-            self.advicelabel.setText('Container Name needs to be at least 4 charaters long')
+def containerPermission(mainguihandle, maincontainertab):
+    permissiongui = permissionsDialog(maincontainertab.mainContainer)
+    inputs = permissiongui.getInputs()
+    if inputs:
+        maincontainertab.mainContainer.editusers(inputs['userlist'])
+        # MainGuiHandle.tabWidget.setCurrentIndex(maincontainertab.index)
 
 
-    def getInputs(self):
-        if self.exec_() == QDialog.Accepted:
-            return {'dir':self.containerpathlbl.text(), 'containername':self.containernameEdit.text()}
-            # print()
-        else:
-            return None
 

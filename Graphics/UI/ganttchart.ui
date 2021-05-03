@@ -27,9 +27,9 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>550</y>
+     <y>590</y>
      <width>1081</width>
-     <height>211</height>
+     <height>171</height>
     </rect>
    </property>
    <property name="font">
@@ -38,7 +38,25 @@
     </font>
    </property>
    <property name="text">
-    <string>TextLabel</string>
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>550</y>
+     <width>221</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Commit Message</string>
    </property>
   </widget>
  </widget>

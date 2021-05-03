@@ -13,92 +13,121 @@ from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtCore import *
 import requests
 from Graphics.Dialogs import downloadProgressBar
-from Config import BASE,changenewfile, changemd5,changedate , changeremoved
+from SagaApp.SagaUtil import FrameNumInBranch
+# from Config import typeInput,typeOutput,typeRequired, sagaGuiDir
+from Config import BASE,changenewfile, changemd5,changedate , changeremoved, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
 
-blankFrame = {'parentcontainerid':"",'FrameName': "", 'FrameInstanceId': "",'commitMessage': "",'inlinks': "",'outlinks': "",'AttachedFiles': "", 'commitUTCdatetime': "",'filestrack': ""}
-
+blankFrame = {'parentcontainerid':"",'FrameName': NEWFRAMEFN, 'FrameInstanceId': "",'commitMessage': "",'inlinks': "",'outlinks': "",'AttachedFiles': "", 'commitUTCdatetime': "",'filestrack': ""}
+import shutil
 
 class Frame:
-    def __init__(self, framefn = None, filestomonitor = None,localfilepath = 'Default'):
-        if framefn == None:
-            FrameYaml = blankFrame
-            localfilepath = 'newFrames/' #generalize this file path
-        else:
-            with open(framefn,'r') as file:
-                FrameYaml = yaml.load(file, Loader=yaml.FullLoader)
-        # self.containerworkingfolder = os.path.dirname(containerfn)
-        self.refframefn = framefn
-        self.parentcontainerid = FrameYaml['parentcontainerid']
-        self.FrameName = FrameYaml['FrameName']
-        # self.description = FrameYaml['Description']
-        self.FrameInstanceId = FrameYaml['FrameInstanceId']
-        self.commitMessage = FrameYaml['commitMessage']
-        # self.filestomonitor = filestomonitor
-        self.inlinks = FrameYaml['inlinks']
-        self.outlinks = FrameYaml['outlinks']
-        self.AttachedFiles = FrameYaml['AttachedFiles']
-        try:
-            self.commitUTCdatetime = FrameYaml['commitUTCdatetime']
-        except:
-            self.commitUTCdatetime = 1587625655.939034
-        # self.inoutcheck()
-        self.localfilepath=localfilepath
+
+    @classmethod
+    def loadFramefromYaml(cls, containerworkingfolder,containfn):
+        workingyamlfn = TEMPFRAMEFN if containfn==TEMPCONTAINERFN else NEWFRAMEFN
+        framefullpath = os.path.join(containerworkingfolder, 'Main', workingyamlfn)
+        if not os.path.exists(framefullpath):
+            framefullpath, revnum = FrameNumInBranch(os.path.join(containerworkingfolder, 'Main'), None)
+            shutil.copy(framefullpath,os.path.join(containerworkingfolder, 'Main',TEMPFRAMEFN))
+
+        with open(framefullpath,'r') as file:
+            framedict = yaml.load(file, Loader=yaml.FullLoader)
+
+        cframe = cls(parentcontainerid=framedict['parentcontainerid'],
+                     FrameName=framedict['FrameName'],
+                     FrameInstanceId=framedict['FrameInstanceId'],
+                     commitMessage=framedict['commitMessage'],
+                     inlinks=framedict['inlinks'],
+                     outlinks=framedict['outlinks'],
+                     AttachedFiles=framedict['AttachedFiles'],
+                     commitUTCdatetime=framedict['commitUTCdatetime'],
+                     containerworkingfolder=containerworkingfolder,
+                     filestracklist=framedict['filestrack'],
+                     workingyamlfn=workingyamlfn)
+        return cframe
+
+    @classmethod
+    def loadRefFramefromYaml(cls, refframefullpath,containerworkingfolder):
+        path , workingyamlfn = os.path.split(refframefullpath)
+        with open(refframefullpath,'r') as file:
+            framedict = yaml.load(file, Loader=yaml.FullLoader)
+
+        cframe = cls(parentcontainerid=framedict['parentcontainerid'],
+                     FrameName=framedict['FrameName'],
+                     FrameInstanceId=framedict['FrameInstanceId'],
+                     commitMessage=framedict['commitMessage'],
+                     inlinks=framedict['inlinks'],
+                     outlinks=framedict['outlinks'],
+                     AttachedFiles=framedict['AttachedFiles'],
+                     commitUTCdatetime=framedict['commitUTCdatetime'],
+                     containerworkingfolder=containerworkingfolder,
+                     filestracklist=framedict['filestrack'],
+                     workingyamlfn=workingyamlfn)
+        return cframe
+
+    @classmethod
+    def InitiateFrame(cls, parentcontainerid, parentcontainername, localdir):
+        newframe = cls(filestracklist=[],
+                       FrameName='Rev0',
+                       parentcontainerid=parentcontainerid,
+                       parentcontainername=parentcontainername,
+                       containerworkingfolder=localdir,
+                       workingyamlfn=NEWFRAMEFN)
+        newframe.writeoutFrameYaml()
+        return newframe
+
+    @classmethod
+    def LoadFrameFromDict(cls, framedict, containerworkingfolder='LoadedFromDict', workingyamlfn=TEMPFRAMEFN):
+        cframe = cls(parentcontainerid= framedict['parentcontainerid'],
+                     FrameName=framedict['FrameName'],
+                     FrameInstanceId=framedict['FrameInstanceId'],
+                     commitMessage=framedict['commitMessage'],
+                     inlinks=framedict['inlinks'],
+                     outlinks=framedict['outlinks'],
+                     AttachedFiles=framedict['AttachedFiles'],
+                     commitUTCdatetime=framedict['commitUTCdatetime'],
+                     containerworkingfolder=containerworkingfolder,
+                     filestracklist=framedict['filestrack'],
+                     workingyamlfn=workingyamlfn)
+        return cframe
+
+    def __init__(self,parentcontainerid=None,parentcontainername=None, FrameName=None, FrameInstanceId=None,commitMessage=None,
+                 inlinks=None,outlinks=None,AttachedFiles=None,commitUTCdatetime=None,containerworkingfolder=None,filestracklist={},
+                 workingyamlfn = TEMPFRAMEFN, branch='Main'
+                 ):
+        self.parentcontainerid = parentcontainerid
+        self.parentcontainername=parentcontainername
+        self.FrameName = FrameName
+        self.FrameInstanceId = FrameInstanceId
+        self.commitMessage = commitMessage
+        self.workingyamlfn = workingyamlfn
+        self.inlinks = inlinks
+        self.outlinks = outlinks
+        self.AttachedFiles = AttachedFiles
+        self.commitUTCdatetime = commitUTCdatetime
+        self.containerworkingfolder = containerworkingfolder
+        self.framefullpath = os.path.join(containerworkingfolder, branch, workingyamlfn)
         self.filestrack = {}
-        for ftrack in FrameYaml['filestrack']:
+        for ftrack in filestracklist:
             FileHeader = ftrack['FileHeader']
-            # cont= Container(os.path.join('Container/',self.parentcontainerid, 'containerstate.yaml'))
             conn=None
             if 'connection' in ftrack.keys() and ftrack['connection']:
                 conn = FileConnection(ftrack['connection']['refContainerId'],
                     connectionType=ftrack['connection']['connectionType'],
                                          branch=ftrack['connection']['branch'],
                                          Rev=ftrack['connection']['Rev'])
-
             self.filestrack[FileHeader] = FileTrack(FileHeader=ftrack['FileHeader'],
                                                      file_name=ftrack['file_name'],
-                                                     localfilepath=self.localfilepath,
+                                                     containerworkingfolder=containerworkingfolder,
                                                      md5=ftrack['md5'],
                                                      style=ftrack['style'],
                                                      file_id=ftrack['file_id'],
                                                      commitUTCdatetime=ftrack['commitUTCdatetime'],
                                                      lastEdited=ftrack['lastEdited'],
-                                                     connection=conn)
+                                                     connection=conn,
+                                                     persist=True)
 
-    def add_fileTrack(self, filepath,FileHeader):
-
-        fileb = open(filepath, 'rb')
-        md5hash = hashlib.md5(fileb.read())
-        md5 = md5hash.hexdigest()
-        # print('md5',md5)
-        fileobj = FileTrack(FileHeader=FileHeader,
-                            localfilepath=os.path.dirname(filepath),
-                            file_name=os.path.basename(filepath),
-                            md5=md5,
-
-
-                            )
-
-        self.filestrack[FileHeader]=fileobj
-
-    def add_inlinks(self, inlinks):
-        self.inlinks.append(inlinks)
-
-    def add_outlinks(self, outlinks):
-        self.outlinks.append(outlinks)
-
-    def add_AttachedFiles(self, AttachedFiles):
-        self.AttachedFiles.append(AttachedFiles)
-
-    def add_misc(self, misc):
-        self.misc.append(misc)
-
-    def filestoCheck(self):
-        filestocheck = []
-        for filetrackobj in self.filestrack:
-            filestocheck.append(filetrackobj['file_name'])
-        return filestocheck
-
-    def dealwithalteredInput(self, alterinputfileinfo):
+    def dealwithalteredInput(self, alterinputfileinfo, refframefullpath):
         # self.filestrack[]
         # add new file track, determine whether its just this next rev or keep check in the future persist
         # rename altered input file names
@@ -106,15 +135,15 @@ class Frame:
         filetrack = alterinputfileinfo['alterfiletrack']
         fileheader = filetrack.FileHeader
 
-        refframe = Frame(self.refframefn, None,self.localfilepath )
+        refframe = Frame.loadRefFramefromYaml(refframefullpath, self.containerworkingfolder )
         reffiletrack = refframe.filestrack[fileheader]
         ## File Management
-        os.rename(os.path.join(self.localfilepath,filetrack.file_name), os.path.join(self.localfilepath,alterinputfileinfo['nfilename']))
-        self.getfile(reffiletrack.file_id, reffiletrack.file_name, self.localfilepath, reffiletrack.lastEdited)
+        os.rename(os.path.join(self.containerworkingfolder,filetrack.file_name), os.path.join(self.containerworkingfolder,alterinputfileinfo['nfilename']))
+        self.getfile(reffiletrack.file_id, reffiletrack.file_name, self.containerworkingfolder, reffiletrack.lastEdited)
         ## Update FileTrack
         self.filestrack[alterinputfileinfo['nfileheader']]=FileTrack(
             FileHeader=alterinputfileinfo['nfileheader'],
-            localfilepath=self.localfilepath,
+            containerworkingfolder=self.containerworkingfolder,
             file_name=alterinputfileinfo['nfilename'],
             style='ref',
             persist= alterinputfileinfo['persist'],
@@ -123,8 +152,8 @@ class Frame:
 
     def downloadfullframefiles(self):
         for fileheader, filetrack in self.filestrack.items():
-            # print(filetrack.file_name,self.localfilepath)
-            self.getfile(filetrack.file_id,filetrack.file_name,self.localfilepath,filetrack.lastEdited )
+            # print(filetrack.file_name,self.containerworkingfolder)
+            self.getfile(filetrack.file_id,filetrack.file_name,self.containerworkingfolder,filetrack.lastEdited )
 
     def getfile(self, file_id, file_name, filepath, lastEdited):
         response = requests.get(BASE + 'FILES',
@@ -136,38 +165,28 @@ class Frame:
         os.utime(fn, (lastEdited, lastEdited))
 
 
-    def addFileTotrack(self, fullpath, FileHeader, style):
-        [path, file_name] = os.path.split(fullpath)
-        if os.path.exists(fullpath):
-            newfiletrackobj = FileTrack(file_name=file_name,
-                                        FileHeader=FileHeader,
-                                        # localfilepath=self.localfilepath,
-                                        localfilepath=path,
-                                        style=style,
-                                        lastEdited=os.path.getmtime(fullpath))
-            self.filestrack[FileHeader] = newfiletrackobj
-        else:
-            raise(fullpath + ' does not exist')
-
-    def addOutputFileTotrack(self, fileinfo, style):
+    def addFileTotrack(self, fileheader,filefullpath, fileType):
         branch = 'Main'
-        fullpath = fileinfo['FilePath']
-        [path, file_name] = os.path.split(fullpath)
-        conn = FileConnection([],
-                              connectionType=ConnectionTypes.Output,
-                              branch=branch)
-        if os.path.exists(fileinfo['FilePath']):
+        # fullpath=fileinfo['FilePath']
+        [path, file_name] = os.path.split(filefullpath)
+        # FileHeader=fileinfo['fileheader']
+        if fileType =='Required':
+            conn=None
+        elif fileType=='Output':
+            conn = FileConnection([],
+                                  connectionType=ConnectionTypes.Output,
+                                  branch=branch)
+        if os.path.exists(filefullpath):
             newfiletrackobj = FileTrack(file_name=file_name,
-                                        FileHeader=fileinfo['fileheader'],
-                                        # localfilepath=self.localfilepath,
-                                        localfilepath=path,
-                                        style=style,
+                                        FileHeader=fileheader,
                                         connection=conn,
-                                        lastEdited=os.path.getmtime(fullpath))
-            self.filestrack[fileinfo['fileheader']] = newfiletrackobj
+                                        containerworkingfolder=path,
+                                        style=fileType,
+                                        lastEdited=os.path.getmtime(filefullpath))
+            self.filestrack[fileheader] = newfiletrackobj
+            self.writeoutFrameYaml()
         else:
-            raise(fullpath + ' does not exist')
-
+            raise(filefullpath + ' does not exist')
 
 
     def addfromOutputtoInputFileTotrack(self, fullpath, fileheader, reffiletrack:FileTrack,style,refContainerId,branch,rev):
@@ -185,11 +204,10 @@ class Frame:
                                         file_id=reffiletrack.file_id,
                                         commitUTCdatetime=reffiletrack.commitUTCdatetime,
                                         connection=conn,
-                                        localfilepath=path,
+                                        containerworkingfolder=path,
                                         lastEdited=os.path.getmtime(fullpath))
-
-
             self.filestrack[fileheader] = newfiletrackobj
+            self.writeoutFrameYaml()
         else:
             raise(fullpath + ' does not exist')
 
@@ -208,22 +226,28 @@ class Frame:
                 dictout[key] = value
         return dictout
 
-    def writeoutFrameYaml(self, yamlfn):
-        with open(yamlfn, 'w') as outyaml:
-            yaml.dump(self.dictify(), outyaml)
+    def writeoutFrameYaml(self, fn=None):
+        if fn:
+            with open(os.path.join(self.containerworkingfolder,'Main',fn), 'w') as outyaml:
+                yaml.dump(self.dictify(), outyaml)
+        else:
+            with open(os.path.join(self.containerworkingfolder,'Main',self.workingyamlfn), 'w') as outyaml:
+                yaml.dump(self.dictify(), outyaml)
 
     def __repr__(self):
         return json.dumps(self.dictify())
 
     def revertTo(self, reverttirev):
-        framefn = os.path.join(self.localfilepath, 'Main', reverttirev+'.yaml')
-        revertframe = Frame(framefn, None, self.localfilepath)
+        framefn = os.path.join(self.containerworkingfolder, 'Main', reverttirev+'.yaml')
+        revertframe = Frame(self.containerworkingfolder, framefn=framefn)
         for fileheader, filetrack in revertframe.filestrack.items():
-            revertframe.getfile(filetrack.file_id, filetrack.file_name, self.localfilepath, filetrack.lastEdited)
+            revertframe.getfile(filetrack.file_id, filetrack.file_name, self.containerworkingfolder, filetrack.lastEdited)
 
-    def compareToRefFrame(self, filestomonitor):
+    def compareToRefFrame(self, refframefullpath, filestomonitor):
         alterfiletracks=[]
-        refframe = Frame(self.refframefn, None, self.localfilepath)
+        if NEWFRAMEFN == os.path.basename(refframefullpath):
+            return {'NewContainer':{'reason': 'NewContainer'}},[]  ### this might not be final as alternating input files can bring in new difficulties
+        refframe = Frame.loadRefFramefromYaml(refframefullpath,self.containerworkingfolder)
         changes = {}
         refframefileheaders = list(refframe.filestrack.keys())
         for fileheader in filestomonitor.keys():
@@ -236,7 +260,7 @@ class Frame:
                 changes[fileheader]= {'reason': changenewfile}
                 continue
             refframefileheaders.remove(fileheader)
-            path = self.localfilepath + '/' + self.filestrack[fileheader].file_name
+            path = self.containerworkingfolder + '/' + self.filestrack[fileheader].file_name
             fileb = open(path, 'rb')
             self.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
             # calculate md5 of file, if md5 has changed, update md5
