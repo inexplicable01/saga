@@ -22,7 +22,6 @@ import json
 import logging
 import traceback
 import yaml
-
 from functools import partial
 from Config import BASE,mapdetailstxt
 from SagaApp.WorldMap import WorldMap

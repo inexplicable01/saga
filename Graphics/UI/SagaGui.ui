@@ -622,7 +622,9 @@ QScrollBar::sub-page:vertical
     height: 0px;
     background-color: #d8dce6;
 
-}</string>
+}
+
+</string>
     </property>
     <property name="currentIndex">
      <number>0</number>
@@ -717,6 +719,19 @@ QScrollBar::sub-page:vertical
       </property>
       <property name="text">
        <string>Click on Container to Select</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="ganttbttn">
+      <property name="geometry">
+       <rect>
+        <x>400</x>
+        <y>570</y>
+        <width>178</width>
+        <height>36</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Generate Gantt Chart</string>
       </property>
      </widget>
     </widget>

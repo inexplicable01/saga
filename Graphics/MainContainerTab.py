@@ -35,7 +35,7 @@ class MainContainerTab():
         self.refreshBttn = mainguihandle.refreshBttn
         self.refreshBttnUpstream = mainguihandle.refreshBttn_2
         self.downloadUpstreamBttn = mainguihandle.refreshBttn_3
-        # self.refreshContainerBttn = mainguihandle.refreshBttn_4
+        self.refreshContainerBttn = mainguihandle.refreshBttn_4
         self.downloadUpstreamBttn.setDisabled(True)
         # self.refreshContainerBttn.setDisabled(True)
         self.framelabel = mainguihandle.framelabel
@@ -76,7 +76,7 @@ class MainContainerTab():
         self.refreshBttn.clicked.connect(self.checkdelta)
         self.refreshBttnUpstream.clicked.connect(self.checkUpstream)
         self.downloadUpstreamBttn.clicked.connect(self.downloadUpstream)
-        # self.refreshContainerBttn.clicked.connect(self.refreshContainer)
+        self.refreshContainerBttn.clicked.connect(self.refreshContainer)
         # self.testbttn.clicked.connect(self.numeroustest)
         # self.testremovebttn.clicked.connect(self.removenumeroustest)
         # self.resetbutton.clicked.connect(self.resetrequest)
