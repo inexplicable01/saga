@@ -2,7 +2,8 @@ import os
 import re
 import warnings
 from Config import BASE,TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
-
+import requests
+import json
 
 def latestFrameInBranch(path):
     # add comment
@@ -43,4 +44,11 @@ def FrameNumInBranch(path, revnum):
                 return os.path.join(path, NEWFRAMEFN), 0
             warnings.warn("Can't find frame in Container", Warning)
         return os.path.join(path, 'Rev' + str(revnum) + ".yaml"), revnum
+
+def getContainerInfo(authtoken):
+    response = requests.get(BASE + 'CONTAINERS/List',headers={"Authorization": 'Bearer ' + authtoken})
+    containerinfolist = json.loads(response.headers['containerinfolist'])
+    if not containerinfolist:
+        containerinfolist= {'EMPTY': {'ContainerDescription': 'empty', 'branches': [{'name': 'Empty', 'revcount': 0}]}}
+    return containerinfolist
 

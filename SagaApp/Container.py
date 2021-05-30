@@ -47,7 +47,7 @@ class Container:
                            allowedUser=[],
                            readingUsers=[],
                            currentbranch="Main",revnum='0',
-                           refframefullpath='dont have one yet',
+                           refframefullpath=NEWFRAMEFN,
                            workingFrame = Frame.InitiateFrame(parentcontainerid=containerName,parentcontainername=containerName, localdir=directory),
                            yamlfn = NEWCONTAINERFN)
         return newcontainer
@@ -122,7 +122,7 @@ class Container:
 
 
         response = requests.post(BASE + 'SAGAOP/commit',
-                                 headers={"Authorization": 'Bearer ' + authtoken['auth_token']},
+                                 headers={"Authorization": 'Bearer ' + authtoken},
                                  data={'containerID': self.containerId,
                                        'containerdictjson': containerdictjson,
                                        'framedictjson': framedictjson,
@@ -167,7 +167,7 @@ class Container:
                 filesToUpload[fileheader] = open(filepath, 'rb')
                 fileb = open(filepath, 'rb')
                 filetrack.md5 = hashlib.md5(fileb.read()).hexdigest()
-        headers = {  'Authorization': 'Bearer ' + authtoken['auth_token']}
+        headers = {  'Authorization': 'Bearer ' + authtoken}
         response = requests.request("POST", url, headers=headers, data=payload, files=filesToUpload)
         if 'Container Made' == response.headers['response']:
             resp = response.json()
@@ -195,7 +195,7 @@ class Container:
 
     @classmethod
     def downloadContainerInfo(cls, refpath, authtoken, BASE, containerId):
-        headers = {'Authorization': 'Bearer ' + authtoken['auth_token']  }
+        headers = {'Authorization': 'Bearer ' + authtoken  }
         response = requests.get(BASE + 'CONTAINERS/containerID', headers=headers, data={'containerID': containerId})
         # response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
         # requests is a python object/class, that sends a http request
@@ -213,7 +213,7 @@ class Container:
         payload = {'containerID': containerId,
                    'branch': branch}
         headers = {
-            'Authorization': 'Bearer ' + authtoken['auth_token']
+            'Authorization': 'Bearer ' + authtoken
         }
         response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
         print(response.headers)
@@ -282,6 +282,9 @@ class Container:
         outyaml.close()
         self.yamlfn=fn
 
+    def setAllowedUser(self, allowedUserList):
+        self.allowedUser= allowedUserList
+        self.save()
 
     def dictify(self):
         dictout = {}
@@ -350,7 +353,7 @@ class Container:
         payload = {'containerID': self.containerId,
                    'branch': branch}
         headers = {
-            'Authorization': 'Bearer ' + authtoken['auth_token']
+            'Authorization': 'Bearer ' + authtoken
         }
         if not os.path.exists(os.path.join(refpath,branch)):
             os.mkdir(os.path.join(refpath,branch))

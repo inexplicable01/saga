@@ -35,6 +35,7 @@ class ContainerMap():
         self.containerConnections = {} # dictionary of Id: list of OD
         self.containerConnectLines={}  # dictionary of lineId:LineObject
         self.activeContainersObj = {}
+        self.activeContainers={}
 
     def drawline(self):
         for containerId_in, containerId_outlist in self.containerConnections.items():
@@ -91,7 +92,7 @@ class ContainerMap():
 
     def plot(self):
         try:
-            self.sectionid=self.mainguihandle.userdata['sectionid']
+            self.sectionid=self.mainguihandle.userdata['current_sectionid']
             self.mapdetailtxt = os.path.join(self.mainguihandle.guiworkingdir, 'SagaGuiData', self.sectionid,
                                              mapdetailstxt)
             with open(self.mapdetailtxt , 'r') as mapdets:

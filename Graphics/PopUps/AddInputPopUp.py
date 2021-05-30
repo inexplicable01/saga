@@ -13,13 +13,17 @@ import sys
 import requests
 import json
 from Config import BASE
+from SagaApp.SagaUtil import getContainerInfo
+from Graphics.QAbstract.ContainerListModel import ContainerListModel
 
 class AddInputPopUp(QDialog):
     def __init__(self, mainguihandle):
         super().__init__()
         uic.loadUi("Graphics/UI/AddInput.ui", self)
         # self.containerpathlbl.setText(path)
-        mainguihandle.getContainerInfo(self.containerlisttable)
+        containerinfolist = getContainerInfo(mainguihandle.authtoken)
+
+        self.containerlisttable.setModel(ContainerListModel(containerinfolist))
         self.containerlisttable.clicked.connect(self.showContainerFromList)
 
         self.refContainerPlot = ContainerPlot(self, self.refContainerView)

@@ -109,7 +109,8 @@ class MainContainerTab():
     #     redownload ContainerMapWorkDir
         self.mainguihandle.getWorldContainers()
     #   Check to see if newer revision now exists
-        revList = listdir(os.path.join(self.mainguihandle.guiworkingdir,'ContainerMapWorkDir',self.mainContainer.containerId,'Main'))
+        revList = listdir(os.path.join(self.mainguihandle.guiworkingdir,
+                                       'ContainerMapWorkDir',self.mainContainer.containerId,'Main'))
         for index, fileName in enumerate(revList):
             length = len(fileName)
             revList[index] = int(fileName[-(length-3):-5])
@@ -294,7 +295,8 @@ class MainContainerTab():
                         containeryaml = os.path.join(self.mainContainer.containerworkingfolder, TEMPCONTAINERFN)
                         self.mainguihandle.maincontainertab.readcontainer(containeryaml)
                         self.mainguihandle.tabWidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
-                        self.mainguihandle.maptab.updateContainerMap()
+                        self.mainguihandle.refresh()
+                        # self.mainguihandle.maptab.updateContainerMap()
                         self.descriptionText.setDisabled(True)
                     else:
                         print('Commit failed')
@@ -311,7 +313,7 @@ class MainContainerTab():
 
         if committed:
             self.mainContainer.save()
-            self.mainguihandle.maptab.updateContainerMap()
+            self.mainguihandle.refresh()
             self.framelabel.setText(self.mainContainer.workingFrame.FrameName)
             self.checkdelta()
             self.histModel = HistoryListModel(self.mainContainer.commithistory())
@@ -348,6 +350,8 @@ class MainContainerTab():
         else:
             self.commitBttn.setText('Commit')
             self.newContainerStatus = False
+        ## Enable Permission button since Main Container
+        self.mainguihandle.setPermissionsEnable()
 
     def coolerRectangleFeedback(self, type, view, fileheader , curContainer):
         self.curfileheader = fileheader

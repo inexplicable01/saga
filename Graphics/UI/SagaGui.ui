@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1540</width>
-    <height>844</height>
+    <width>1340</width>
+    <height>758</height>
    </rect>
   </property>
   <property name="font">
@@ -85,10 +85,10 @@ QMenu {
    <widget class="QLabel" name="userstatuslbl">
     <property name="geometry">
      <rect>
-      <x>780</x>
+      <x>220</x>
       <y>0</y>
-      <width>481</width>
-      <height>41</height>
+      <width>1041</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="font">
@@ -121,10 +121,10 @@ QMenu {
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>0</y>
+      <x>0</x>
+      <y>30</y>
       <width>1280</width>
-      <height>720</height>
+      <height>681</height>
      </rect>
     </property>
     <property name="font">
@@ -625,7 +625,7 @@ QScrollBar::sub-page:vertical
 }</string>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="Map">
      <attribute name="title">
@@ -669,19 +669,6 @@ QScrollBar::sub-page:vertical
         <width>591</width>
         <height>511</height>
        </rect>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="generateContainerBttn">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>570</y>
-        <width>178</width>
-        <height>36</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Generate Project Map</string>
       </property>
      </widget>
      <widget class="QTableView" name="containerlisttable">
@@ -1186,7 +1173,7 @@ QScrollBar::sub-page:vertical
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1540</width>
+     <width>1340</width>
      <height>24</height>
     </rect>
    </property>
@@ -1206,6 +1193,8 @@ QScrollBar::sub-page:vertical
     </property>
     <addaction name="actionSign_In"/>
     <addaction name="actionSign_Out"/>
+    <addaction name="separator"/>
+    <addaction name="actionSign_Up"/>
    </widget>
    <widget class="QMenu" name="menuContainer">
     <property name="font">
@@ -1252,6 +1241,9 @@ QScrollBar::sub-page:vertical
    <property name="text">
     <string>New Container</string>
    </property>
+   <property name="font">
+    <font/>
+   </property>
   </action>
   <action name="actionFind_Local_Container">
    <property name="text">
@@ -1264,18 +1256,34 @@ QScrollBar::sub-page:vertical
    </property>
   </action>
   <action name="actionNew_Section">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>New Section</string>
    </property>
   </action>
   <action name="actionEnter_Section">
    <property name="text">
-    <string>Enter an Existing Section</string>
+    <string>Register to an Existing Section</string>
    </property>
   </action>
   <action name="actionContainer_Permission">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Container Permission</string>
+   </property>
+   <property name="font">
+    <font>
+     <strikeout>true</strikeout>
+    </font>
+   </property>
+  </action>
+  <action name="actionSign_Up">
+   <property name="text">
+    <string>Sign Up</string>
    </property>
   </action>
  </widget>
