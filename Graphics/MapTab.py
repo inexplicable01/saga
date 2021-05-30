@@ -8,8 +8,10 @@ import requests
 from Config import BASE
 import shutil
 import json
-from Graphics.QAbstract.ContainerListModel import ContainerListModel
+
 import os
+from Graphics.QAbstract.ContainerListModel import ContainerListModel
+from SagaApp.SagaUtil import getContainerInfo
 from Graphics.PopUps.GanttChartPopUp import GanttChartPopUp
 from SagaApp.Container import Container
 from Graphics.Dialogs import ganttChartProject
@@ -22,14 +24,14 @@ class MapTab():
         self.containerMapView = mainguihandle.containerMapView
         # self.returncontlist = mainguihandle.returncontlist
         self.containerlisttable = mainguihandle.containerlisttable
-        self.generateContainerBttn = mainguihandle.generateContainerBttn
+        # self.generateContainerBttn = mainguihandle.generateContainerBttn
         self.mainguihandle = mainguihandle
         self.dlContainerBttn = mainguihandle.dlContainerBttn
         self.ganttbttn=mainguihandle.ganttbttn
         # self.ganttChartBttn = mainguihandle.ganttChartBttn
 
         # self.ganttChartBttn.clicked.connect(self.showGanttChart)
-        self.generateContainerBttn.clicked.connect(self.generateContainerMap)
+        # self.generateContainerBttn.clicked.connect(self.generateContainerMap)
         self.containerlisttable.clicked.connect(self.updatecontainertodl)
         self.dlContainerBttn.clicked.connect(self.downloadcontainer)
         self.ganttbttn.clicked.connect(self.showGanttChart)
@@ -51,20 +53,24 @@ class MapTab():
         self.ganttChart  = GanttChartPopUp(mainguihandle=self.mainguihandle)
         # self.ganttChart.showChart()
 
-    def generateContainerMap(self):
-        containeridlist = self.mainguihandle.worldlist
-        for containerID in containeridlist:
-            self.containermap.addActiveContainers(
-                Container.LoadContainerFromYaml(os.path.join('ContainerMapWorkDir', containerID , 'containerstate.yaml'))
-            )
+    def generateContainerMap(self,containerinfolist):
+        self.containerlisttable.setModel(ContainerListModel(containerinfolist))
         self.containermap.reset()
-        self.containermap.editcontainerConnections()
-        self.containermap.plot()
-        self.detailedmap.passobj(self.containermap)
+        if 'EMPTY' in containerinfolist.keys():
+            self.containermap.plot()
+        else:
+            for containerID in containerinfolist.keys():
+                self.containermap.addActiveContainers(
+                    Container.LoadContainerFromYaml(os.path.join('ContainerMapWorkDir', containerID , 'containerstate.yaml'))
+                )
 
-    def updateContainerMap(self):
-        self.mainguihandle.getContainerInfo(self.containerlisttable)
-        self.mainguihandle.getWorldContainers()
+            self.containermap.editcontainerConnections()
+            self.containermap.plot()
+            self.detailedmap.passobj(self.containermap)
+
+
+
+
 
     def updatecontainertodl(self, listtable):
         rownumber = listtable.row()

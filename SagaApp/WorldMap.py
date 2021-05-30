@@ -11,7 +11,7 @@ class WorldMap:
 
     @staticmethod
     def CheckContainerCanDeleteOutput(curcontainerid,  fileheader, guiworkingdir,authtoken):
-        response = requests.get(BASE + 'CONTAINERS/List',headers={"Authorization": 'Bearer ' + authtoken['auth_token']})
+        response = requests.get(BASE + 'CONTAINERS/List',headers={"Authorization": 'Bearer ' + authtoken})
         containerinfolist = json.loads(response.headers['containerinfolist'])
         for containerid in containerinfolist.keys():
             if containerid==curcontainerid:

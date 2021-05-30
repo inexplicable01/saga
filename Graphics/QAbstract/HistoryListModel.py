@@ -16,14 +16,9 @@ class HistoryListModel(QAbstractTableModel):
         containdata=[]
         sortdict={}
         self.filetype=typeRequired
-
-
-
         if len(historyinfodict.keys()) == 0:
             containdata.append(['Rev0', 'Container Not Yet Committed', ''])
         else:
-
-
             for rev, revdetails in historyinfodict.items():
                 row = [rev, revdetails['commitmessage'] , time.ctime(revdetails['timestamp'])]
                 sortdict[rev] = revdetails['timestamp']

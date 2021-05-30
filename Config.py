@@ -74,3 +74,5 @@ CONTAINERFN='containerstate.yaml'
 boxwidth = 40
 boxheight = 40
 RECTMARGINpx=5
+
+BANNEDNAMES=['EMPTY']
