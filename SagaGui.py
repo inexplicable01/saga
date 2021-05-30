@@ -75,7 +75,7 @@ class UI(QMainWindow):
         self.actionContainer_Permission.triggered.connect(partial(containerPermission, self, self.maincontainertab))
 
         self.maincontainerview.installEventFilter(self)
-
+        self.versionLabel.setText('Version: 1.1')
         self.checkUserStatus()
         self.startingcheck = False
 
@@ -150,7 +150,7 @@ class UI(QMainWindow):
                     self.userstatuslbl.setText('User ' + usertoken['data']['email'] + ' Signed in')
                     self.userdata = usertoken['data']
                     self.authtoken = authtoken
-
+                    # self.versionNumber = usertoken['versionnumber']
                     self.menuContainer.setEnabled(True)
                 else:
                     self.authtoken = None

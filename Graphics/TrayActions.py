@@ -46,14 +46,15 @@ class InputDialog(QDialog):
         self.email = QLineEdit(self)
         self.password = QLineEdit(self)
         # self.username.setText('UserC')
-        self.email.setText('happyfamilylee@gmail.com')
-        self.password.setText('Password1234')
+        self.email.setText('jimmyleong113@gmail.com')
+        self.password.setText('passwordJ')
 
         buttonBox = QDialogButtonBox(self)
+        cancelbttn = buttonBox.addButton('Cancel', QDialogButtonBox.AcceptRole)
         signinbttn = buttonBox.addButton('Sign In', QDialogButtonBox.ActionRole)
         # genbttn = buttonBox.addButton('Generate new User', QDialogButtonBox.ActionRole)
         # signupbttn = buttonBox.addButton('Sign Up', QDialogButtonBox.ActionRole)
-        cancelbttn = buttonBox.addButton('Cancel', QDialogButtonBox.AcceptRole)
+
 
         # genbttn.clicked.connect(self.gen)
         cancelbttn.clicked.connect(self.close)
@@ -98,6 +99,7 @@ class InputDialog(QDialog):
         self.MainGuiHandle.checkUserStatus()
         if authtoken['status']=='success':
             self.MainGuiHandle.maptab.updateContainerMap()
+
         self.close()
 
 
