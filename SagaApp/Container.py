@@ -144,7 +144,8 @@ class Container:
             return response.headers['commitsuccess']
         else:
             print('Commit Fail')
-            print(response.json())
+            resp = json.loads(response.content)
+            print(resp)
             return self.workingFrame, False
 
     def CommitNewContainer(self, containerName,commitmessage,authtoken,BASE):
