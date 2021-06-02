@@ -60,7 +60,13 @@ waichak = {'first_name':'Waichak',
                     'password':'passwordW',
 }
 
-testerlogin=waichak
+jimmy = {'first_name':'Jimmy',
+                   'last_name':'Leong',
+                   'email':'jimmyleong113@gmail.com',
+                    'password':'passwordJ',
+}
+
+testerlogin=jimmy
 
 
 

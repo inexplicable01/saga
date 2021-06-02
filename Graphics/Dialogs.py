@@ -17,6 +17,16 @@ import json
 import copy
 # from SagaApp.Container import Container
 
+class updateDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi("Graphics/UI/updateDialog.ui", self)
+    def update(self):
+        if self.exec_() == QDialog.Accepted:
+            return True
+        else:
+            return False
+
 class ganttChartFiles(QDialog):
     def __init__(self):
         super().__init__()

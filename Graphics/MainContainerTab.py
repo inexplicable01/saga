@@ -33,10 +33,10 @@ class MainContainerTab():
         self.revertbttn = mainguihandle.revertbttn
         self.commitmsgEdit = mainguihandle.commitmsgEdit
         self.commithisttable = mainguihandle.commithisttable
-        self.refreshBttn = mainguihandle.refreshBttn
-        self.refreshBttnUpstream = mainguihandle.refreshBttn_2
-        self.downloadUpstreamBttn = mainguihandle.refreshBttn_3
-        self.refreshContainerBttn = mainguihandle.refreshBttn_4
+        self.refreshBttn = mainguihandle.checkChangesBttn
+        self.refreshBttnUpstream = mainguihandle.checkUpstreamBttn
+        self.downloadUpstreamBttn = mainguihandle.updateInputsBttn
+        self.refreshContainerBttn = mainguihandle.refreshContainerBttn
         self.downloadUpstreamBttn.setDisabled(True)
         # self.refreshContainerBttn.setDisabled(True)
         self.framelabel = mainguihandle.framelabel
@@ -110,6 +110,8 @@ class MainContainerTab():
     #   Check to see if newer revision now exists
         revList = listdir(os.path.join(self.mainguihandle.guiworkingdir,
                                        'ContainerMapWorkDir',self.mainContainer.containerId,'Main'))
+        if revList.count('temp_frame.yaml') > 0:
+            revList.remove('temp_frame.yaml')
         for index, fileName in enumerate(revList):
             length = len(fileName)
             revList[index] = int(fileName[-(length-3):-5])

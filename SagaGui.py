@@ -9,7 +9,7 @@ from Graphics.TrayActions import SignIn, SignOut,SignUp, newContainer, find_Loca
 
 from Graphics.MainContainerTab import MainContainerTab
 from Graphics.MapTab import MapTab
-# from Graphics.Dialogs import errorPopUp
+from Graphics.Dialogs import updateDialog
 from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
 from Graphics.PopUps.newsection import newSection
@@ -26,6 +26,7 @@ import yaml
 from functools import partial
 from Config import BASE,mapdetailstxt
 from SagaApp.WorldMap import WorldMap
+from subprocess import Popen
 
 # from NewContainerGraphics import newContainerGraphics
 # from hackpatch import downloadedFrames
@@ -86,7 +87,8 @@ class UI(QMainWindow):
 
 
         self.maincontainerview.installEventFilter(self)
-        self.versionLabel.setText('Version: 1.1')
+        self.versionNumber = 0.0
+        self.versionLabel.setText(str(self.versionNumber))
         self.checkUserStatus()
         self.startingcheck = False
 
@@ -163,11 +165,20 @@ class UI(QMainWindow):
                     self.authtoken = None
                     self.userstatuslbl.setText('Please sign in')
                     self.userdata = None
-
                     self.menuContainer.setEnabled(False)
                     self.menuSection.setEnabled(False)
                 if self.menuContainer.isEnabled() and self.authtoken:
                     self.tabWidget.setEnabled(True)
+                    serverVersion = self.userdata['version_num']
+                    if self.versionNumber is not serverVersion:
+                        updater = updateDialog()
+                        if updater.update() == True:
+                            response = requests.get(BASE + 'GENERAL/UpdatedInstallation', headers={"Authorization": 'Bearer ' + self.authtoken})
+                            installPath = os.path.join(self.guiworkingdir, 'Saga.exe')
+                            open(installPath, 'wb').write(response.content)
+                            Popen(installPath, shell = True)
+                            sys.exit(app.exec_())
+
         except Exception as e:
             print('No User Signed in yet')
 
