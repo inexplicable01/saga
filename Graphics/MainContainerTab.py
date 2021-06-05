@@ -5,8 +5,9 @@ from PyQt5.QtCore import *
 from Graphics.QAbstract.HistoryListModel import HistoryListModel
 from Graphics.Dialogs import alteredinputFileDialog
 from Graphics.ContainerPlot import ContainerPlot
-from Graphics.Dialogs import ganttChartFiles, ErrorMessage, inputFileDialog, removeFileDialog, selectFileDialog, commitDialog,alteredinputFileDialog
+from Graphics.Dialogs import ganttChartFiles, ErrorMessage, removeFileDialog, commitDialog,alteredinputFileDialog
 from functools import partial
+from Graphics.PopUps.selectFileDialog import selectFileDialog
 
 import requests
 import os
@@ -36,7 +37,7 @@ class MainContainerTab():
         self.refreshBttn = mainguihandle.refreshBttn
         self.refreshBttnUpstream = mainguihandle.refreshBttn_2
         self.downloadUpstreamBttn = mainguihandle.refreshBttn_3
-        # self.refreshContainerBttn = mainguihandle.refreshBttn_4
+        self.refreshContainerBttn = mainguihandle.refreshBttn_4
         self.downloadUpstreamBttn.setDisabled(True)
         # self.refreshContainerBttn.setDisabled(True)
         self.framelabel = mainguihandle.framelabel
@@ -80,7 +81,7 @@ class MainContainerTab():
         self.refreshBttn.clicked.connect(self.checkdelta)
         self.refreshBttnUpstream.clicked.connect(self.checkUpstream)
         self.downloadUpstreamBttn.clicked.connect(self.downloadUpstream)
-        # self.refreshContainerBttn.clicked.connect(self.refreshContainer)
+        self.refreshContainerBttn.clicked.connect(self.refreshContainer)
         # self.testbttn.clicked.connect(self.numeroustest)
         # self.testremovebttn.clicked.connect(self.removenumeroustest)
         # self.resetbutton.clicked.connect(self.resetrequest)
@@ -114,6 +115,7 @@ class MainContainerTab():
         for index, fileName in enumerate(revList):
             length = len(fileName)
             revList[index] = int(fileName[-(length-3):-5])
+        # show Jimmy RegularExpression
         revNum = max(revList)
         if self.mainContainer.revnum < revNum:
 
@@ -324,7 +326,7 @@ class MainContainerTab():
         # path = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
         self.mainContainerpath = path
         self.mainContainer = Container.LoadContainerFromYaml(path, revnum=None)
-
+        # sel
         [self.workingdir, file_name] = os.path.split(path)
         self.containerlabel.setText('Container Name : ' + self.mainContainer.containerName)
 
@@ -388,7 +390,7 @@ class MainContainerTab():
         fileInfo = fileInfoDialog.getInputs()
         if fileInfo:
             if fileType == 'Required' or fileType == 'Output':
-                self.mainContainer.addFileObject(fileInfo['fileheader'], fileInfo['ContainerFileInfo'], fileInfo['FilePath'], fileType)
+                self.mainContainer.addFileObject(fileInfo['fileheader'], fileInfo['ContainerFileInfo'], fileInfo['FilePath'], fileType,fileInfo['ctnrootpathlist'])
             self.maincontainerplot.plot(self.changes)
 
     def removeFileInfo(self):

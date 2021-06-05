@@ -114,62 +114,7 @@ class commitDialog(QDialog):
         else:
             return False
 
-class selectFileDialog(QDialog):
-    def __init__(self, fileType:str, containerworkdir, containerlist=None):
-        super().__init__()
-        self.fileType = fileType
-        if self.fileType == typeRequired:
-            uic.loadUi("Graphics/UI/file_info.ui", self)
-            self.ownerEdit.setText('OwnerRequired')
-            self.descriptionEdit.setText('DescrtiptionRequired')
-        elif self.fileType == typeOutput:
-            uic.loadUi("Graphics/UI/file_info_outputs.ui", self)
-            self.ownerEdit.setText('Owneroutput')
-            self.descriptionEdit.setText('Descrtiptionoutpu')
-            # for container in containerlist:
-            #     self.downcontainerbox.addItem(container)
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
-        self.openDirButton.clicked.connect(self.openDirectory)
-        self.containerworkdir=containerworkdir
 
-    def openDirectory(self):
-
-        openDirectoryDialog = QFileDialog.getOpenFileName(self, "Get Dir Path", self.containerworkdir)
-        if openDirectoryDialog:
-            [path, file_name] = os.path.split(openDirectoryDialog[0])
-
-            if os.path.normpath(self.containerworkdir)==os.path.normpath(path):#root folder
-                self.filePathEdit.setText(os.path.join(self.containerworkdir, file_name))
-            elif os.path.normpath(self.containerworkdir) in os.path.normpath(path):# Subfolder
-                print('sub Folder')
-            else:
-                choice = QMessageBox.question(self, 'File not in Container',
-                                                    "Copy file into Container folder?",
-                                                    QMessageBox.Ok | QMessageBox.No)
-                if choice==QMessageBox.Ok:
-                    newfilepath = os.path.join(self.containerworkdir,file_name)
-                    copyfile(os.path.join(path,file_name), newfilepath)
-                    lastedited = os.path.getmtime(os.path.join(path,file_name))
-                    os.utime(newfilepath, (lastedited, lastedited))
-                    self.filePathEdit.setText(os.path.join(self.containerworkdir,file_name))
-
-
-
-    def getInputs(self):
-        if self.exec_() == QDialog.Accepted:
-            if self.fileType == typeRequired:
-                containerFileInfo = {'Container': 'here', 'type':typeRequired}
-                return {'fileheader': self.fileObjHeaderEdit.text(), 'FilePath':self.filePathEdit.text(),
-                        'Owner': self.ownerEdit.text(), 'Description': self.descriptionEdit.text(),
-                        'ContainerFileInfo': containerFileInfo}
-            elif self.fileType == typeOutput:
-                containerFileInfo = {'Container': [], 'type': typeOutput}
-                return {'fileheader': self.fileObjHeaderEdit.text(), 'FilePath': self.filePathEdit.text(),
-                        'Owner': self.ownerEdit.text(), 'Description': self.descriptionEdit.text(),
-                        'ContainerFileInfo': containerFileInfo}
-        else:
-            return None
 
 class alteredinputFileDialog(QDialog):
     def __init__(self, alterfiletrack:FileTrack):

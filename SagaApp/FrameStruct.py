@@ -13,7 +13,7 @@ from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtCore import *
 import requests
 from Graphics.Dialogs import downloadProgressBar
-from SagaApp.SagaUtil import FrameNumInBranch
+from SagaApp.SagaUtil import FrameNumInBranch,ensureFolderExist
 # from Config import typeInput,typeOutput,typeRequired, sagaGuiDir
 from Config import BASE,changenewfile, changemd5,changedate , changeremoved, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
 
@@ -25,6 +25,12 @@ class Frame:
     @classmethod
     def loadFramefromYaml(cls, containerworkingfolder,containfn):
         workingyamlfn = TEMPFRAMEFN if containfn==TEMPCONTAINERFN else NEWFRAMEFN
+        if containfn==TEMPCONTAINERFN:
+            workingyamlfn = TEMPFRAMEFN
+        elif containfn==NEWCONTAINERFN:
+            workingyamlfn = NEWFRAMEFN
+        elif containfn=='containerstate.yaml':
+            workingyamlfn = TEMPFRAMEFN
         framefullpath = os.path.join(containerworkingfolder, 'Main', workingyamlfn)
         if not os.path.exists(framefullpath):
             framefullpath, revnum = FrameNumInBranch(os.path.join(containerworkingfolder, 'Main'), None)
@@ -110,6 +116,9 @@ class Frame:
         self.filestrack = {}
         for ftrack in filestracklist:
             FileHeader = ftrack['FileHeader']
+            ctnrootpathlist=[]
+            if 'ctnrootpathlist' in ftrack.keys():
+                ctnrootpathlist=ftrack['ctnrootpathlist']
             conn=None
             if 'connection' in ftrack.keys() and ftrack['connection']:
                 conn = FileConnection(ftrack['connection']['refContainerId'],
@@ -125,6 +134,7 @@ class Frame:
                                                      commitUTCdatetime=ftrack['commitUTCdatetime'],
                                                      lastEdited=ftrack['lastEdited'],
                                                      connection=conn,
+                                                     ctnrootpathlist=ctnrootpathlist,
                                                      persist=True)
 
     def dealwithalteredInput(self, alterinputfileinfo, refframefullpath):
@@ -139,7 +149,7 @@ class Frame:
         reffiletrack = refframe.filestrack[fileheader]
         ## File Management
         os.rename(os.path.join(self.containerworkingfolder,filetrack.file_name), os.path.join(self.containerworkingfolder,alterinputfileinfo['nfilename']))
-        self.getfile(reffiletrack.file_id, reffiletrack.file_name, self.containerworkingfolder, reffiletrack.lastEdited)
+        self.getfile(reffiletrack.file_id, reffiletrack.file_name, self.containerworkingfolder, reffiletrack.lastEdited, reffiletrack.ctnrootpath)
         ## Update FileTrack
         self.filestrack[alterinputfileinfo['nfileheader']]=FileTrack(
             FileHeader=alterinputfileinfo['nfileheader'],
@@ -153,19 +163,22 @@ class Frame:
     def downloadfullframefiles(self):
         for fileheader, filetrack in self.filestrack.items():
             # print(filetrack.file_name,self.containerworkingfolder)
-            self.getfile(filetrack.file_id,filetrack.file_name,self.containerworkingfolder,filetrack.lastEdited )
+            self.getfile(filetrack.file_id,filetrack.file_name,self.containerworkingfolder,filetrack.lastEdited , filetrack.ctnrootpath)
 
-    def getfile(self, file_id, file_name, filepath, lastEdited):
+    def getfile(self, file_id, file_name, filepath, lastEdited, ctnrootpath):
         response = requests.get(BASE + 'FILES',
                                 data={'file_id': file_id, 'file_name': file_name})
         # Loops through the filestrack in curframe and request files listed in the frame
-        fn = os.path.join(filepath, response.headers['file_name'])
+        fn = os.path.join(filepath,ctnrootpath, response.headers['file_name'])
+
+        if not ctnrootpath=='.':
+            ensureFolderExist(fn)
         open(fn, 'wb').write(response.content)
         # saves the content into file.
         os.utime(fn, (lastEdited, lastEdited))
 
 
-    def addFileTotrack(self, fileheader,filefullpath, fileType):
+    def addFileTotrack(self, fileheader,filefullpath, fileType,ctnrootpathlist):
         branch = 'Main'
         # fullpath=fileinfo['FilePath']
         [path, file_name] = os.path.split(filefullpath)
@@ -182,7 +195,8 @@ class Frame:
                                         connection=conn,
                                         containerworkingfolder=path,
                                         style=fileType,
-                                        lastEdited=os.path.getmtime(filefullpath))
+                                        lastEdited=os.path.getmtime(filefullpath),
+                                        ctnrootpathlist=ctnrootpathlist)
             self.filestrack[fileheader] = newfiletrackobj
             self.writeoutFrameYaml()
         else:
@@ -241,7 +255,7 @@ class Frame:
         framefn = os.path.join(self.containerworkingfolder, 'Main', reverttirev+'.yaml')
         revertframe = Frame(self.containerworkingfolder, framefn=framefn)
         for fileheader, filetrack in revertframe.filestrack.items():
-            revertframe.getfile(filetrack.file_id, filetrack.file_name, self.containerworkingfolder, filetrack.lastEdited)
+            revertframe.getfile(filetrack.file_id, filetrack.file_name, self.containerworkingfolder, filetrack.lastEdited, filetrack.ctnrootpath)
 
     def compareToRefFrame(self, refframefullpath, filestomonitor):
         alterfiletracks=[]
@@ -260,39 +274,36 @@ class Frame:
                 changes[fileheader]= {'reason': changenewfile}
                 continue
             refframefileheaders.remove(fileheader)
-            path = self.containerworkingfolder + '/' + self.filestrack[fileheader].file_name
-            fileb = open(path, 'rb')
+            filename = os.path.join(self.containerworkingfolder, self.filestrack[fileheader].ctnrootpath, self.filestrack[fileheader].file_name)
+            fileb = open(filename, 'rb')
             self.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
             # calculate md5 of file, if md5 has changed, update md5
 
             if refframe.filestrack[fileheader].md5 != self.filestrack[fileheader].md5:
-                self.filestrack[fileheader].lastEdited = os.path.getmtime(path)
+                self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
                 changes[fileheader]= {'reason': changemd5}
                 if self.filestrack[fileheader].connection:
                     if self.filestrack[fileheader].connection.connectionType==ConnectionTypes.Input:
                         alterfiletracks.append(self.filestrack[fileheader])
                     continue
             # if file has been updated, update last edited
-            self.filestrack[fileheader].lastEdited = os.path.getmtime(path)
+            self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
 
             if self.filestrack[fileheader].lastEdited != refframe.filestrack[fileheader].lastEdited:
                 changes[fileheader] = {'reason': changedate}
-                self.filestrack[fileheader].lastEdited = os.path.getmtime(path)
+                self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
                 print('Date changed without Md5 changin')
                 continue
         for removedheaders in refframefileheaders:
             changes[removedheaders] = {'reason': changeremoved}
         return changes, alterfiletracks
 
-
-
-
     def downloadInputFile(self, fileheader, workingdir):
         response = requests.get(BASE + 'FILES',
                                 data={'file_id': self.filestrack[fileheader].file_id,
                                       'file_name': self.filestrack[fileheader].file_name})
         # Loops through the filestrack in curframe and request files listed in the frame
-        fn = os.path.join(workingdir, response.headers['file_name'])
+        fn = os.path.join(workingdir,self.filestrack[fileheader].ctnrootpath, response.headers['file_name'])
         self.progress = downloadProgressBar(response.headers['file_name'])
         dataDownloaded = 0
         self.progress.updateProgress(dataDownloaded)

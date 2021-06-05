@@ -72,11 +72,11 @@ class InputDialog(QDialog):
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:
             return (self.first.text(), self.second.text(), self.third.text(), self.fourth.text())
-
-    def gen(self):
-        self.username.setText(random_char(7))
-        self.email.setText(random_char(7)+"@gmail.com")
-        self.password.setText(random_char(7))
+    #
+    # def gen(self):
+    #     self.username.setText(random_char(7))
+    #     self.email.setText(random_char(7)+"@gmail.com")
+    #     self.password.setText(random_char(7))
 
     def signin(self):
         print(self.email.text())
@@ -92,20 +92,4 @@ class InputDialog(QDialog):
         self.mainguihandle.checkUserStatus()
         if signinresp['status']=='success':
             self.mainguihandle.refresh()
-        self.close()
-
-
-    def signup(self):
-        payload = {'email': self.email.text(),
-                   'password': self.password.text()}
-        response = requests.post(BASE + 'auth/register',
-                                 data=payload,
-                                 )
-        authtoken = response.json()
-        print('usertoken[status] ' + authtoken['status'])
-        with open('token.txt', 'w') as tokenfile:
-            json.dump(authtoken, tokenfile)
-        # else:
-
-        self.mainguihandle.checkUserStatus()
         self.close()

@@ -55,7 +55,7 @@ class Container:
     @classmethod
     def LoadContainerFromYaml(cls, containerfn, currentbranch='Main',revnum=None, fullload=True):
         containerworkingfolder = os.path.dirname(containerfn)
-        yamlfn = os.path.basename(containerfn)
+        containeryamlfn = os.path.basename(containerfn)
         with open(containerfn) as file:
             containeryaml = yaml.load(file, Loader=yaml.FullLoader)
 
@@ -68,7 +68,7 @@ class Container:
         if 'readingUsers' not in containeryaml.keys():
             containeryaml['readingUsers']=[]
         if fullload:
-            workingFrame = Frame.loadFramefromYaml(containerworkingfolder=containerworkingfolder, containfn=yamlfn)
+            workingFrame = Frame.loadFramefromYaml(containerworkingfolder=containerworkingfolder, containfn=containeryamlfn)
         else:
             workingFrame=None
 
@@ -81,7 +81,7 @@ class Container:
                            allowedUser=containeryaml['allowedUser'],
                            readingUsers=containeryaml['readingUsers'],
                            currentbranch=currentbranch, revnum=revnum,
-                           refframefullpath=refframefullpath, workingFrame=workingFrame, yamlfn=yamlfn)
+                           refframefullpath=refframefullpath, workingFrame=workingFrame, yamlfn=containeryamlfn)
         if container.yamlfn == CONTAINERFN:
             container.yamlfn == TEMPFRAMEFN
             container.save()
@@ -99,7 +99,7 @@ class Container:
                 # only commit new input files if input files were downloaded
                 if self.updatedInputs == False:
                     continue
-            filepath = os.path.join(self.containerworkingfolder, filetrack.file_name)
+            filepath = os.path.join(self.containerworkingfolder,filetrack.ctnrootpath, filetrack.file_name)
             # Should file be committed?
             commit_file, md5 = self.CheckCommit(filetrack, filepath, frameRef)
             if fileheader not in self.FileHeaders.keys():
@@ -228,18 +228,16 @@ class Container:
         open(frameyamlDL, 'wb').write(response.content)
         return frameyamlDL
 
-    def CheckCommit(self, filetrackobj, filepath, frameRef):
+    def CheckCommit(self, filetrack, filepath, frameRef):
         fileb = open(filepath, 'rb')
         md5hash = hashlib.md5(fileb.read())
         md5 = md5hash.hexdigest()
-        if filetrackobj.FileHeader not in frameRef.filestrack.keys():
+        if filetrack.FileHeader not in frameRef.filestrack.keys():
             return True, md5
-        if (md5 != frameRef.filestrack[filetrackobj.FileHeader].md5):
+        if (md5 != frameRef.filestrack[filetrack.FileHeader].md5):
             return True, md5
-        if frameRef.filestrack[filetrackobj.FileHeader].lastEdited != os.path.getmtime(
-                os.path.join(self.containerworkingfolder, filetrackobj.file_name)):
-            frameRef.filestrack[filetrackobj.FileHeader].lastEdited = os.path.getmtime(
-                os.path.join(self.containerworkingfolder, filetrackobj.file_name))
+        if frameRef.filestrack[filetrack.FileHeader].lastEdited != os.path.getmtime(filepath):
+            frameRef.filestrack[filetrack.FileHeader].lastEdited = os.path.getmtime(filepath)
             return True, md5
         return False, md5
         # Make new Yaml file  some meta data sohould exit in Yaml file
@@ -298,7 +296,7 @@ class Container:
     def __repr__(self):
         return json.dumps(self.dictify())
 
-    def addFileObject(self, fileheader, ContainerFileInfo, filepath, fileType:str):
+    def addFileObject(self, fileheader, ContainerFileInfo, filepath, fileType:str,ctnrootpathlist):
         # print(fileType)
         if fileType ==typeInput:
             self.FileHeaders[fileheader] = ContainerFileInfo
@@ -306,10 +304,10 @@ class Container:
             # self.workingFrame.addfromOutputtoInputFileTotrack(fileheader, fileInfo, fileType,refContainerId,branch,rev)
         elif fileType == typeRequired:
             self.FileHeaders[fileheader] = ContainerFileInfo
-            self.workingFrame.addFileTotrack(fileheader, filepath,fileType)
+            self.workingFrame.addFileTotrack(fileheader, filepath,fileType,ctnrootpathlist)
         elif fileType == typeOutput:
             self.FileHeaders[fileheader] = ContainerFileInfo
-            self.workingFrame.addFileTotrack(fileheader, filepath,fileType)
+            self.workingFrame.addFileTotrack(fileheader, filepath,fileType,ctnrootpathlist)
         self.workingFrame.writeoutFrameYaml()
         self.save(fn=self.yamlfn)
             # print(self.FileHeaders)
