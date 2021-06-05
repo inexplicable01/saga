@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1385</width>
-    <height>796</height>
+    <width>1280</width>
+    <height>720</height>
    </rect>
   </property>
   <property name="font">
@@ -85,10 +85,10 @@ QMenu {
    <widget class="QLabel" name="userstatuslbl">
     <property name="geometry">
      <rect>
-      <x>220</x>
+      <x>780</x>
       <y>0</y>
-      <width>1041</width>
-      <height>21</height>
+      <width>481</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="font">
@@ -122,9 +122,9 @@ QMenu {
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>30</y>
+      <y>0</y>
       <width>1280</width>
-      <height>681</height>
+      <height>720</height>
      </rect>
     </property>
     <property name="font">
@@ -323,10 +323,10 @@ QListView
 	padding-right: -15px;
 	padding-top: 5px;
 
-}
+} 
 
 
-QListView:disabled
+QListView:disabled 
 {
 	background-color: #5c5c5c;
 
@@ -374,7 +374,7 @@ QListView::item:!selected:hover
 
 
 /*-----QTreeView-----*/
-QTreeView
+QTreeView 
 {
 	background-color: #fff;
 	show-decoration-selected: 0;
@@ -391,7 +391,7 @@ QTreeView:disabled
 }
 
 
-QTreeView::item
+QTreeView::item 
 {
 	border-top-color: transparent;
 	border-bottom-color: transparent;
@@ -399,7 +399,7 @@ QTreeView::item
 }
 
 
-QTreeView::item:hover
+QTreeView::item:hover 
 {
 	background-color: #bcbdbb;
 	color: #000;
@@ -407,7 +407,7 @@ QTreeView::item:hover
 }
 
 
-QTreeView::item:selected
+QTreeView::item:selected 
 {
 	background-color: #5c55e9;
 	color: #fff;
@@ -432,14 +432,14 @@ QTreeView::item:selected:disabled
 
 
 QTreeView::branch:has-children:!has-siblings:closed,
-QTreeView::branch:closed:has-children:has-siblings
+QTreeView::branch:closed:has-children:has-siblings 
 {
 	image: url(://tree-closed.png);
 
 }
 
 QTreeView::branch:open:has-children:!has-siblings,
-QTreeView::branch:open:has-children:has-siblings
+QTreeView::branch:open:has-children:has-siblings  
 {
 	image: url(://tree-open.png);
 
@@ -467,7 +467,7 @@ QTableView
 }
 
 
-QTableView::item:hover
+QTableView::item:hover 
 {
     background-color: #bcbdbb;
     color: #000;
@@ -475,7 +475,7 @@ QTableView::item:hover
 }
 
 
-QTableView::item:selected
+QTableView::item:selected 
 {
 	background-color: #5c55e9;
     color: #fff;
@@ -566,7 +566,7 @@ QHeaderView::section::horizontal
 
 
 /*-----QScrollBar-----*/
-QScrollBar:horizontal
+QScrollBar:horizontal 
 {
     background-color: transparent;
     height: 8px;
@@ -576,7 +576,7 @@ QScrollBar:horizontal
 }
 
 
-QScrollBar::handle:horizontal
+QScrollBar::handle:horizontal 
 {
     border: none;
 	min-width: 100px;
@@ -585,10 +585,10 @@ QScrollBar::handle:horizontal
 }
 
 
-QScrollBar::add-line:horizontal,
+QScrollBar::add-line:horizontal, 
 QScrollBar::sub-line:horizontal,
-QScrollBar::add-page:horizontal,
-QScrollBar::sub-page:horizontal
+QScrollBar::add-page:horizontal, 
+QScrollBar::sub-page:horizontal 
 {
     width: 0px;
     background-color: #d8dce6;
@@ -596,7 +596,7 @@ QScrollBar::sub-page:horizontal
 }
 
 
-QScrollBar:vertical
+QScrollBar:vertical 
 {
     background-color: transparent;
     width: 8px;
@@ -605,7 +605,7 @@ QScrollBar:vertical
 }
 
 
-QScrollBar::handle:vertical
+QScrollBar::handle:vertical 
 {
     border: none;
 	min-height: 100px;
@@ -614,18 +614,20 @@ QScrollBar::handle:vertical
 }
 
 
-QScrollBar::add-line:vertical,
+QScrollBar::add-line:vertical, 
 QScrollBar::sub-line:vertical,
-QScrollBar::add-page:vertical,
-QScrollBar::sub-page:vertical
+QScrollBar::add-page:vertical, 
+QScrollBar::sub-page:vertical 
 {
     height: 0px;
     background-color: #d8dce6;
 
-}</string>
+}
+
+</string>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="Map">
      <attribute name="title">
@@ -671,6 +673,19 @@ QScrollBar::sub-page:vertical
        </rect>
       </property>
      </widget>
+     <widget class="QPushButton" name="generateContainerBttn">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>570</y>
+        <width>178</width>
+        <height>36</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Generate Project Map</string>
+      </property>
+     </widget>
      <widget class="QTableView" name="containerlisttable">
       <property name="geometry">
        <rect>
@@ -709,14 +724,14 @@ QScrollBar::sub-page:vertical
      <widget class="QPushButton" name="ganttbttn">
       <property name="geometry">
        <rect>
-        <x>420</x>
+        <x>400</x>
         <y>570</y>
         <width>178</width>
         <height>36</height>
        </rect>
       </property>
       <property name="text">
-       <string>Gantt Chart</string>
+       <string>Generate Gantt Chart</string>
       </property>
      </widget>
     </widget>
@@ -786,7 +801,7 @@ QScrollBar::sub-page:vertical
          </property>
         </widget>
        </widget>
-       <widget class="QPushButton" name="refreshContainerBttn">
+       <widget class="QPushButton" name="refreshBttn_4">
         <property name="text">
          <string>Refresh Container</string>
         </property>
@@ -898,7 +913,7 @@ QScrollBar::sub-page:vertical
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QPushButton" name="checkChangesBttn">
+      <widget class="QPushButton" name="refreshBttn">
        <property name="font">
         <font>
          <pointsize>-1</pointsize>
@@ -910,7 +925,7 @@ QScrollBar::sub-page:vertical
         <string>Check Changes</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="checkUpstreamBttn">
+      <widget class="QPushButton" name="refreshBttn_2">
        <property name="font">
         <font>
          <pointsize>-1</pointsize>
@@ -922,7 +937,7 @@ QScrollBar::sub-page:vertical
         <string>Check Upstream</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="updateInputsBttn">
+      <widget class="QPushButton" name="refreshBttn_3">
        <property name="font">
         <font>
          <pointsize>-1</pointsize>
@@ -1167,36 +1182,13 @@ QScrollBar::sub-page:vertical
      </widget>
     </widget>
    </widget>
-   <widget class="QLabel" name="versionLabel">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>720</y>
-      <width>481</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Version:</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-    </property>
-   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1385</width>
+     <width>1280</width>
      <height>24</height>
     </rect>
    </property>
@@ -1216,8 +1208,6 @@ QScrollBar::sub-page:vertical
     </property>
     <addaction name="actionSign_In"/>
     <addaction name="actionSign_Out"/>
-    <addaction name="separator"/>
-    <addaction name="actionSign_Up"/>
    </widget>
    <widget class="QMenu" name="menuContainer">
     <property name="font">
@@ -1231,7 +1221,6 @@ QScrollBar::sub-page:vertical
     <addaction name="actionNew_Container"/>
     <addaction name="actionFind_Local_Container"/>
     <addaction name="separator"/>
-    <addaction name="actionContainer_Permission"/>
    </widget>
    <widget class="QMenu" name="menuSection">
     <property name="font">
@@ -1264,9 +1253,6 @@ QScrollBar::sub-page:vertical
    <property name="text">
     <string>New Container</string>
    </property>
-   <property name="font">
-    <font/>
-   </property>
   </action>
   <action name="actionFind_Local_Container">
    <property name="text">
@@ -1279,34 +1265,13 @@ QScrollBar::sub-page:vertical
    </property>
   </action>
   <action name="actionNew_Section">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
    <property name="text">
     <string>New Section</string>
    </property>
   </action>
   <action name="actionEnter_Section">
    <property name="text">
-    <string>Register to an Existing Section</string>
-   </property>
-  </action>
-  <action name="actionContainer_Permission">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Container Permission</string>
-   </property>
-   <property name="font">
-    <font>
-     <strikeout>true</strikeout>
-    </font>
-   </property>
-  </action>
-  <action name="actionSign_Up">
-   <property name="text">
-    <string>Sign Up</string>
+    <string>Enter an Existing Section</string>
    </property>
   </action>
  </widget>

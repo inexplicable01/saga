@@ -22,6 +22,11 @@ changedate = 'MD5 Changed'
 changeremoved = 'File Header Removed'
 
 
+
+colorscheme = {typeInput: QColor(124, 0, 255 ), typeOutput: QColor(0, 255, 120), typeRequired: Qt.blue, changedate: Qt.cyan,\
+                changemd5: Qt.red, changenewfile: Qt.black, changeremoved: Qt.darkCyan}
+
+
 mechuser1login = {'first_name':'Bob',
                    'last_name':'Smith',
                    'email':'user1@mechdemo.com',
@@ -48,17 +53,22 @@ oleglogin = {'first_name':'o',
 
 
 
+
 waichak = {'first_name':'Waichak',
                    'last_name':'Luk',
                    'email':'waichak.luk@gmail.com',
                     'password':'passwordW',
 }
 
-testerlogin=waichak
+jimmy = {'first_name':'Jimmy',
+                   'last_name':'Leong',
+                   'email':'jimmyleong113@gmail.com',
+                    'password':'passwordJ',
+}
+
+testerlogin=jimmy
 
 
-colorscheme = {typeInput: QColor(124, 0, 255 ), typeOutput: QColor(0, 255, 120), typeRequired: Qt.blue, changedate: Qt.cyan,\
-               changemd5: Qt.red, changenewfile: Qt.black, changeremoved: Qt.darkCyan}
 
 TEMPCONTAINERFN='temp_containerstate.yaml'
 TEMPFRAMEFN='temp_frame.yaml'

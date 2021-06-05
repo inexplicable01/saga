@@ -57,6 +57,7 @@ def SignUp(mainguihandle):
             print('usertoken[status] ' + authtoken['status'])
 
 
+
 def newContainer(MainGuiHandle,maincontainertab):
     newcontainergui = newContainerDialog("Select a local location for building your container")
     inputs = newcontainergui.getInputs()

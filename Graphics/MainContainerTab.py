@@ -34,10 +34,10 @@ class MainContainerTab():
         self.revertbttn = mainguihandle.revertbttn
         self.commitmsgEdit = mainguihandle.commitmsgEdit
         self.commithisttable = mainguihandle.commithisttable
-        self.refreshBttn = mainguihandle.refreshBttn
-        self.refreshBttnUpstream = mainguihandle.refreshBttn_2
-        self.downloadUpstreamBttn = mainguihandle.refreshBttn_3
-        self.refreshContainerBttn = mainguihandle.refreshBttn_4
+        self.refreshBttn = mainguihandle.checkChangesBttn
+        self.refreshBttnUpstream = mainguihandle.checkUpstreamBttn
+        self.downloadUpstreamBttn = mainguihandle.updateInputsBttn
+        self.refreshContainerBttn = mainguihandle.refreshContainerBttn
         self.downloadUpstreamBttn.setDisabled(True)
         # self.refreshContainerBttn.setDisabled(True)
         self.framelabel = mainguihandle.framelabel
@@ -55,7 +55,6 @@ class MainContainerTab():
         self.removeFileButton_2 = mainguihandle.removeFileButton_2
         # self.testbttn= mainguihandle.testbttn
         # self.testremovebttn = mainguihandle.testremovebttn
-
         self.fileHistoryBttn = mainguihandle.fileHistoryBttn
         self.fileHistoryBttn.setDisabled(True)
 
@@ -112,6 +111,8 @@ class MainContainerTab():
     #   Check to see if newer revision now exists
         revList = listdir(os.path.join(self.mainguihandle.guiworkingdir,
                                        'ContainerMapWorkDir',self.mainContainer.containerId,'Main'))
+        if revList.count('temp_frame.yaml') > 0:
+            revList.remove('temp_frame.yaml')
         for index, fileName in enumerate(revList):
             length = len(fileName)
             revList[index] = int(fileName[-(length-3):-5])
@@ -412,7 +413,32 @@ class MainContainerTab():
         self.revertbttn.setText('Revert back to ' + self.reverttorev)
         self.revertbttn.setEnabled(True)
 
+    def initiate(self, inputs):
+        os.mkdir(inputs['dir'])
+        os.mkdir(os.path.join(inputs['dir'], 'Main'))
 
+        self.mainContainer = Container.InitiateContainer(inputs['containername'], inputs['dir'])
+        self.mainContainer.containerName = inputs['containername']
+        self.mainContainer.containerworkingfolder = inputs['dir']
+        self.mainContainer.save()
+        self.containerlabel.setText(inputs['containername'])
+
+        self.workingdir = inputs['dir']
+
+        self.mainContainer.workingFrame = Frame(localfilepath = inputs['dir'])
+        self.mainContainer.workingFrame.parentcontainerid = inputs['containername']
+        self.mainContainer.workingFrame.FrameName = 'Rev1'
+        self.mainContainer.workingFrame.writeoutFrameYaml(os.path.join(inputs['dir'], 'Main', 'Rev1.yaml'))
+        self.maincontainerplot = ContainerPlot(self, self.maincontainerview, self.mainContainer) #Edit to use refContainer
+        # self.histModel.beginResetModel()
+        # self.histModel.removeRows(0, self.histModel.rowCount(0))
+        # self.histModel.endResetModel()
+        self.histModel = HistoryListModel({})
+        self.commithisttable.setModel(self.histModel)
+        self.framelabel.setText('Revision 0 (New Container)')
+        self.newContainerStatus = True
+        self.descriptionText.setEnabled(True)
+        self.setTab(True)
 
     def numeroustest(self):
         maxinputadder=2
@@ -493,33 +519,6 @@ class MainContainerTab():
         #         del self.mainContainer.FileHeaders[self.curfileheader]
         #     self.maincontainerplot.plot(self.changes)
         #     self.removeFileButton_2.setEnabled(False)
-
-
-
-
-    def initiate(self, inputs):
-        os.mkdir(inputs['dir'])
-        os.mkdir(os.path.join(inputs['dir'], 'Main'))
-
-        self.mainContainer = Container.InitiateContainer(inputs['containername'], inputs['dir'])
-        self.mainContainer.containerName = inputs['containername']
-        self.mainContainer.containerworkingfolder = inputs['dir']
-        self.mainContainer.save(NEWCONTAINERFN)
-        self.containerlabel.setText(inputs['containername'])
-
-        self.workingdir = inputs['dir']
-
-        self.maincontainerplot = ContainerPlot(self, self.maincontainerview, self.mainContainer)  # Edit to use refContainer
-
-        self.histModel = HistoryListModel({})
-        self.commithisttable.setModel(self.histModel)
-        self.framelabel.setText('Revision 0 (New Container)')
-        self.newContainerStatus = True
-        self.descriptionText.setEnabled(True)
-        self.commitBttn.setText('Commit New Container')
-        self.setTab(True)
-
-
 
 
 
