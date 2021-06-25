@@ -97,8 +97,13 @@ class Container:
                 continue
             if self.FileHeaders[fileheader]['type']== typeInput:
                 # only commit new input files if input files were downloaded
-                if self.updatedInputs == False:
+                if not frameRef.filestrack[fileheader].connection.Rev == filetrack.connection.Rev:
+                    inputsupdated = True
+                else:
                     continue
+
+                # if self.updatedInputs == False:
+                #     continue
             filepath = os.path.join(self.containerworkingfolder,filetrack.ctnrootpath, filetrack.file_name)
             # Should file be committed?
             commit_file, md5 = self.CheckCommit(filetrack, filepath, frameRef)
@@ -137,7 +142,8 @@ class Container:
             self.workingFrame = Frame.loadRefFramefromYaml(yamlframefn, self.containerworkingfolder)
             self.save(fn=CONTAINERFN)
             self.save(fn=TEMPCONTAINERFN)
-            self.workingFrame.writeoutFrameYaml()
+            # self.workingFrame.writeoutFrameYaml()
+            self.workingFrame.writeoutFrameYaml(fn=TEMPFRAMEFN)
 
             self.refframefullpath = yamlframefn
 

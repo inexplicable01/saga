@@ -7,7 +7,7 @@ from SagaApp.Connection import FileConnection
 class FileTrack:
     def __init__(self, FileHeader, containerworkingfolder, \
                  file_name, connection:FileConnection=None, style=None, lastEdited=None, committedby='waichak', \
-                 md5=None, file_id=None, commitUTCdatetime=None,persist: bool = True , ctnrootpathlist = []
+                 md5=None,  commitUTCdatetime=None,persist: bool = True , ctnrootpathlist = []
                  ):
         self.FileHeader = FileHeader
         self.file_name = file_name
@@ -18,7 +18,7 @@ class FileTrack:
         self.committedby = committedby
         self.md5 = md5
         self.style = style
-        self.file_id = file_id
+        # self.file_id = file_id
         self.commitUTCdatetime = commitUTCdatetime
         self.connection=connection
         self.persist=persist

@@ -53,9 +53,9 @@ class DetailedMap():
 
 class containerBox(QGraphicsRectItem):
     def __init__(self, containerscene,container,containerBoxHeight=containerBoxHeight, containerBoxWidth=containerBoxWidth):
-        super().__init__(0, 0,  containerBoxWidth,containerBoxHeight)
-        self.containerBoxHeight = containerBoxHeight
-        self.containerBoxWidth = containerBoxWidth
+        super().__init__(0, 0,  containerBoxWidth,containerscene.height())
+        # self.containerBoxHeight = containerBoxHeight
+        # self.containerBoxWidth = containerBoxWidth
         # self.QPos = QPointF(50,50)
         self.setBrush(QBrush(Qt.transparent))
         self.setPen(QPen(Qt.black))
@@ -99,8 +99,15 @@ class containerBox(QGraphicsRectItem):
                     #                                            fileinfo=fileinfo,fileheader=fileheader,type=type)
                     typecounter[type]+=1
 
+        ##Quick Hack to size height of Container Box
+        self.setRect(0, 0,  containerBoxWidth,70 + max(typecounter.values())*100)
+
 
 class ConnectionBox():
+
+    # ConnectionBox is currently a generic class while containerBox inherits from QRects
+# This is rather confusing and just not a very good structure  They should either both inherit from Qrects or both are just generic classes
+
     def __init__(self, containerscene,containerIn:Container, containerOut:Container,containerBoxHeight=containerBoxHeight, containerBoxWidth=containerBoxWidth):
         self.containInBox = QGraphicsRectItem(containerBoxWidth*-1.0, 0,  containerBoxWidth,containerBoxHeight)
         containerscene.addItem(self.containInBox)
@@ -121,6 +128,11 @@ class ConnectionBox():
                     self.fileObj.append(FileRect(None, containerBoxWidth*-0.5, idx, fileinfo=upfileinfo, fileheader=upfileheader, type='Connection'))
                     containerscene.addItem(self.fileObj[-1])
                     idx +=1
+
+        self.containInBox.setRect(containerBoxWidth*-1.0, 0,  containerBoxWidth, 70 + idx * 100)
+        self.containoutBox.setRect(containerBoxWidth * gap, 0, containerBoxWidth, 70 + idx * 100)
+        ##Quick Hack to size height of Container Box
+        # self.setRect(0, 0, containerBoxWidth, 70 + idx * 100)
 
 
 class FileRect(QGraphicsRectItem):
@@ -166,8 +178,6 @@ class FileRect(QGraphicsRectItem):
         self.upbox.setPos(self.rect().topLeft())
         self.upboxtext =QGraphicsTextItem(fileheader, parent=self.upbox)
         self.upboxtext.setPos(self.upbox.rect().topLeft())
-
-
 
     #     self.upbox = {}
     #     self.upboxtext = {}

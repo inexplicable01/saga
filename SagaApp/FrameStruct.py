@@ -130,7 +130,7 @@ class Frame:
                                                      containerworkingfolder=containerworkingfolder,
                                                      md5=ftrack['md5'],
                                                      style=ftrack['style'],
-                                                     file_id=ftrack['file_id'],
+                                                     # file_id=ftrack['file_id'],
                                                      commitUTCdatetime=ftrack['commitUTCdatetime'],
                                                      lastEdited=ftrack['lastEdited'],
                                                      connection=conn,
@@ -149,7 +149,7 @@ class Frame:
         reffiletrack = refframe.filestrack[fileheader]
         ## File Management
         os.rename(os.path.join(self.containerworkingfolder,filetrack.file_name), os.path.join(self.containerworkingfolder,alterinputfileinfo['nfilename']))
-        self.getfile(reffiletrack.file_id, reffiletrack.file_name, self.containerworkingfolder, reffiletrack.lastEdited, reffiletrack.ctnrootpath)
+        self.getfile(reffiletrack, self.containerworkingfolder)
         ## Update FileTrack
         self.filestrack[alterinputfileinfo['nfileheader']]=FileTrack(
             FileHeader=alterinputfileinfo['nfileheader'],
@@ -163,19 +163,24 @@ class Frame:
     def downloadfullframefiles(self):
         for fileheader, filetrack in self.filestrack.items():
             # print(filetrack.file_name,self.containerworkingfolder)
-            self.getfile(filetrack.file_id,filetrack.file_name,self.containerworkingfolder,filetrack.lastEdited , filetrack.ctnrootpath)
+            self.getfile(filetrack, self.containerworkingfolder)
 
-    def getfile(self, file_id, file_name, filepath, lastEdited, ctnrootpath):
+    def getfile(self, filetrack: FileTrack, filepath):
         response = requests.get(BASE + 'FILES',
-                                data={'file_id': file_id, 'file_name': file_name})
+                                data={'md5': filetrack.md5, 'file_name': filetrack.file_name})
         # Loops through the filestrack in curframe and request files listed in the frame
-        fn = os.path.join(filepath,ctnrootpath, response.headers['file_name'])
-
-        if not ctnrootpath=='.':
+        fn = os.path.join(filepath, filetrack.ctnrootpath, filetrack.file_name)
+        if not filetrack.ctnrootpath == '.':
             ensureFolderExist(fn)
-        open(fn, 'wb').write(response.content)
-        # saves the content into file.
-        os.utime(fn, (lastEdited, lastEdited))
+        if response.headers['status']=='Success':
+            open(fn, 'wb').write(response.content)
+        else:
+            open(fn,'w').write('Terrible quick bug fix')
+            # There should be a like a nuclear warning here is this imples something went wrong with the server and the frame bookkeeping system
+            # This might be okay meanwhile as this is okay to break during dev but not during production.
+            print('could not find file ' + filetrack.md5 + ' on server')
+        os.utime(fn, (filetrack.lastEdited, filetrack.lastEdited))
+
 
 
     def addFileTotrack(self, fileheader,filefullpath, fileType,ctnrootpathlist):
@@ -215,7 +220,7 @@ class Frame:
                                         FileHeader=fileheader,
                                         style=style,
                                         committedby=reffiletrack.committedby,
-                                        file_id=reffiletrack.file_id,
+                                        # file_id=reffiletrack.file_id,
                                         commitUTCdatetime=reffiletrack.commitUTCdatetime,
                                         connection=conn,
                                         containerworkingfolder=path,
@@ -255,7 +260,7 @@ class Frame:
         framefn = os.path.join(self.containerworkingfolder, 'Main', reverttirev+'.yaml')
         revertframe = Frame(self.containerworkingfolder, framefn=framefn)
         for fileheader, filetrack in revertframe.filestrack.items():
-            revertframe.getfile(filetrack.file_id, filetrack.file_name, self.containerworkingfolder, filetrack.lastEdited, filetrack.ctnrootpath)
+            revertframe.getfile(filetrack, self.containerworkingfolder)
 
     def compareToRefFrame(self, refframefullpath, filestomonitor):
         alterfiletracks=[]
@@ -300,7 +305,7 @@ class Frame:
 
     def downloadInputFile(self, fileheader, workingdir):
         response = requests.get(BASE + 'FILES',
-                                data={'file_id': self.filestrack[fileheader].file_id,
+                                data={'md5': self.filestrack[fileheader].md5,
                                       'file_name': self.filestrack[fileheader].file_name})
         # Loops through the filestrack in curframe and request files listed in the frame
         fn = os.path.join(workingdir,self.filestrack[fileheader].ctnrootpath, response.headers['file_name'])
