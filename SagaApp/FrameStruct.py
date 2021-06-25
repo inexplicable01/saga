@@ -15,7 +15,7 @@ import requests
 from Graphics.Dialogs import downloadProgressBar
 from SagaApp.SagaUtil import FrameNumInBranch
 # from Config import typeInput,typeOutput,typeRequired, sagaGuiDir
-from Config import BASE,changenewfile, changemd5,changedate , changeremoved, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
+from Config import BASE,changenewfile, changemd5,changedate , changeremoved, CONTAINERFN, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
 
 blankFrame = {'parentcontainerid':"",'FrameName': NEWFRAMEFN, 'FrameInstanceId': "",'commitMessage': "",'inlinks': "",'outlinks': "",'AttachedFiles': "", 'commitUTCdatetime': "",'filestrack': ""}
 import shutil
@@ -24,7 +24,11 @@ class Frame:
 
     @classmethod
     def loadFramefromYaml(cls, containerworkingfolder,containfn):
-        workingyamlfn = TEMPFRAMEFN if containfn==TEMPCONTAINERFN else NEWFRAMEFN
+        CONTAINERLIST = [TEMPCONTAINERFN, CONTAINERFN]
+        if containfn in CONTAINERLIST:
+            workingyamlfn = TEMPFRAMEFN
+        else:
+            workingyamlfn = NEWFRAMEFN
         framefullpath = os.path.join(containerworkingfolder, 'Main', workingyamlfn)
         if not os.path.exists(framefullpath):
             framefullpath, revnum = FrameNumInBranch(os.path.join(containerworkingfolder, 'Main'), None)
@@ -239,7 +243,7 @@ class Frame:
 
     def revertTo(self, reverttirev):
         framefn = os.path.join(self.containerworkingfolder, 'Main', reverttirev+'.yaml')
-        revertframe = Frame(self.containerworkingfolder, framefn=framefn)
+        revertframe = Frame(containerworkingfolder = self.containerworkingfolder, FrameName=framefn)
         for fileheader, filetrack in revertframe.filestrack.items():
             revertframe.getfile(filetrack.file_id, filetrack.file_name, self.containerworkingfolder, filetrack.lastEdited)
 
