@@ -3,7 +3,7 @@ from PyQt5.QtGui import QColor
 import os
 BASE = "http://fatpanda1985.pythonanywhere.com/"
 # BASE = "http://127.0.0.1:5000/"
-
+#
 
 WorldMapDir = 'ContainerMapWorkDir'
 sagaGuiDir = os.getcwd()
@@ -66,7 +66,7 @@ jimmy = {'first_name':'Jimmy',
                     'password':'passwordJ',
 }
 
-testerlogin=jimmy
+testerlogin=waichak
 
 
 

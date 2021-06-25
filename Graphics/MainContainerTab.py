@@ -5,8 +5,9 @@ from PyQt5.QtCore import *
 from Graphics.QAbstract.HistoryListModel import HistoryListModel
 from Graphics.Dialogs import alteredinputFileDialog
 from Graphics.ContainerPlot import ContainerPlot
-from Graphics.Dialogs import ganttChartFiles, ErrorMessage, inputFileDialog, removeFileDialog, selectFileDialog, commitDialog,alteredinputFileDialog
+from Graphics.Dialogs import ganttChartFiles, ErrorMessage, removeFileDialog, commitDialog,alteredinputFileDialog
 from functools import partial
+from Graphics.PopUps.selectFileDialog import selectFileDialog
 
 import requests
 import os
@@ -115,6 +116,7 @@ class MainContainerTab():
         for index, fileName in enumerate(revList):
             length = len(fileName)
             revList[index] = int(fileName[-(length-3):-5])
+        # show Jimmy RegularExpression
         revNum = max(revList)
         if self.mainContainer.revnum < revNum:
 
@@ -170,18 +172,20 @@ class MainContainerTab():
         # self.commithisttable.setModel(HistoryListModel(self.mainContainer.commithistory()))
 
     def downloadUpstream(self):
-        fileheaderArr = [fileheader for fileheader,change in self.changes.items()]
-        revArr = [change['revision'] for fileheader,change in self.changes.items()]
+        # fileheaderArr = [fileheader for fileheader,change in self.changes.items()]
+        # revArr = [change['revision'] for fileheader,change in self.changes.items()]
+        wf = self.mainContainer.workingFrame
         chgstr = ''
         for fileheader, change in self.changes.items():
             self.changes[fileheader]['inputframe'].downloadInputFile(fileheader, self.mainContainer.workingFrame.containerworkingfolder)
             fileEditPath = os.path.join(
-                self.mainContainer.workingFrame.containerworkingfolder + '/' + self.mainContainer.workingFrame.filestrack[fileheader].file_name)
+                wf.containerworkingfolder,wf.filestrack[fileheader].ctnrootpath,wf.filestrack[fileheader].file_name)
             fileb = open(fileEditPath, 'rb')
             self.mainContainer.workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
-            self.mainContainer.workingFrame.filestrack[fileheader].file_id = change['file_id']
+            # self.mainContainer.workingFrame.filestrack[fileheader].file_id = change['file_id']
             self.mainContainer.workingFrame.filestrack[fileheader].connection.Rev = change['revision']
             chgstr = chgstr + fileheader + '\t' + 'File Updated From Upstream' + '\n'
+        wf.writeoutFrameYaml()
         self.changes = self.compareToUpstream(self.mainguihandle.authtoken)
         self.mainContainer.updatedInputs = True
         self.frametextBrowser.setText(chgstr)
@@ -191,6 +195,42 @@ class MainContainerTab():
 
 
     def checkUpstream(self):
+        workingFrame = self.mainContainer.workingFrame
+        changes = {}
+        for fileheader in self.mainContainer.filestomonitor().keys():
+            if workingFrame.filestrack[fileheader].connection is not None:
+                if str(workingFrame.filestrack[fileheader].connection.connectionType) == 'ConnectionTypes.Input':
+                    if workingFrame.filestrack[fileheader].connection.refContainerId is not workingFrame.parentcontainerid:
+                        #Check to see if input file is internal to container, not referencing other containers
+                        containerID = workingFrame.filestrack[fileheader].connection.refContainerId
+
+                        # this is super slow and inefficient.
+                        inputContainerPath = os.path.join(self.mainguihandle.guiworkingdir, 'ContainerMapWorkDir')
+                        inputContainerPathID = os.path.join(self.mainguihandle.guiworkingdir, 'ContainerMapWorkDir', containerID)
+                        dlcontainyaml = Container.downloadContainerInfo(inputContainerPath, self.mainguihandle.authToken, BASE,
+                                                                            containerID)
+                        dlcontainer = Container.LoadContainerFromYaml(containerfn=dlcontainyaml)
+                        dlcontainer.downloadbranch('Main', BASE, self.mainguihandle.authToken, inputContainerPathID)
+                        framePath = os.path.join(inputContainerPathID,'Main','Rev' + str(dlcontainer.revnum) + '.yaml')
+                        inputFrame = Frame.loadRefFramefromYaml(framePath, dlcontainer.containerworkingfolder)
+                        # ##Above Chuck of Code should be done in one line or two
+                        # dlcontainer.workingFrame
+
+                        ft = workingFrame.filestrack[fileheader]
+                        fileCheckPath = os.path.join(workingFrame.containerworkingfolder,ft.ctnrootpath, ft.file_name)
+                        fileb = open(fileCheckPath, 'rb')
+
+                        # Is it necessary that we get the existing file's md5.   Why does checking upstream require knowledge the change in the current md5?
+                        # This should really have two parts, one is to simply compare the last commit Rev of Downstream container to the last committed Rev of the Upstream container.
+
+                        workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
+
+                        if workingFrame.filestrack[fileheader].md5 != inputFrame.filestrack[fileheader].md5:
+                            changes[fileheader] = {'reason': 'MD5 Updated Upstream',
+                                                   'revision': inputFrame.FrameName,
+                                                    'file_id': inputFrame.filestrack[fileheader].file_id,
+                                                   'inputframe': inputFrame}
+
         self.changes = self.compareToUpstream(self.mainguihandle.authtoken)
         if len(self.changes.keys())>0:
             chgstr = ''
@@ -202,38 +242,15 @@ class MainContainerTab():
         else:
             print('No Upstream Updates')
 
-    def compareToUpstream(self, authToken):
-        workingFrame = self.mainContainer.workingFrame
-
-        changes = {}
-        for fileheader in self.mainContainer.filestomonitor().keys():
-            if workingFrame.filestrack[fileheader].connection is not None:
-                if str(workingFrame.filestrack[fileheader].connection.connectionType) == 'ConnectionTypes.Input':
-                    if workingFrame.filestrack[fileheader].connection.refContainerId is not workingFrame.parentcontainerid:
-                        #Check to see if input file is internal to container, not referencing other containers
-                        containerID = workingFrame.filestrack[fileheader].connection.refContainerId
-                        inputContainerPath = os.path.join(self.mainguihandle.guiworkingdir, 'ContainerMapWorkDir')
-                        inputContainerPathID = os.path.join(self.mainguihandle.guiworkingdir, 'ContainerMapWorkDir', containerID)
-                        dlcontainyaml = Container.downloadContainerInfo(inputContainerPath, authToken, BASE,
-                                                                            containerID)
-                        dlcontainer = Container.LoadContainerFromYaml(containerfn=dlcontainyaml)
-                        dlcontainer.downloadbranch('Main', BASE, authToken, inputContainerPathID)
-                        framePath = os.path.join(inputContainerPathID,'Main','Rev' + str(dlcontainer.revnum) + '.yaml')
-                        inputFrame = Frame.loadRefFramefromYaml(framePath, dlcontainer.containerworkingfolder)
-                        fileCheckPath = os.path.join(workingFrame.containerworkingfolder,workingFrame.filestrack[fileheader].file_name)
-                        fileb = open(fileCheckPath, 'rb')
-                        workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
-                        # calculate md5 of file, if md5 has changed, update md5
-                        if workingFrame.filestrack[fileheader].md5 != inputFrame.filestrack[fileheader].md5:
-                            changes[fileheader] = {'reason': 'MD5 Updated Upstream', 'revision': inputFrame.filestrack[fileheader].connection.Rev, 'file_id': inputFrame.filestrack[fileheader].file_id,
-                                                   'inputframe': inputFrame}
-        return changes
 
     def checkdelta(self):
         allowCommit = False
         fixInput = False
         # allowCommit, changes, fixInput , self.alterfiletracks= self.mainContainer.checkFrame(self.mainContainer.workingFrame)
         self.changes, self.alterfiletracks = self.mainContainer.workingFrame.compareToRefFrame(self.mainContainer.refframefullpath, self.mainContainer.filestomonitor())
+
+        # workingFrame.SomeFrameMethod(data (no guihandles.))
+
         for fileheader, changedetails in self.changes.items():
             if fileheader in self.mainContainer.filestomonitor().keys():
                 # only set allowCommit to true if the changes involve what is in the Container's need to monitor
@@ -325,7 +342,7 @@ class MainContainerTab():
         # path = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
         self.mainContainerpath = path
         self.mainContainer = Container.LoadContainerFromYaml(path, revnum=None)
-
+        # sel
         [self.workingdir, file_name] = os.path.split(path)
         self.containerlabel.setText('Container Name : ' + self.mainContainer.containerName)
 
@@ -389,7 +406,7 @@ class MainContainerTab():
         fileInfo = fileInfoDialog.getInputs()
         if fileInfo:
             if fileType == 'Required' or fileType == 'Output':
-                self.mainContainer.addFileObject(fileInfo['fileheader'], fileInfo['ContainerFileInfo'], fileInfo['FilePath'], fileType)
+                self.mainContainer.addFileObject(fileInfo['fileheader'], fileInfo['ContainerFileInfo'], fileInfo['FilePath'], fileType,fileInfo['ctnrootpathlist'])
             self.maincontainerplot.plot(self.changes)
 
     def removeFileInfo(self):
@@ -423,7 +440,9 @@ class MainContainerTab():
 
         self.workingdir = inputs['dir']
 
-        self.mainContainer.workingFrame = Frame(localfilepath = inputs['dir'])
+        self.mainContainer.workingFrame = Frame.InitiateFrame(parentcontainerid=self.mainContainer.containerId,
+                                                              parentcontainername=self.mainContainer.containerName,
+                                                              localdir = inputs['dir'])
         self.mainContainer.workingFrame.parentcontainerid = inputs['containername']
         self.mainContainer.workingFrame.FrameName = 'Rev1'
         self.mainContainer.workingFrame.writeoutFrameYaml(os.path.join(inputs['dir'], 'Main', 'Rev1.yaml'))

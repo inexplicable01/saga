@@ -7,7 +7,7 @@ from SagaApp.Connection import FileConnection
 class FileTrack:
     def __init__(self, FileHeader, containerworkingfolder, \
                  file_name, connection:FileConnection=None, style=None, lastEdited=None, committedby='waichak', \
-                 md5=None, file_id=None, commitUTCdatetime=None,persist: bool = True
+                 md5=None,  commitUTCdatetime=None,persist: bool = True , ctnrootpathlist = []
                  ):
         self.FileHeader = FileHeader
         self.file_name = file_name
@@ -18,10 +18,14 @@ class FileTrack:
         self.committedby = committedby
         self.md5 = md5
         self.style = style
-        self.file_id = file_id
+        # self.file_id = file_id
         self.commitUTCdatetime = commitUTCdatetime
         self.connection=connection
         self.persist=persist
+        if len(ctnrootpathlist)>0:
+            self.ctnrootpath=os.path.join(*ctnrootpathlist)
+        else:
+            self.ctnrootpath='.'
 
     def dictify(self):
         ###Should__dict__be used instead?
@@ -32,6 +36,14 @@ class FileTrack:
                     dictout[key] = value.dictify()
                 else:
                     dictout[key] = None
+            elif key=='ctnrootpath':
+                ctnrootpathlist=[]
+                if value=='.':
+                    dictout['ctnrootpathlist'] = []
+                else:
+                    for folder in value.split(os.path.sep):
+                        ctnrootpathlist.append(folder)
+                    dictout['ctnrootpathlist'] = ctnrootpathlist
             else:
                 dictout[key] = value
         return dictout
@@ -50,7 +62,7 @@ class FileTrack:
         str += 'committedby:   ' + self.committedby+ '\n'
         if self.style:
             str += 'style:   ' + self.style+ '\n'
-        str += 'file_id:   ' + self.file_id+ '\n'
+        # str += 'file_id:   ' + self.file_id+ '\n'
         if self.commitUTCdatetime:
             str += 'commitUTCdatetime:   ' + datetime.fromtimestamp(self.commitUTCdatetime).isoformat()+ '\n'
         str += 'connection:     ' + self.connection.__repr__() + '\n'

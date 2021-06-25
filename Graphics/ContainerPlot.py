@@ -49,7 +49,7 @@ class ContainerPlot():
             self.RectBox[fileheader] = coolerRectangle(150*typeindex[type] , 200 + 100*typecounter[type],  \
                                                        containerBoxWidth, containerBoxHeight,
                                                             type,self.curContainer , fileheader, self.guiHandle, self.view, change,\
-                                                       self.curContainer.workingFrame.filestrack[fileheader].file_name)
+                                                       self.curContainer.workingFrame.filestrack[fileheader])
             self.RectBox[fileheader].setPen(QPen(colorscheme[type]))
             self.RectBox[fileheader].text = fileheader
             self.scene.addItem(self.RectBox[fileheader])
@@ -79,7 +79,7 @@ class ContainerPlot():
 
 class coolerRectangle(QGraphicsRectItem):
     def __init__(self, xpos, ypos, xwidth, ywidth, \
-                 type, curContainer, fileheader, guiHandle, view, change, filename):
+                 type, curContainer, fileheader, guiHandle, view, change, filetrack):
         super().__init__(xpos, ypos, xwidth, ywidth)
         self.type = type
         self.point=QPoint(xpos,ypos)
@@ -88,12 +88,14 @@ class coolerRectangle(QGraphicsRectItem):
         self.fileheader = fileheader
         self.curContainer = curContainer
         self.view = view
-        self.filename = filename
+        # self.file_name = filetrack.file_name
+        self.filetrack = filetrack
+        print(filetrack.ctnrootpath)
 
     def mousePressEvent(self,event):
         # print('pressed huh' + self.type)
         self.guiHandle.coolerRectangleFeedback(self.type, self.view, self.fileheader , self.curContainer)
-        # print('filename ', self.filename)
+        # print('file_name ', self.file_name)
         self.update()
 
     def boundingRect(self):
@@ -119,9 +121,9 @@ class coolerRectangle(QGraphicsRectItem):
         painter.drawRect(rect)
         # Draw text
         painter.setPen(QPen(QBrush(Qt.black), 6))
-        painter.drawText(textRect, Qt.AlignCenter, self.filename)
+        painter.drawText(textRect, Qt.AlignCenter, self.filetrack.file_name)
         # Draw Picture
-        filename, file_extension = os.path.splitext(self.filename)
+        file_name, file_extension = os.path.splitext(self.filetrack.file_name)
 
         if file_extension in ['.docx','.doc']:
             qpic = QImage('Graphics/FileIcons/Word.png')
@@ -137,6 +139,9 @@ class coolerRectangle(QGraphicsRectItem):
             qpic = QImage('Graphics/FileIcons/pdficon.png')
         else:
             qpic= QImage('Graphics/FileIcons/genericfile.png')
+
+        if not self.filetrack.ctnrootpath == '.':
+            qpic = QImage('Graphics/FileIcons/foldericon.png')
         painter.drawImage(picRect, qpic)
 
 

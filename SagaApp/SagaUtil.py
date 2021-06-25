@@ -52,3 +52,14 @@ def getContainerInfo(authtoken):
         containerinfolist= {'EMPTY': {'ContainerDescription': 'empty', 'branches': [{'name': 'Empty', 'revcount': 0}]}}
     return containerinfolist
 
+def ensureFolderExist(fn):
+    if os.path.exists(fn):
+        return
+    else:
+        dir, file = os.path.split(fn)
+        ensureFolderExist(dir)
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+
+
+
