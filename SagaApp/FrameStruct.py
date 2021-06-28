@@ -8,14 +8,14 @@ from SagaApp.Connection import FileConnection, ConnectionTypes
 import time
 import json
 from PyQt5.QtWidgets import *
-from PyQt5 import uic
+# from PyQt5 import uic
 from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtCore import *
 import requests
 from Graphics.Dialogs import downloadProgressBar
 from SagaApp.SagaUtil import FrameNumInBranch,ensureFolderExist
 # from Config import typeInput,typeOutput,typeRequired, sagaGuiDir
-from Config import BASE,changenewfile, changemd5,changedate , changeremoved, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
+from Config import BASE,changenewfile, changemd5,changedate , changeremoved, CONTAINERFN, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
 
 blankFrame = {'parentcontainerid':"",'FrameName': NEWFRAMEFN, 'FrameInstanceId': "",'commitMessage': "",'inlinks': "",'outlinks': "",'AttachedFiles': "", 'commitUTCdatetime': "",'filestrack': ""}
 import shutil
@@ -24,13 +24,21 @@ class Frame:
 
     @classmethod
     def loadFramefromYaml(cls, containerworkingfolder,containfn):
-        workingyamlfn = TEMPFRAMEFN if containfn==TEMPCONTAINERFN else NEWFRAMEFN
-        if containfn==TEMPCONTAINERFN:
+# <<<<<<< HEAD
+#         workingyamlfn = TEMPFRAMEFN if containfn==TEMPCONTAINERFN else NEWFRAMEFN
+#         if containfn==TEMPCONTAINERFN:
+#             workingyamlfn = TEMPFRAMEFN
+#         elif containfn==NEWCONTAINERFN:
+#             workingyamlfn = NEWFRAMEFN
+#         elif containfn=='containerstate.yaml':
+#             workingyamlfn = TEMPFRAMEFN
+# =======
+        CONTAINERLIST = [TEMPCONTAINERFN, CONTAINERFN]
+        if containfn in CONTAINERLIST:
             workingyamlfn = TEMPFRAMEFN
-        elif containfn==NEWCONTAINERFN:
+        else:
             workingyamlfn = NEWFRAMEFN
-        elif containfn=='containerstate.yaml':
-            workingyamlfn = TEMPFRAMEFN
+# >>>>>>> JimmyBranch
         framefullpath = os.path.join(containerworkingfolder, 'Main', workingyamlfn)
         if not os.path.exists(framefullpath):
             framefullpath, revnum = FrameNumInBranch(os.path.join(containerworkingfolder, 'Main'), None)
@@ -258,7 +266,7 @@ class Frame:
 
     def revertTo(self, reverttirev):
         framefn = os.path.join(self.containerworkingfolder, 'Main', reverttirev+'.yaml')
-        revertframe = Frame(self.containerworkingfolder, framefn=framefn)
+        revertframe = Frame(containerworkingfolder = self.containerworkingfolder, FrameName=framefn)
         for fileheader, filetrack in revertframe.filestrack.items():
             revertframe.getfile(filetrack, self.containerworkingfolder)
 
