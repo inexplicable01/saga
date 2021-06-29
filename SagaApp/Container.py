@@ -13,7 +13,7 @@ import json
 import warnings
 from Config import typeInput,typeOutput,typeRequired, sagaGuiDir, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN,CONTAINERFN
 from hackpatch import workingdir
-from SagaApp.SagaUtil import FrameNumInBranch
+from SagaApp.SagaUtil import getFramePathbyRevnum
 from datetime import datetime
 
 fileobjtypes = ['inputObjs', 'requiredObjs', 'outputObjs']
@@ -72,7 +72,10 @@ class Container:
         else:
             workingFrame=None
 
-        refframefullpath, revnum = FrameNumInBranch(os.path.join(containerworkingfolder, currentbranch), revnum)
+        if containerfn==NEWCONTAINERFN:
+            refframefullpath, revnum = os.path.join(containerworkingfolder, NEWFRAMEFN), 0
+        else:
+            refframefullpath, revnum = getFramePathbyRevnum(os.path.join(containerworkingfolder, currentbranch), revnum)
 
         container = cls(containerworkingfolder=containerworkingfolder,
                            containerName=containeryaml['containerName'],

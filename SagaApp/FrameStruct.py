@@ -13,7 +13,7 @@ from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtCore import *
 import requests
 from Graphics.Dialogs import downloadProgressBar
-from SagaApp.SagaUtil import FrameNumInBranch,ensureFolderExist
+from SagaApp.SagaUtil import getFramePathbyRevnum,ensureFolderExist
 # from Config import typeInput,typeOutput,typeRequired, sagaGuiDir
 from Config import BASE,changenewfile, changemd5,changedate , changeremoved, CONTAINERFN, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
 
@@ -41,7 +41,7 @@ class Frame:
 # >>>>>>> JimmyBranch
         framefullpath = os.path.join(containerworkingfolder, 'Main', workingyamlfn)
         if not os.path.exists(framefullpath):
-            framefullpath, revnum = FrameNumInBranch(os.path.join(containerworkingfolder, 'Main'), None)
+            framefullpath, revnum = getFramePathbyRevnum(os.path.join(containerworkingfolder, 'Main'), None)
             shutil.copy(framefullpath,os.path.join(containerworkingfolder, 'Main',TEMPFRAMEFN))
 
         with open(framefullpath,'r') as file:

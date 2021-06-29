@@ -121,8 +121,8 @@ QMenu {
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>30</y>
+      <x>10</x>
+      <y>40</y>
       <width>1280</width>
       <height>681</height>
      </rect>
@@ -805,7 +805,7 @@ QScrollBar::sub-page:vertical
       <property name="maximumSize">
        <size>
         <width>431</width>
-        <height>161</height>
+        <height>164</height>
        </size>
       </property>
       <property name="orientation">
@@ -1188,6 +1188,19 @@ QScrollBar::sub-page:vertical
     </property>
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="sourcefolderlbl">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>20</y>
+      <width>281</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
     </property>
    </widget>
   </widget>

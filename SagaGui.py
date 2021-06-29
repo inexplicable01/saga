@@ -37,12 +37,15 @@ if os.path.exists("token.txt"):
 logging.basicConfig(filename='error.log', filemode='a',
                     format='%(asctime)s,%(msecs)d - %(name)s - %(levelname)s - %(message)s',
                     datefmt='%H:%M:%S')
-
 wmap = WorldMap()
+
+
+
+
 
 class UI(QMainWindow):
     def __init__(self):
-        # self.logf = open("C:\\Users\\waich\\LocalGitProjects\\saga\\error.txt", 'w+')
+
         super(UI, self).__init__()
         uic.loadUi("Graphics/UI/SagaGui.ui", self)
         # self.enterEvent=self.action_enterEvent
@@ -93,6 +96,7 @@ class UI(QMainWindow):
         self.startingcheck = False
 
         # self.conect(self.testcreatemanyfiles)
+        self.sourcefolderlbl.setText(self.guiworkingdir)
         self.show()
 
     def eventFilter(self, source, event):

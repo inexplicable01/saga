@@ -1,8 +1,8 @@
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QColor
 import os
-BASE = "http://fatpanda1985.pythonanywhere.com/"
-# BASE = "http://127.0.0.1:5000/"
+# BASE = "http://fatpanda1985.pythonanywhere.com/"
+BASE = "http://127.0.0.1:5001/"
 #
 
 WorldMapDir = 'ContainerMapWorkDir'
@@ -20,8 +20,6 @@ changenewfile = 'New File Header Added'
 changemd5 = 'MD5 Changed'
 changedate = 'MD5 Changed'
 changeremoved = 'File Header Removed'
-
-
 
 colorscheme = {typeInput: QColor(124, 0, 255 ), typeOutput: QColor(0, 255, 120), typeRequired: Qt.blue, changedate: Qt.cyan,\
                 changemd5: Qt.red, changenewfile: Qt.black, changeremoved: Qt.darkCyan}
@@ -69,6 +67,8 @@ jimmy = {'first_name':'Jimmy',
 testerlogin=waichak
 
 
+# Read a input file
+sourcefolder = ''
 
 TEMPCONTAINERFN='temp_containerstate.yaml'
 TEMPFRAMEFN='temp_frame.yaml'

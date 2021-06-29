@@ -21,29 +21,32 @@ def latestFrameInBranch(path):
         return latestrev, revnum
 
 
-def FrameNumInBranch(path, revnum):
-    # add comment
-    if revnum:
-        if os.path.exists(os.path.join(path, "Rev"+ str(revnum) + ".yaml")):
-            return os.path.join(path, 'Rev' + str(revnum) + ".yaml"), revnum
-        else:
-            warnings.warn("Rev " + str(revnum) + " doesn't exist in " + path , Warning)
-            latestrev, revnum = latestFrameInBranch(path)
-            return os.path.join(path, 'Rev' + str(revnum) + ".yaml"), revnum
-    else:
-        # if revnum is None, that means that they are looking for the latest greatest.
-        # Before first Commit, this should return NEWFRAMEFN
-        # After first Commit, this should either be latest Rev or TEMPFRAMEFN
-        ##
-        latestrev, revnum = latestFrameInBranch(path)
-
-        # if os.path.exists(os.path.join(path, TEMPFRAMEFN)):
-        #     return os.path.join(path, TEMPFRAMEFN), revnum
-        if latestrev=='':
-            if os.path.exists(os.path.join(path, NEWFRAMEFN)):
-                return os.path.join(path, NEWFRAMEFN), 0
-            warnings.warn("Can't find frame in Container", Warning)
+def getFramePathbyRevnum(path, revnum):
+    # function is to return frame yaml full path if it exists.  If it doesn't exist search for the latest rev
+    # if the latest rev doesn't exist, shoot warning.'
+    if os.path.exists(os.path.join(path, 'Rev' + str(revnum) + ".yaml")):
+        # if revnum is a numeric string and that yaml exists, return filepath
         return os.path.join(path, 'Rev' + str(revnum) + ".yaml"), revnum
+    else:
+        # Code should come here most of the time /
+        latestrev, revnum = latestFrameInBranch(path)
+        if revnum==0:
+            warnings.warn("Cannot find reasonable Rev/Frame in " + path, Warning)
+            return latestrev, revnum
+        else:
+            return os.path.join(path, 'Rev' + str(revnum) + ".yaml"), revnum
+    # else:
+    #     # if revnum is None, that means that they are looking for the latest greatest.
+    #     # Before first Commit, this should return NEWFRAMEFN
+    #     # After first Commit, this should either be latest Rev or TEMPFRAMEFN
+    #
+    #     # if os.path.exists(os.path.join(path, TEMPFRAMEFN)):
+    #     #     return os.path.join(path, TEMPFRAMEFN), revnum
+    #     if latestrev=='':
+    #         if os.path.exists(os.path.join(path, NEWFRAMEFN)):
+    #             return os.path.join(path, NEWFRAMEFN), 0
+    #         warnings.warn("Can't find frame in Container", Warning)
+    #     return os.path.join(path, 'Rev' + str(revnum) + ".yaml"), revnum
 
 def getContainerInfo(authtoken):
     response = requests.get(BASE + 'CONTAINERS/List',headers={"Authorization": 'Bearer ' + authtoken})
