@@ -196,7 +196,7 @@ class MainContainerTab():
 
     def checkUpstream(self):
         workingFrame = self.mainContainer.workingFrame
-        changes = {}
+        self.changes = {}
         for fileheader in self.mainContainer.filestomonitor().keys():
             if workingFrame.filestrack[fileheader].connection is not None:
                 if str(workingFrame.filestrack[fileheader].connection.connectionType) == 'ConnectionTypes.Input':
@@ -207,10 +207,10 @@ class MainContainerTab():
                         # this is super slow and inefficient.
                         inputContainerPath = os.path.join(self.mainguihandle.guiworkingdir, 'ContainerMapWorkDir')
                         inputContainerPathID = os.path.join(self.mainguihandle.guiworkingdir, 'ContainerMapWorkDir', containerID)
-                        dlcontainyaml = Container.downloadContainerInfo(inputContainerPath, self.mainguihandle.authToken, BASE,
+                        dlcontainyaml = Container.downloadContainerInfo(inputContainerPath, self.mainguihandle.authtoken, BASE,
                                                                             containerID)
                         dlcontainer = Container.LoadContainerFromYaml(containerfn=dlcontainyaml)
-                        dlcontainer.downloadbranch('Main', BASE, self.mainguihandle.authToken, inputContainerPathID)
+                        dlcontainer.downloadbranch('Main', BASE, self.mainguihandle.authtoken, inputContainerPathID)
                         framePath = os.path.join(inputContainerPathID,'Main','Rev' + str(dlcontainer.revnum) + '.yaml')
                         inputFrame = Frame.loadRefFramefromYaml(framePath, dlcontainer.containerworkingfolder)
                         # ##Above Chuck of Code should be done in one line or two
@@ -226,12 +226,12 @@ class MainContainerTab():
                         workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
 
                         if workingFrame.filestrack[fileheader].md5 != inputFrame.filestrack[fileheader].md5:
-                            changes[fileheader] = {'reason': 'MD5 Updated Upstream',
+                            self.changes[fileheader] = {'reason': 'MD5 Updated Upstream',
                                                    'revision': inputFrame.FrameName,
-                                                    'file_id': inputFrame.filestrack[fileheader].file_id,
+                                                    'md5': inputFrame.filestrack[fileheader].md5,
                                                    'inputframe': inputFrame}
 
-        self.changes = self.compareToUpstream(self.mainguihandle.authtoken)
+        # self.changes = self.compareToUpstream(self.mainguihandle.authtoken)
         if len(self.changes.keys())>0:
             chgstr = ''
             for fileheader, change in self.changes.items():

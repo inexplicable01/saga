@@ -100,10 +100,12 @@ class Container:
                 continue
             if self.FileHeaders[fileheader]['type']== typeInput:
                 # only commit new input files if input files were downloaded
-                if not frameRef.filestrack[fileheader].connection.Rev == filetrack.connection.Rev:
-                    inputsupdated = True
-                else:
-                    continue
+                # Dealing with input updates is gonna require a lot of thought.
+                inputsupdated = True
+                # if not frameRef.filestrack[fileheader].connection.Rev == filetrack.connection.Rev:
+                #     inputsupdated = True
+                # else:
+                #     continue
 
                 # if self.updatedInputs == False:
                 #     continue
@@ -117,7 +119,6 @@ class Container:
                 # new file needs to be committed as the new local file is not the same as previous md5
                 filesToUpload[fileheader] = open(filepath,'rb')
                 updateinfo[fileheader] = {
-                    'file_id': filetrack.file_id,
                     'file_name': filetrack.file_name,
                     'lastEdited': filetrack.lastEdited,
                     'md5': filetrack.md5,

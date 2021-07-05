@@ -2,7 +2,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import QColor
 import os
 # BASE = "http://fatpanda1985.pythonanywhere.com/"
-BASE = "http://127.0.0.1:5001/"
+BASE = "http://127.0.0.1:9500/"
 #
 
 WorldMapDir = 'ContainerMapWorkDir'
@@ -64,7 +64,64 @@ jimmy = {'first_name':'Jimmy',
                     'password':'passwordJ',
 }
 
-testerlogin=waichak
+privatepackagejohnlee = {'first_name':'John',
+                   'last_name':'Lee',
+                   'email':'member@example.com',
+                    'password':'Password1',
+}
+
+privatepackageadmin = {'first_name':'Simon',
+                   'last_name':'Genius',
+                   'email':'admin@example.com',
+                    'password':'PasswordS',
+}
+privatepackagejames = {'first_name':'James',
+                   'last_name':'Bond',
+                   'email':'agent@example.com',
+                    'password':'Password007',
+}
+
+privatepackagechris = {'first_name':'Chris',
+                   'last_name':'Everyman',
+                   'email':'usercemail@gmail.com',
+                    'password':'passwordC',
+}
+privatepackagedennis = {'first_name':'Dennis',
+                   'last_name':'Wong',
+                   'email':'userdemail@gmail.com',
+                    'password':'passwordD',
+}
+
+privatepackageaaron = {'first_name':'aaron',
+                   'last_name':'Jones',
+                   'email':'useraemail@gmail.com',
+                    'password':'passwordA',
+}
+
+privatepackagebeth = {'first_name':'beth',
+                   'last_name':'asdf',
+                   'email':'userbemail@gmail.com',
+                    'password':'passwordB',
+}
+privatepackageevan = {'first_name':'Evan',
+                   'last_name':'Port',
+                   'email':'usereemail@gmail.com',
+                    'password':'passwordE',
+}
+
+privatepackageman = {'first_name':'Mr',
+                   'last_name':'Manager',
+                   'email':'manager@gmail.com',
+                    'password':'passwordM',
+}
+privatepackagecustomer = {'first_name':'Good',
+                   'last_name':'Customer',
+                   'email':'customer@gmail.com',
+                    'password':'passwordCust',
+}
+
+
+testerlogin=privatepackageaaron
 
 
 # Read a input file

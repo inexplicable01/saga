@@ -25,6 +25,7 @@ def getFramePathbyRevnum(path, revnum):
     # function is to return frame yaml full path if it exists.  If it doesn't exist search for the latest rev
     # if the latest rev doesn't exist, shoot warning.'
     if os.path.exists(os.path.join(path, 'Rev' + str(revnum) + ".yaml")):
+        # Container and Frames default revnum to None above should evaluate to RevNone.yaml most of the time.
         # if revnum is a numeric string and that yaml exists, return filepath
         return os.path.join(path, 'Rev' + str(revnum) + ".yaml"), revnum
     else:
