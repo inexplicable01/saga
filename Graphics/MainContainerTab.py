@@ -3,28 +3,30 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Graphics.QAbstract.HistoryListModel import HistoryListModel
+from Graphics.QAbstract.ConflictListModel import ConflictListModel
 from Graphics.Dialogs import alteredinputFileDialog
 from Graphics.ContainerPlot import ContainerPlot
-from Graphics.Dialogs import ganttChartFiles, ErrorMessage, removeFileDialog, commitDialog,alteredinputFileDialog
+from Graphics.Dialogs import ganttChartFiles, ErrorMessage, removeFileDialog, commitDialog,alteredinputFileDialog, refreshContainerPopUp, downloadProgressBar,commitConflictCheck
 from functools import partial
 from Graphics.PopUps.selectFileDialog import selectFileDialog
 
 import requests
 import os
 import hashlib
-from Config import BASE, typeInput,typeOutput,typeRequired, boxwidth, boxheight, colorscheme,TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
+from Config import *
 from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
 from SagaApp.WorldMap import WorldMap
 from Graphics.GuiUtil import AddIndexToView
 from Graphics.PopUps.AddInputPopUp import AddInputPopUp
 from os import listdir
+from os.path import isfile, join
 import shutil
 # import threading
 # import time
 import random
 import string
-
+import json
 
 class MainContainerTab():
     def __init__(self,mainguihandle):
@@ -35,11 +37,10 @@ class MainContainerTab():
         self.commitmsgEdit = mainguihandle.commitmsgEdit
         self.commithisttable = mainguihandle.commithisttable
         self.refreshBttn = mainguihandle.checkChangesBttn
-        self.refreshBttnUpstream = mainguihandle.checkUpstreamBttn
         self.downloadUpstreamBttn = mainguihandle.updateInputsBttn
         self.refreshContainerBttn = mainguihandle.refreshContainerBttn
         self.downloadUpstreamBttn.setDisabled(True)
-        # self.refreshContainerBttn.setDisabled(True)
+        self.refreshContainerBttn.setDisabled(True)
         self.framelabel = mainguihandle.framelabel
         self.maincontainerview = mainguihandle.maincontainerview
         self.indexView1 = mainguihandle.indexView1
@@ -78,9 +79,8 @@ class MainContainerTab():
         self.removeFileButton_2.clicked.connect(self.removeFileInfo)
         self.inputFileButton_2.clicked.connect(self.AddInputFile)
         self.refreshBttn.clicked.connect(self.checkdelta)
-        self.refreshBttnUpstream.clicked.connect(self.checkUpstream)
         self.downloadUpstreamBttn.clicked.connect(self.downloadUpstream)
-        self.refreshContainerBttn.clicked.connect(self.refreshContainer)
+        self.refreshContainerBttn.clicked.connect(self.updateToLatestRevision)
         # self.testbttn.clicked.connect(self.numeroustest)
         # self.testremovebttn.clicked.connect(self.removenumeroustest)
         # self.resetbutton.clicked.connect(self.resetrequest)
@@ -100,54 +100,151 @@ class MainContainerTab():
         self.changes = {}
         self.containerLoaded = False
         self.newContainerStatus = False
-
+        self.containerstatuslabel = self.mainguihandle.containerStatusLabel
+        self.refreshedrevision = 0
+        self.refreshedcheck = False
         AddIndexToView(self.indexView1)
         # self.t = threading.Timer(1.0, self.checkingFileDelta)
 
 
-    def refreshContainer(self):
-    #     redownload ContainerMapWorkDir
-        self.mainguihandle.getWorldContainers()
-    #   Check to see if newer revision now exists
-        revList = listdir(os.path.join(self.mainguihandle.guiworkingdir,
-                                       'ContainerMapWorkDir',self.mainContainer.containerId,'Main'))
-        if revList.count('temp_frame.yaml') > 0:
-            revList.remove('temp_frame.yaml')
-        for index, fileName in enumerate(revList):
-            length = len(fileName)
-            revList[index] = int(fileName[-(length-3):-5])
-        # show Jimmy RegularExpression
-        revNum = max(revList)
-        if self.mainContainer.revnum < revNum:
+    def checkLatestRevision(self):
+        payload = {'containerID': self.mainContainer.containerId}
 
+        headers = {
+            'Authorization': 'Bearer ' + self.mainguihandle.authtoken
+        }
+
+        response = requests.get(BASE + 'CONTAINERS/newestrevnum', headers=headers, data=payload)
+        resp = json.loads(response.content)
+        self.newestframe = Frame.LoadFrameFromDict(resp['framedict'])
+        self.newestrevnum = resp['newestrevnum']
+        self.newestFiles = {}
+        if self.mainContainer.revnum < self.newestrevnum:
+            self.refreshContainerBttn.setEnabled(True)
+            if self.refreshedcheck:
+                self.containerstatuslabel.setText(
+                    'Newer Revision Exists!' + ' Current Rev: ' + self.refreshrevnum
+                    + ', Latest Rev: ' + str(self.newestrevnum))
+            else:
+                self.containerstatuslabel.setText('Newer Revision Exists!' + ' Current Rev: ' + str(self.mainContainer.revnum)
+                                                  + ', Latest Rev: ' + str(self.newestrevnum))
+            #if the newest rev num is different from local rev num:
+            #loop through filesttrack of both newest frame, check if file exists in current frame and compare MD5s,
+            # if exists, add update message to changes, if notadd new file message
+            for fileheader in self.newestframe.filestrack.keys():
+                if fileheader in self.mainContainer.workingFrame.filestrack.keys():
+                    if self.newestframe.filestrack[fileheader].md5 != self.mainContainer.workingFrame.filestrack[fileheader].md5:
+                        if fileheader in self.changes.keys():
+                            self.changes[fileheader]['reason'].append(newrevision)
+                        else:
+                            self.changes[fileheader] = {'reason': [newrevision]}
+                        #if 'File updated....' is within changes reason dictionary, display delta in GUI
+                else:
+                    self.changes[fileheader] = {'reason': fileadded}
+
+            # Loop through working frame to check if any files have been deleted in new revision
+            for fileheader in self.mainContainer.workingFrame.filestrack.keys():
+                if fileheader not in self.newestframe.filestrack.keys():
+                    if fileheader in self.changes.keys():
+                        self.changes[fileheader]['reason'].append(filedeleted)
+                    else:
+                        self.changes[fileheader] = {'reason': [filedeleted]}
+
+    def updateToLatestRevision(self):
+        self.refreshedcheck = True
+        self.refreshContainerBttn.setDisabled(True)
+        self.refreshrevnum = str(self.mainContainer.revnum) + '/' + str(self.newestrevnum)
+        self.containerstatuslabel.setText('Container Refreshed' + ' Current Rev: ' + self.refreshrevnum + ', Latest Rev: ' + str(self.newestrevnum))
+        self.conflictlistmodel = ConflictListModel(self.changes, self.newestframe)
+        conflictpopup = refreshContainerPopUp(self.changes, self.conflictlistmodel)
+        filestodownload = conflictpopup.selectFiles()
+        for fileheader in filestodownload.keys():
+            if filestodownload[fileheader] != 'Do not download':
+                wf = self.mainContainer.workingFrame
+                payload = {'md5': self.newestframe.filestrack[fileheader].md5,
+                           'file_name': self.newestframe.filestrack[fileheader].file_name}
+                headers = {}
+                response = requests.get(BASE + 'FILES', headers=headers, data=payload)
+                self.progress = downloadProgressBar(response.headers['file_name'])
+                dataDownloaded = 0
+                self.progress.updateProgress(dataDownloaded)
+                if filestodownload[fileheader] == 'Overwrite':
+                    fileEditPath = os.path.join(
+                        wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+                        wf.filestrack[fileheader].file_name)
+                    with open(fileEditPath, 'wb') as f:
+                        for data in response.iter_content(1024):
+                            dataDownloaded += len(data)
+                            f.write(data)
+                            percentDone = 100 * dataDownloaded / len(response.content)
+                            self.progress.updateProgress(percentDone)
+                            QGuiApplication.processEvents()
+                    self.mainContainer.workingFrame.filestrack[fileheader].md5 = self.newestframe.filestrack[fileheader].md5
+                    self.mainContainer.workingFrame.filestrack[fileheader].lastEdited = os.path.getmtime(fileEditPath)
+
+                elif filestodownload[fileheader] == 'Download Copy':
+                    filePath = os.path.join(
+                        wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+                        wf.filestrack[fileheader].file_name)
+                    filecopy_name = os.path.splitext(filePath)[0] + '_' + self.newestframe.FrameName + 'Copy' + \
+                                    os.path.splitext(filePath)[1]
+                    fileEditPath = os.path.join(
+                        wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+                        filecopy_name)
+                    with open(fileEditPath, 'wb') as f:
+                        for data in response.iter_content(1024):
+                            dataDownloaded += len(data)
+                            f.write(data)
+                            percentDone = 100 * dataDownloaded / len(response.content)
+                            self.progress.updateProgress(percentDone)
+                            QGuiApplication.processEvents()
+                    print('No changes to Frame')
+
+                elif filestodownload[fileheader] == 'Download':
+                    filePath = os.path.join(
+                        wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+                        self.newestframe.filestrackk[fileheader].file_name)
+                    with open(filePath, 'wb') as f:
+                        for data in response.iter_content(1024):
+                            dataDownloaded += len(data)
+                            f.write(data)
+                            percentDone = 100 * dataDownloaded / len(response.content)
+                            self.progress.updateProgress(percentDone)
+                            QGuiApplication.processEvents()
+                    containerFileInfo = {'Container': 'here', 'type': self.newestframe.filestrack[fileheader].style}
+                    self.mainContainer.addFileObject(fileheader, containerFileInfo, filePath, self.newestframe.filestrack[fileheader].style, '')
+
+                elif filestodownload[fileheader] == 'Delete':
+                    filePath = os.path.join(
+                        wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+                        wf.filestrack[fileheader].file_name)
+                    if os.path.exists(filePath):
+                        os.remove(filePath)
+                        self.mainContainer.removeFileHeader(fileheader)
+                    else:
+                        print("The file does not exist")
+
+
+
+
+
+        #         TO DO add to commit function check of conflicting files and spit out error message or have user choose which file to commit
+
+        # pass along list of files different to pop up screen
+
+
+        # populate new pop up screen with list of files different and option for user to overwrite or download a copy
+        # return user selections
+        # download files from newest frame
+        # loop through changed files to overwrite or write a new copy
+        # add functionality to commit to prevent commit if conflict exists
+        #
         #     download container
         #           download updated containstate
         #           download updated frame yaml
         #           download updated files
         #     reload contain state into SAGA GUI
-            openDirectoryDialog = QFileDialog().getExistingDirectory(self.mainguihandle,
-                                                                     'Select Folder Space to Place ' + self.mainContainer.containerId
-                                                                     + ' container folder.')
-            if openDirectoryDialog:
-                contdir = os.path.join(openDirectoryDialog, self.mainContainer.containerId)
-                if not os.path.exists(contdir):
-                    os.mkdir(contdir)
-                else:
-                    print('Container exists already...removing')
-                    shutil.rmtree(contdir)
-                dlcontainyaml = Container.downloadContainerInfo(openDirectoryDialog, self.mainguihandle.authtoken, BASE,
-                                                                self.mainContainer.containerId)
-                dlcontainer = Container.LoadContainerFromYaml(containerfn=dlcontainyaml)
-                dlcontainer.downloadbranch('Main', BASE, self.mainguihandle.authtoken, contdir)
-                dlcontainer.workingFrame.downloadfullframefiles()
-                self.mainguihandle.maincontainertab.readcontainer(dlcontainyaml)
-                self.mainguihandle.tabWidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
-                # print(os.path.join(openDirectoryDialog, self.dlcontainer))
-                if openDirectoryDialog:
-                    print(os.path.split(openDirectoryDialog[0]))
 
-        else:
-            print('Container is the lastest revision')
 
     def fileGanttChart(self):
         self.ganttChart = ganttChartFiles()
@@ -186,7 +283,6 @@ class MainContainerTab():
             self.mainContainer.workingFrame.filestrack[fileheader].connection.Rev = change['revision']
             chgstr = chgstr + fileheader + '\t' + 'File Updated From Upstream' + '\n'
         wf.writeoutFrameYaml()
-        self.changes = self.compareToUpstream(self.mainguihandle.authtoken)
         self.mainContainer.updatedInputs = True
         self.frametextBrowser.setText(chgstr)
         self.downloadUpstreamBttn.setDisabled(True)
@@ -196,7 +292,7 @@ class MainContainerTab():
 
     def checkUpstream(self):
         workingFrame = self.mainContainer.workingFrame
-        self.changes = {}
+        refFrame = Frame.loadRefFramefromYaml(self.mainContainer.refframefullpath,self.mainContainer.workingFrame.containerworkingfolder)
         for fileheader in self.mainContainer.filestomonitor().keys():
             if workingFrame.filestrack[fileheader].connection is not None:
                 if str(workingFrame.filestrack[fileheader].connection.connectionType) == 'ConnectionTypes.Input':
@@ -223,22 +319,19 @@ class MainContainerTab():
                         # Is it necessary that we get the existing file's md5.   Why does checking upstream require knowledge the change in the current md5?
                         # This should really have two parts, one is to simply compare the last commit Rev of Downstream container to the last committed Rev of the Upstream container.
 
-                        workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
+                        # workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
 
-                        if workingFrame.filestrack[fileheader].md5 != inputFrame.filestrack[fileheader].md5:
-                            self.changes[fileheader] = {'reason': 'MD5 Updated Upstream',
+                        if refFrame.filestrack[fileheader].md5 != inputFrame.filestrack[fileheader].md5:
+                            if fileheader in self.changes.keys():
+                                self.changes[fileheader]['reason'].append('MD5 Updated Upstream')
+                            else:
+                                self.changes[fileheader] = {'reason': ['MD5 Updated Upstream'],
                                                    'revision': inputFrame.FrameName,
                                                     'md5': inputFrame.filestrack[fileheader].md5,
                                                    'inputframe': inputFrame}
 
-        # self.changes = self.compareToUpstream(self.mainguihandle.authtoken)
         if len(self.changes.keys())>0:
-            chgstr = ''
-            for fileheader, change in self.changes.items():
-                chgstr = chgstr + fileheader + '\t' + change['reason'] + '\n'
-            self.frametextBrowser.setText(chgstr)
             self.downloadUpstreamBttn.setEnabled(True)
-            self.maincontainerplot.plot(self.changes)
         else:
             print('No Upstream Updates')
 
@@ -246,9 +339,11 @@ class MainContainerTab():
     def checkdelta(self):
         allowCommit = False
         fixInput = False
+        self.changes = {}
         # allowCommit, changes, fixInput , self.alterfiletracks= self.mainContainer.checkFrame(self.mainContainer.workingFrame)
-        self.changes, self.alterfiletracks = self.mainContainer.workingFrame.compareToRefFrame(self.mainContainer.refframefullpath, self.mainContainer.filestomonitor())
-
+        self.changes, self.alterfiletracks = self.mainContainer.workingFrame.compareToRefFrame(self.mainContainer.refframefullpath, self.mainContainer.filestomonitor(), self.changes)
+        self.checkUpstream()
+        self.checkLatestRevision()
         # workingFrame.SomeFrameMethod(data (no guihandles.))
 
         for fileheader, changedetails in self.changes.items():
@@ -273,7 +368,7 @@ class MainContainerTab():
 
         chgstr = ''
         for fileheader, change in self.changes.items():
-            chgstr = chgstr + fileheader + '\t' + change['reason'] + '\n'
+            chgstr = chgstr + fileheader + '\t' + ', '.join(change['reason']) + '\n'
         self.frametextBrowser.setText(chgstr)
 
     def addressAlteredInput(self):
@@ -284,7 +379,6 @@ class MainContainerTab():
                 self.mainContainer.workingFrame.dealwithalteredInput(alterinputfileinfo, self.mainContainer.refframefullpath)
         self.readcontainer(os.path.join(self.mainContainer.containerworkingfolder ,TEMPCONTAINERFN))
         self.checkdelta()
-
 
     def commit(self):
         # print(self.commitmsgEdit.toPlainText() + str())
@@ -326,7 +420,17 @@ class MainContainerTab():
                 error_dialog.showMessage('You do not have the privilege to commit to this container')
                 error_dialog.exec_()
                 return
-
+            # Check if there are any conflicting files from refresh action with 'RevXCopy' in file name
+            if self.refreshedcheck is True:
+                filepath = self.mainContainer.workingFrame.containerworkingfolder
+                files =  [f for f in listdir(filepath) if isfile(join(filepath, f))]
+                searchstring = 'Rev' + str(self.newestrevnum) + 'Copy'
+                conflictfiles = [f for f in files if searchstring in f]
+                if len(conflictfiles) > 0:
+            #         show popup with list of conflict files
+                    commitconflictpopup = commitConflictCheck(conflictfiles)
+                    commitconflictpopup.showconflicts()
+                    return
             committed = self.mainContainer.commit(self.commitmsgEdit.toPlainText(), self.mainguihandle.authtoken, BASE)
 
         if committed:

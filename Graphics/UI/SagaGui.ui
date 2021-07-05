@@ -121,10 +121,10 @@ QMenu {
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>40</y>
+      <x>0</x>
+      <y>10</y>
       <width>1280</width>
-      <height>681</height>
+      <height>701</height>
      </rect>
     </property>
     <property name="font">
@@ -880,7 +880,7 @@ QScrollBar::sub-page:vertical
       <property name="geometry">
        <rect>
         <x>440</x>
-        <y>116</y>
+        <y>136</y>
         <width>831</width>
         <height>421</height>
        </rect>
@@ -890,7 +890,7 @@ QScrollBar::sub-page:vertical
       <property name="geometry">
        <rect>
         <x>440</x>
-        <y>550</y>
+        <y>570</y>
         <width>391</width>
         <height>51</height>
        </rect>
@@ -965,7 +965,7 @@ QScrollBar::sub-page:vertical
       <property name="geometry">
        <rect>
         <x>440</x>
-        <y>39</y>
+        <y>30</y>
         <width>371</width>
         <height>62</height>
        </rect>
@@ -1129,7 +1129,7 @@ QScrollBar::sub-page:vertical
       <property name="geometry">
        <rect>
         <x>860</x>
-        <y>570</y>
+        <y>590</y>
         <width>162</width>
         <height>19</height>
        </rect>
@@ -1149,7 +1149,7 @@ QScrollBar::sub-page:vertical
       <property name="geometry">
        <rect>
         <x>1020</x>
-        <y>570</y>
+        <y>590</y>
         <width>251</width>
         <height>19</height>
        </rect>
@@ -1163,6 +1163,19 @@ QScrollBar::sub-page:vertical
       </property>
       <property name="text">
        <string>FileName</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="containerStatusLabel">
+      <property name="geometry">
+       <rect>
+        <x>440</x>
+        <y>90</y>
+        <width>821</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
       </property>
      </widget>
     </widget>

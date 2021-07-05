@@ -3,6 +3,7 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
+from Graphics.QAbstract.ConflictListModel import ConflictListModel
 import yaml
 # from SagaApp.FrameStruct import Frame
 # from SagaApp.Container import Container
@@ -59,10 +60,10 @@ class ganttChartProject(QDialog):
 #         self.exec()
 
 class downloadProgressBar(QWidget):
-    def __init__(self, fileId):
+    def __init__(self, fileName):
         super().__init__()
         uic.loadUi("Graphics/UI/downloadProgressBar.ui", self)
-        self.fileNameLabel.setText(fileId)
+        self.fileNameLabel.setText(fileName)
     def updateProgress(self, value):
         self.progressBar.setValue(value)
         self.show()
@@ -112,6 +113,48 @@ class removeFileDialog(QDialog):
             return self.fileheader
         else:
             return None
+
+class refreshContainerPopUp(QDialog):
+    def __init__(self, changes, conflictmodel = None, addedmodel = None, deletedmodel = None):
+        self.changes = changes
+        self.conflictmodel = conflictmodel
+        self.addedmodel = addedmodel
+        self.deletedmodel = deletedmodel
+        super().__init__()
+        uic.loadUi("Graphics/UI/ConflictPopUp.ui", self)
+        self.conflictView.setModel(self.conflictmodel)
+        self.addedView.setModel(self.addedmodel)
+        self.deletedView.setModel(self.deletedmodel)
+
+    def selectFiles(self):
+        if self.exec_() == QDialog.Accepted:
+            self.fileList = {}
+            for fileheader in self.changes.keys():
+                for index in self.conflictmodel.checks:
+                    # how to get the row of the index from self.model.checks
+                    if self.conflictmodel.conflictdata[index.row()] == fileheader:
+                        if index.column() == 1:
+                            self.fileList[fileheader] = 'Overwrite'
+                        elif index.column() == 2:
+                            self.fileList[fileheader] = 'Download Copy'
+                for index in self.addedmodel.checks:
+                    # how to get the row of the index from self.model.checks
+                    if self.addedmodel.conflictdata[index.row()] == fileheader:
+                        if index.column() == 1:
+                            self.fileList[fileheader] = 'Download'
+                        elif index.column() == 2:
+                            self.fileList[fileheader] = 'Do not download'
+                for index in self.deletedmodel.checks:
+                    # how to get the row of the index from self.model.checks
+                    if self.deletedmodel.conflictdata[index.row()] == fileheader:
+                        if index.column() == 1:
+                            self.fileList[fileheader] = 'Delete'
+                        elif index.column() == 2:
+                            self.fileList[fileheader] = 'Do not delete'
+            return self.fileList
+        else:
+            return None
+
 class commitDialog(QDialog):
     def __init__(self, containerName, description, commitMessage):
         super().__init__()
@@ -124,7 +167,17 @@ class commitDialog(QDialog):
         else:
             return False
 
-
+class commitConflictCheck(QDialog):
+    def __init__(self, conflictfiles):
+        super().__init__()
+        uic.loadUi("Graphics/UI/commitConflictCheck.ui", self)
+        for filename in conflictfiles:
+            self.listWidget.addItem(filename)
+    def showconflicts(self):
+        if self.exec_() == QDialog.Accepted:
+            print('Acknowledged')
+        else:
+            return None
 
 class alteredinputFileDialog(QDialog):
     def __init__(self, alterfiletrack:FileTrack):

@@ -76,6 +76,7 @@ def find_Local_Container(MainGuiHandle,maincontainertab):
         # print(fname)
         maincontainertab.readcontainer(fname)
         MainGuiHandle.tabWidget.setCurrentIndex(maincontainertab.index)
+        maincontainertab.refreshedcheck = 0
 
 def containerPermission(mainguihandle, maincontainertab):
     permissiongui = permissionsDialog(maincontainertab.mainContainer, mainguihandle)
