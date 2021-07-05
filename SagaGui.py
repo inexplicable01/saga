@@ -136,6 +136,14 @@ class UI(QMainWindow):
         containerinfolist = self.getWorldContainers()
         self.maptab.generateContainerMap(containerinfolist)
 
+    def resetguionsectionswitch(self):
+        self.maincontainertab.reset()
+        self.maptab.reset()
+        self.checkUserStatus()
+        containerinfolist = self.getWorldContainers()
+
+        self.maptab.generateContainerMap(containerinfolist)
+
 
 
     def action_enterEvent(self, event):
@@ -164,6 +172,7 @@ class UI(QMainWindow):
                     self.authtoken = token['auth_token']
                     self.menuContainer.setEnabled(True)
                     self.menuSection.setEnabled(True)
+                    self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, "Map"))
                 else:
                     self.authtoken = None
                     self.userstatuslbl.setText('Please sign in')

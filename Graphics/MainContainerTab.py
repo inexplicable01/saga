@@ -67,7 +67,7 @@ class MainContainerTab():
 
         self.GuiTab = mainguihandle.ContainerTab
 
-        self.maincontainerplot = None
+        self.maincontainerplot = ContainerPlot(self, self.maincontainerview, container=None)
         # self.openContainerBttn = mainguihandle.openContainerBttn
         self.commitBttn.setEnabled(False)
         self.workingdir=''
@@ -441,12 +441,55 @@ class MainContainerTab():
             self.histModel = HistoryListModel(self.mainContainer.commithistory())
             self.commithisttable.setModel(self.histModel)
 
+    def reset(self):
+        self.mainContainer=None
+        self.containerlabel.setText('')
+        self.histModel = HistoryListModel({})
+        self.commithisttable.setModel(self.histModel)
+        self.maincontainerplot.reset()
 
     def readcontainer(self,path):
         # path = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
-        self.mainContainerpath = path
-        self.mainContainer = Container.LoadContainerFromYaml(path, revnum=None)
-        # sel
+        loadingcontainer = Container.LoadContainerFromYaml(path, revnum=None)
+        # section check
+
+        payload = {'containerid': loadingcontainer.containerId}
+        headers = {'Authorization': 'Bearer ' + self.mainguihandle.authtoken}
+        permissionsresponse = requests.get(BASE + 'USER/checkcontainerpermissions', headers=headers, data=payload)
+        print(permissionsresponse.headers['message'])
+        permissionsresponsecontent = json.loads(permissionsresponse.content)
+        if permissionsresponsecontent['goswitch']:
+            ### To Jimmy ####  Below code is copy and based from the Graphics/Popups/switchsection.py
+            ### This is another example of where seperating view and model can clean up code.
+            # switchsection.py SHOULD be a view, the view should be be calling a
+            # method called switchusersection that resides in a model
+            # All the py in pop up guis are technically views and there should be another place for model.
+            ## I'm not sure what the Model organization should actually look like yet.  It might reside in SagaApp folder
+            payload = {'newsectionid': permissionsresponsecontent['sectionid']}
+            headers = {'Authorization': 'Bearer ' + self.mainguihandle.authtoken}
+            switchresponse = requests.post(BASE + 'USER/switchusersection', headers=headers, data=payload)
+            resp = json.loads(switchresponse.content)
+            report = resp['report']
+            msg = QMessageBox()
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.setText(report['status'])
+            if report['status'] == 'User Current Section successfully changed':
+                msg.setIcon(QMessageBox.Information)
+                self.mainguihandle.resetguionsectionswitch()
+            else:
+                msg.setIcon(QMessageBox.Critical)
+                ## if we arrived here, then that means either
+            msg.exec_()
+        else: ##if not goswitch then either user is in currentsection, (which is great) or containerid exists nowhere on the server
+            if permissionsresponsecontent['sectionid']:
+               print('Loading ' + loadingcontainer.containerName)
+            else:
+                msg = QMessageBox()
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.setText(permissionsresponse.headers['message'])
+                msg.exec_()
+                return
+        self.mainContainer = loadingcontainer
         [self.workingdir, file_name] = os.path.split(path)
         self.containerlabel.setText('Container Name : ' + self.mainContainer.containerName)
 
@@ -456,7 +499,7 @@ class MainContainerTab():
         self.commithisttable.setColumnWidth(0, self.commithisttable.width()*0.1)
         self.commithisttable.setColumnWidth(1, self.commithisttable.width() * 0.6)
         self.commithisttable.setColumnWidth(2, self.commithisttable.width() * 0.29)
-        self.maincontainerplot=ContainerPlot(self, self.maincontainerview, container=self.mainContainer)
+        self.maincontainerplot.setContainer(curContainer = self.mainContainer)
         self.maincontainerplot.plot(self.changes)
         ## Grab container history
         changesbyfile=self.mainContainer.commithistorybyfile()
@@ -551,95 +594,11 @@ class MainContainerTab():
         self.mainContainer.workingFrame.FrameName = 'Rev1'
         self.mainContainer.workingFrame.writeoutFrameYaml(os.path.join(inputs['dir'], 'Main', 'Rev1.yaml'))
         self.maincontainerplot = ContainerPlot(self, self.maincontainerview, self.mainContainer) #Edit to use refContainer
-        # self.histModel.beginResetModel()
-        # self.histModel.removeRows(0, self.histModel.rowCount(0))
-        # self.histModel.endResetModel()
+
         self.histModel = HistoryListModel({})
         self.commithisttable.setModel(self.histModel)
         self.framelabel.setText('Revision 0 (New Container)')
         self.newContainerStatus = True
         self.descriptionText.setEnabled(True)
         self.setTab(True)
-
-    def numeroustest(self):
-        maxinputadder=2
-        counter = 0
-        for ifile in range(0,20):
-            fileheader = ''.join(random.choices(string.ascii_uppercase +
-                                         string.digits, k=7))
-            filepath = os.path.join(self.mainContainer.containerworkingfolder, 'Test' + fileheader + '.txt')
-            with open(filepath, 'w') as newfile:
-                newfile.write(''.join(random.choices(string.ascii_uppercase +string.digits, k=90)))
-            fileType = random.choice([typeInput,typeRequired, typeOutput])
-            # fileType=typeInput
-            if fileType == typeInput and counter<maxinputadder:
-                availablecontainers = os.listdir(os.path.join(self.mainguihandle.guiworkingdir, 'ContainerMapWorkDir'))
-                print(availablecontainers)
-
-                outputfile = []
-                while len(outputfile)==0:
-                    # print(random.choice(availablecontainers))
-                    containerId = random.choice(availablecontainers)
-                    refcontainerpath = os.path.join('ContainerMapWorkDir', containerId, 'containerstate.yaml')
-                    refcontainer = Container.LoadContainerFromYaml(refcontainerpath)
-                    for fileheader, containerdetails in refcontainer.FileHeaders.items():
-                        if containerdetails['type']==typeOutput:
-                            outputfile.append(fileheader)
-                print(containerId)
-                print(outputfile)
-                upstreaminfo={'fileheader': random.choice(outputfile), 'type': fileType,
-                              'UpstreamContainer': refcontainer}
-                upstreamcontainer = upstreaminfo['UpstreamContainer']
-                branch = 'Main'
-                fullpath, filetrack = upstreamcontainer.workingFrame.downloadInputFile(upstreaminfo['fileheader'],
-                                                                                       self.workingdir)
-                self.mainContainer.addInputFileObject(fileheader=upstreaminfo['fileheader'],
-                                                      reffiletrack=filetrack,
-                                                      fullpath=fullpath,
-                                                      refContainerId=upstreamcontainer.containerId,
-                                                      branch=branch,
-                                                      rev='Rev' + str(upstreamcontainer.revnum))
-                counter +=1
-            if fileType==typeRequired:
-                containerFileInfo = {'Container': 'here', 'type': fileType}
-                fileInfo = {'fileheader': fileheader, 'FilePath': filepath,
-                            'Owner': 'owner', 'Description': 'descrip',
-                            'ContainerFileInfo': containerFileInfo}
-                self.mainContainer.addFileObject(fileheader, containerFileInfo, fileType)
-                self.mainContainer.workingFrame.addFileTotrack(filepath, fileheader, fileType)
-            if fileType==typeOutput:
-                containerFileInfo = {'Container': [], 'type': fileType}
-                fileInfo = {'fileheader': fileheader, 'FilePath': filepath,
-                            'Owner': 'owner', 'Description': 'descrip',
-                            'ContainerFileInfo': containerFileInfo}
-                self.mainContainer.addFileObject(fileheader, containerFileInfo, fileType)
-                self.mainContainer.workingFrame.addOutputFileTotrack(fileInfo, fileType)
-
-        self.maincontainerplot.plot(self.changes)
-
-    def removenumeroustest(self):
-        for ifile in range(0, 5):
-            remheader = random.choice(list(self.mainContainer.filestomonitor().keys()))
-            wmap = WorldMap()
-            candelete, candeletemesssage = wmap.CheckContainerCanDeleteOutput(
-                curcontainerid=self.mainContainer.containerId, fileheader=remheader,
-                guiworkingdir=self.mainguihandle.guiworkingdir, authtoken=self.mainguihandle.authtoken)
-            if candelete:
-                if remheader in self.mainContainer.workingFrame.filestrack.keys():
-                    del self.mainContainer.workingFrame.filestrack[remheader]
-                if remheader in self.mainContainer.FileHeaders.keys():
-                    del self.mainContainer.FileHeaders[remheader]
-                print('delete File' + remheader)
-            else:
-                print('dont delete File' + remheader)
-        self.maincontainerplot.plot({})
-        # if fileheader:
-        #     if self.curfileheader in self.mainContainer.workingFrame.filestrack.keys():
-        #         del self.mainContainer.workingFrame.filestrack[self.curfileheader]
-        #     if self.curfileheader in self.mainContainer.FileHeaders.keys():
-        #         del self.mainContainer.FileHeaders[self.curfileheader]
-        #     self.maincontainerplot.plot(self.changes)
-        #     self.removeFileButton_2.setEnabled(False)
-
-
 

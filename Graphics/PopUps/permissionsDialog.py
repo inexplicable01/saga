@@ -95,8 +95,8 @@ class permissionsDialog(QDialog):
         # if os.path.exists(refcontainerpath):
         #     self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         # else:
-        #     refpath = os.path.join(self.mainGuiHandle.guiworkingdir,'ContainerMapWorkDir')
-        #     Container.downloadContainerInfo(refpath,self.mainGuiHandle.authtoken, BASE, containerId)
+        #     refpath = os.path.join(self.mainguihandle.guiworkingdir,'ContainerMapWorkDir')
+        #     Container.downloadContainerInfo(refpath,self.mainguihandle.authtoken, BASE, containerId)
         #     self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         # # self.tester.setText(self.selectedContainer.containerName)
         # self.refContainerPlot.changeContainer(self.selectedContainer)

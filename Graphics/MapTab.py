@@ -68,8 +68,10 @@ class MapTab():
             self.containermap.plot()
             self.detailedmap.passobj(self.containermap)
 
-
-
+    def reset(self):
+        self.containermap.reset()
+        self.detailedmap.reset()
+        self.containerlisttable.setModel(ContainerListModel({}))
 
 
     def updatecontainertodl(self, listtable):

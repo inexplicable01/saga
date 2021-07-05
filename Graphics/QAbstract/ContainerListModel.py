@@ -40,4 +40,7 @@ class ContainerListModel(QAbstractTableModel):
     def columnCount(self, index):
         # The following takes the first sub-list, and returns
         # the length (only works if all rows are an equal length)
-        return len(self.containdata[0])
+        if len(self.containdata)==0:
+            return 0
+        else:
+            return len(self.containdata[0])

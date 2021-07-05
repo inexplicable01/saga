@@ -4,7 +4,7 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-from Graphics.QAbstract.ContainerListModel import ContainerListModel
+
 
 
 import os
@@ -38,9 +38,9 @@ def enterSection(mainguihandle):
 
 
 class switchSectionDialog(QDialog):
-    def __init__(self, MainGuiHandle,sectioninfo,currentsection):
+    def __init__(self, mainguihandle,sectioninfo,currentsection):
         super().__init__()
-        self.MainGuiHandle=MainGuiHandle
+        self.mainguihandle=mainguihandle
         uic.loadUi("Graphics/UI/switchsection.ui", self)
         print(sectioninfo)
         self.oldsection = currentsection
@@ -58,15 +58,17 @@ class switchSectionDialog(QDialog):
     def switchusersection(self):
         # print(self.comboboxid[self.existingsectionbox.currentIndex()])
         payload = {'newsectionid': self.comboboxid[self.existingsectionbox.currentIndex()]}
-        headers = {'Authorization': 'Bearer ' + self.MainGuiHandle.authtoken}
+        headers = {'Authorization': 'Bearer ' + self.mainguihandle.authtoken}
         response = requests.post(BASE + 'USER/switchusersection', headers=headers, data=payload)
         resp = json.loads(response.content)
         report = resp['report']
         if report['status']=='User Current Section successfully changed':
             self.cursectionlbl.setText(resp['usersection'])
             self.newsection = resp['usersection']
+            self.mainguihandle.resetguionsectionswitch()
         else:
             self.cursectionlbl.setText('Error Occured.  Your current section has not change')
+
 
     def waitfordone(self):
         if self.exec_() == QDialog.Accepted:

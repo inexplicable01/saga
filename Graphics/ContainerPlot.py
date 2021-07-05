@@ -33,8 +33,11 @@ class ContainerPlot():
         rectItem.origMousePress = rectItem.mousePressEvent
         # rectItem.mousePressEvent = addFileMousePressA
 
-    def changeContainer(self, newcontainer:Container):
-        self.curContainer = newcontainer
+    def setContainer(self, curContainer:Container):
+        self.curContainer = curContainer
+
+    def reset(self):
+        self.view.setScene(QGraphicsScene())
 
     def plot(self, changes):
         self.scene.clear()

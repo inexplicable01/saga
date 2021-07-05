@@ -31,6 +31,10 @@ class DetailedMap():
         self.viewitems={}
         self.detailsMapView.setScene(self.containerscene)
 
+    def reset(self):
+        self.containerscene = QGraphicsScene()
+        self.detailsMapView.setScene(self.containerscene)
+
     def selectedobj(self,selectedobjname):
         self.containerscene = QGraphicsScene()
 
