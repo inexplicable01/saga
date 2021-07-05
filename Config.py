@@ -2,8 +2,10 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import QColor
 import os
 BASE = "http://fatpanda1985.pythonanywhere.com/"
+# BASE = "http://10.0.0.227:9500/"
 # BASE = "http://127.0.0.1:5000/"
 #
+JimmyDict = {'Whatever': 999}
 
 WorldMapDir = 'ContainerMapWorkDir'
 sagaGuiDir = os.getcwd()
@@ -18,13 +20,19 @@ ServerOrFront = 'FrontEnd'
 
 changenewfile = 'New File Header Added'
 changemd5 = 'MD5 Changed'
-changedate = 'MD5 Changed'
+changedate = 'Date Changed'
 changeremoved = 'File Header Removed'
+updatedupstream = 'MD5 Updated Upstream'
+newrevision = 'File updated in newer Revision'
+filedeleted = 'File deleted in newer Revision'
+fileadded = 'New File committed in newer Revision'
+
+colorscheme = {typeInput: QColor(124, 0, 255 ), typeOutput: QColor(0, 255, 120), typeRequired: Qt.blue, changedate: Qt.cyan,
+                changemd5: Qt.red, updatedupstream: Qt.magenta, changenewfile: Qt.black, changeremoved: Qt.darkCyan,
+               newrevision: QColor(255, 165, 0), filedeleted: Qt.black, fileadded: Qt.black}
 
 
 
-colorscheme = {typeInput: QColor(124, 0, 255 ), typeOutput: QColor(0, 255, 120), typeRequired: Qt.blue, changedate: Qt.cyan,\
-                changemd5: Qt.red, changenewfile: Qt.black, changeremoved: Qt.darkCyan}
 
 
 mechuser1login = {'first_name':'Bob',
@@ -66,7 +74,7 @@ jimmy = {'first_name':'Jimmy',
                     'password':'passwordJ',
 }
 
-testerlogin=waichak
+testerlogin=userclogin
 
 
 

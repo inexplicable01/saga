@@ -85,7 +85,6 @@ class UI(QMainWindow):
         # self.menuBar.addAction(self.action1)
         # self.action1.triggered.connect(self.testprint)
 
-
         self.maincontainerview.installEventFilter(self)
         self.versionNumber = 0.0
         self.versionLabel.setText(str(self.versionNumber))
@@ -100,7 +99,7 @@ class UI(QMainWindow):
             source is self.maincontainerview):
             print('eventFilter: focus in')
             self.maincontainertab.checkdelta()
-            self.maincontainertab.checkUpstream()
+
             # return true here to bypass default behaviour
         return super(UI, self).eventFilter(source, event)
 

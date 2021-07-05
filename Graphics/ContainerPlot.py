@@ -3,7 +3,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
-from Config import typeInput,typeOutput,typeRequired, colorscheme
+from Config import typeInput,typeOutput,typeRequired, colorscheme, updatedupstream, changemd5, changedate
 import os
 
 containerBoxHeight = 50
@@ -50,8 +50,8 @@ class ContainerPlot():
                                                        containerBoxWidth, containerBoxHeight,
                                                             type,self.curContainer , fileheader, self.guiHandle, self.view, change,\
                                                        self.curContainer.workingFrame.filestrack[fileheader])
-            self.RectBox[fileheader].setPen(QPen(colorscheme[type]))
-            self.RectBox[fileheader].text = fileheader
+            # self.RectBox[fileheader].setPen(QPen(colorscheme[type]))
+            # self.RectBox[fileheader].text = fileheader
             self.scene.addItem(self.RectBox[fileheader])
             typecounter[type] += 1
 
@@ -114,7 +114,10 @@ class coolerRectangle(QGraphicsRectItem):
 
         # Draw type Background color
         if self.change:
-            painter.setPen(QPen(QBrush(Qt.red), 4))
+            if len(self.change['reason'])==1:
+                painter.setPen(QPen(QBrush(colorscheme[self.change['reason'][0]]), 4))
+            else:
+                painter.setPen(QPen(QBrush(Qt.yellow), 4))
         else:
             painter.setPen(QPen(QBrush(colorscheme[self.type]), 4))
         painter.setBrush(QBrush(colorscheme[self.type]))

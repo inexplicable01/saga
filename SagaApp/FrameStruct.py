@@ -269,12 +269,11 @@ class Frame:
         for fileheader, filetrack in revertframe.filestrack.items():
             revertframe.getfile(filetrack, self.containerworkingfolder)
 
-    def compareToRefFrame(self, refframefullpath, filestomonitor):
+    def compareToRefFrame(self, refframefullpath, filestomonitor, changes):
         alterfiletracks=[]
         if NEWFRAMEFN == os.path.basename(refframefullpath):
             return {'NewContainer':{'reason': 'NewContainer'}},[]  ### this might not be final as alternating input files can bring in new difficulties
         refframe = Frame.loadRefFramefromYaml(refframefullpath,self.containerworkingfolder)
-        changes = {}
         refframefileheaders = list(refframe.filestrack.keys())
         for fileheader in filestomonitor.keys():
             if fileheader not in refframe.filestrack.keys() and fileheader not in self.filestrack.keys():
@@ -283,7 +282,7 @@ class Frame:
 
             if fileheader not in refframe.filestrack.keys() and fileheader in self.filestrack.keys():
                 # check if fileheader is in the refframe, If not in frame, that means user just added a new fileheader
-                changes[fileheader]= {'reason': changenewfile}
+                changes[fileheader]= {'reason': [changenewfile]}
                 continue
             refframefileheaders.remove(fileheader)
             filename = os.path.join(self.containerworkingfolder, self.filestrack[fileheader].ctnrootpath, self.filestrack[fileheader].file_name)
@@ -293,21 +292,21 @@ class Frame:
 
             if refframe.filestrack[fileheader].md5 != self.filestrack[fileheader].md5:
                 self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
-                changes[fileheader]= {'reason': changemd5}
+                changes[fileheader] = {'reason': [changemd5]}
                 if self.filestrack[fileheader].connection:
                     if self.filestrack[fileheader].connection.connectionType==ConnectionTypes.Input:
                         alterfiletracks.append(self.filestrack[fileheader])
+                    # if file has been updated, update last edited
+                    self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
                     continue
-            # if file has been updated, update last edited
-            self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
-
-            if self.filestrack[fileheader].lastEdited != refframe.filestrack[fileheader].lastEdited:
-                changes[fileheader] = {'reason': changedate}
+            elif self.filestrack[fileheader].lastEdited != refframe.filestrack[fileheader].lastEdited:
+                changes[fileheader] = {'reason': [changedate]}
                 self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
-                print('Date changed without Md5 changin')
+                print('Date changed without Md5 changing')
                 continue
+
         for removedheaders in refframefileheaders:
-            changes[removedheaders] = {'reason': changeremoved}
+            changes[removedheaders] = {'reason': [changeremoved]}
         return changes, alterfiletracks
 
     def downloadInputFile(self, fileheader, workingdir):

@@ -114,7 +114,7 @@ class Container:
                 # new file needs to be committed as the new local file is not the same as previous md5
                 filesToUpload[fileheader] = open(filepath,'rb')
                 updateinfo[fileheader] = {
-                    'file_id': filetrack.file_id,
+                    # 'file_id': filetrack.file_id,
                     'file_name': filetrack.file_name,
                     'lastEdited': filetrack.lastEdited,
                     'md5': filetrack.md5,
