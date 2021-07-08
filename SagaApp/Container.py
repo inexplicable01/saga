@@ -13,8 +13,11 @@ import json
 import warnings
 from Config import typeInput,typeOutput,typeRequired, sagaGuiDir, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN,CONTAINERFN
 from hackpatch import workingdir
-from SagaApp.SagaUtil import getFramePathbyRevnum
+from SagaApp.SagaUtil import getFramePathbyRevnum,makefilehidden
 from datetime import datetime
+import ctypes
+
+FILE_ATTRIBUTE_HIDDEN = 0x02
 
 fileobjtypes = ['inputObjs', 'requiredObjs', 'outputObjs']
 Rev = 'Rev'
@@ -146,6 +149,7 @@ class Container:
             # Updating new frame information
             yamlframefn = os.path.join(self.containerworkingfolder, self.currentbranch, response.headers['file_name'])
             open(yamlframefn, 'wb').write(response.content)
+            makefilehidden(yamlframefn)
             self.workingFrame = Frame.loadRefFramefromYaml(yamlframefn, self.containerworkingfolder)
             self.save(fn=CONTAINERFN)
             self.save(fn=TEMPCONTAINERFN)
@@ -218,7 +222,11 @@ class Container:
             os.mkdir(refpath)
         if not os.path.exists(os.path.join(refpath, containerId)):
             os.mkdir(os.path.join(refpath, containerId))
-        open(os.path.join(refpath, containerId, 'containerstate.yaml'), 'wb').write(response.content)
+        if os.path.exists(os.path.join(refpath, containerId, 'containerstate.yaml')):
+            open(os.path.join(refpath, containerId, 'containerstate.yaml'), 'rb+').write(response.content)
+        else:
+            open(os.path.join(refpath, containerId, 'containerstate.yaml'), 'wb').write(response.content)
+        makefilehidden(os.path.join(refpath, containerId, 'containerstate.yaml'))
         cls.downloadFrame(refpath, authtoken,containerId,BASE)
         return os.path.join(refpath, containerId, 'containerstate.yaml')
 
@@ -230,15 +238,19 @@ class Container:
             'Authorization': 'Bearer ' + authtoken
         }
         response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
-        print(response.headers)
-        print(response.content)
+        # print(response.headers)
+        # print(response.content)
         # request to FRAMES to get the latest frame from the branch as specified in currentbranch
         branch = 'Main'
         # response also returned the name of the branch
         if not os.path.exists(os.path.join(refpath, containerId, branch)):
             os.mkdir(os.path.join(refpath, containerId,branch))
+        makefilehidden(os.path.join(refpath, containerId,branch))
         frameyamlDL = os.path.join(refpath,containerId, branch, response.headers['file_name'])
-        open(frameyamlDL, 'wb').write(response.content)
+        if os.path.exists(frameyamlDL):
+            open(frameyamlDL, 'rb+').write(response.content)
+        else:
+            open(frameyamlDL, 'wb').write(response.content)
         return frameyamlDL
 
     def CheckCommit(self, filetrack, filepath, frameRef):
@@ -287,11 +299,14 @@ class Container:
         return changesbyfile
 
     def save(self, fn = TEMPCONTAINERFN):
-        # if self.containerfn == 'Default':
-        #     self.containerfn = containerName
-        outyaml = open(os.path.join(self.containerworkingfolder, fn), 'w')
+#https://stackoverflow.com/questions/13215716/ioerror-errno-13-permission-denied-when-trying-to-open-hidden-file-in-w-mod
+        if os.path.exists(os.path.join(self.containerworkingfolder, fn)):
+            outyaml = open(os.path.join(self.containerworkingfolder, fn), 'r+')
+        else:
+            outyaml = open(os.path.join(self.containerworkingfolder, fn), 'w')
         yaml.dump(self.dictify(), outyaml)
         outyaml.close()
+        makefilehidden(os.path.join(self.containerworkingfolder, fn))
         self.yamlfn=fn
 
     def setAllowedUser(self, allowedUserList):
@@ -369,6 +384,7 @@ class Container:
         }
         if not os.path.exists(os.path.join(refpath,branch)):
             os.mkdir(os.path.join(refpath,branch))
+        makefilehidden(os.path.join(refpath,branch))
         response = requests.get(BASE + 'CONTAINERS/fullbranch', headers=headers, data=payload)
         fullbranchlist = response.json()
         for rev in fullbranchlist:
@@ -376,8 +392,12 @@ class Container:
                        'branch': branch,
                        'rev':rev}
             revyaml = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
+            if os.path.exists(os.path.join(refpath,branch, rev)):
+                open(os.path.join(refpath, branch, rev), 'rb+').write(revyaml.content)
+            else:
+                open(os.path.join(refpath, branch, rev), 'wb').write(revyaml.content)
+            makefilehidden(os.path.join(refpath,branch, rev))
 
-            open(os.path.join(refpath,branch, rev), 'wb').write(revyaml.content)
 
     def yamlpath(self):
         return os.path.join(self.containerworkingfolder,self.yamlfn)

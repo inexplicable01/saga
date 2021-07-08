@@ -16,6 +16,8 @@ from Graphics.PopUps.newsection import newSection
 from Graphics.PopUps.switchsection import enterSection
 from SagaApp.SagaUtil import getContainerInfo
 
+
+
 import os
 import sys
 import requests
@@ -23,10 +25,12 @@ import json
 import logging
 import traceback
 import yaml
+import warnings
 from functools import partial
 from Config import BASE,mapdetailstxt
 from SagaApp.WorldMap import WorldMap
 from subprocess import Popen
+from SagaApp.SagaUtil import makefilehidden
 
 # from NewContainerGraphics import newContainerGraphics
 # from hackpatch import downloadedFrames
@@ -49,15 +53,18 @@ class UI(QMainWindow):
         super(UI, self).__init__()
         uic.loadUi("Graphics/UI/SagaGui.ui", self)
         # self.enterEvent=self.action_enterEvent
-
+        if not os.name == 'nt':
+            raise('saga designed only for windows right now')
         self.guiworkingdir = os.getcwd()
         ## There are two main paths that the GUI needs to be concerns about
         #1. Where the current container of interests is.
         #2. Where is the GUI running from?  This contains settings about the GUI itself and some larger meta-data
-        if not os.path.exists(os.path.join(self.guiworkingdir, 'SagaGuiData')):
-            os.mkdir(os.path.join(self.guiworkingdir, 'SagaGuiData'))
-        if not os.path.exists(os.path.join(self.guiworkingdir,'ContainerMapWorkDir')):
-            os.mkdir(os.path.join(self.guiworkingdir,'ContainerMapWorkDir'))
+        guidirs= [ 'SagaGuiData','ContainerMapWorkDir']
+        for guidir in guidirs:
+            guidatadir = os.path.join(self.guiworkingdir,guidir)
+            if not os.path.exists(guidatadir):
+                os.mkdir(guidatadir)
+            makefilehidden(guidatadir)
 
         ## newcontainertab handles all the QT features on the new container tab, Initiates to false
         # self.newcontainertab = NewContainerTab(self)
@@ -118,7 +125,11 @@ class UI(QMainWindow):
             response = requests.get(BASE + 'CONTAINERS/containerID', data={'containerID': containerID}, headers={"Authorization": 'Bearer ' + self.authtoken})
             if not os.path.exists(os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID)):
                 os.mkdir(os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID))
-            open(os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']), 'wb').write(response.content)
+            if os.path.exists(os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name'])):
+                open(os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']), 'rb+').write(response.content)
+            else:
+                open(os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']), 'wb').write(
+                    response.content)
             cont = Container.LoadContainerFromYaml( os.path.join('ContainerMapWorkDir', containerID, response.headers['file_name']), fullload=False)
             cont.downloadbranch('Main', BASE, self.authtoken,os.path.join(self.guiworkingdir,'ContainerMapWorkDir',containerID))
 

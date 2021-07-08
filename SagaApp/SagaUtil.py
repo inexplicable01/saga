@@ -4,6 +4,16 @@ import warnings
 from Config import BASE,TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
 import requests
 import json
+import ctypes
+FILE_ATTRIBUTE_HIDDEN = 0x02
+
+def makefilehidden(entitypath):
+    ret = ctypes.windll.kernel32.SetFileAttributesW(entitypath,
+                                                    FILE_ATTRIBUTE_HIDDEN)
+    if not ret:
+        warnings.warn(entitypath+ 'attribute unable to set to Hidden')
+        warnings.warn(ctypes.WinError())
+
 
 def latestFrameInBranch(path):
     # add comment

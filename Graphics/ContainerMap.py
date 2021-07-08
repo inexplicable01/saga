@@ -177,25 +177,6 @@ class containerRect(QGraphicsRectItem):
         return QPointF(self.pos().x() + containerRectWidth/2,self.pos().y() + containerRectHeight/2)
 
 
-    def handleFontChanged(self, font):
-        layout = self.layout()
-        font.setPointSize(20)
-        metrics = QFontMetrics(font)
-        for index in range(1, layout.rowCount()):
-            field = layout.itemAt(index, QFormLayout.FieldRole).widget()
-            label = layout.itemAt(index, QFormLayout.LabelRole).widget()
-            method = label.text().split(' ')[0]
-            text = field.text()
-            if method == 'width':
-                width = metrics.width(text)
-            elif method == 'size':
-                width = metrics.size(field.alignment(), text).width()
-            else:
-                width = metrics.boundingRect(text).width()
-            field.setFixedWidth(width)
-            field.setFont(font)
-            label.setText('%s (%d):' % (method, width))
-
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget = None):
         # Painter paints everything from self.pos(), meaning that if self.pos is 20,10, and you
         # give PAINTER coordinates of 0.0

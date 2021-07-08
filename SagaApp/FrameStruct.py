@@ -13,7 +13,7 @@ from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtCore import *
 import requests
 from Graphics.Dialogs import downloadProgressBar
-from SagaApp.SagaUtil import getFramePathbyRevnum,ensureFolderExist
+from SagaApp.SagaUtil import getFramePathbyRevnum,ensureFolderExist, makefilehidden
 # from Config import typeInput,typeOutput,typeRequired, sagaGuiDir
 from Config import BASE,changenewfile, changemd5,changedate , changeremoved, CONTAINERFN, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
 
@@ -255,9 +255,11 @@ class Frame:
         if fn:
             with open(os.path.join(self.containerworkingfolder,'Main',fn), 'w') as outyaml:
                 yaml.dump(self.dictify(), outyaml)
+            makefilehidden(os.path.join(self.containerworkingfolder, fn))
         else:
             with open(os.path.join(self.containerworkingfolder,'Main',self.workingyamlfn), 'w') as outyaml:
                 yaml.dump(self.dictify(), outyaml)
+            makefilehidden(os.path.join(self.containerworkingfolder,'Main',self.workingyamlfn))
 
     def __repr__(self):
         return json.dumps(self.dictify())
