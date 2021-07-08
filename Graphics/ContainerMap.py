@@ -9,8 +9,13 @@ from Config import typeInput,typeOutput,typeRequired, colorscheme,mapdetailstxt,
 from math import pi
 import os
 
-rectheight = 40
-rectwidth = 40
+containerRectWidth=100
+containerRectHeight=100
+cont_imgheight=50
+cont_imgwidth=50
+fontsize=10
+contmargin = 25
+textmargin = 2
 
 class ContainerMap():
     def __init__(self, activeContainers, qtview, selecteddetail,detailedmap, mainguihandle):
@@ -27,8 +32,6 @@ class ContainerMap():
         self.mapdet={'containerlocations':{}}
         self.sectionid=''
 
-
-
     def reset(self):
         self.containerscene = QGraphicsScene()
         self.qtview.setScene(self.containerscene)
@@ -42,13 +45,13 @@ class ContainerMap():
             for containerId_out in containerId_outlist:
                 lineid = containerId_in + '_' + containerId_out
                 if lineid not in self.containerConnectLines:
-                    Q1 = self.activeContainersObj[containerId_in].QPos + QPointF(rectheight/2, rectwidth/2)
-                    Q2 = self.activeContainersObj[containerId_out].QPos + QPointF(rectheight/2, rectwidth/2)
+                    Q1 = self.activeContainersObj[containerId_in].containercenter()
+                    Q2 = self.activeContainersObj[containerId_out].containercenter()
                     self.containerConnectLines[lineid] = containerLine(Q1,Q2,lineid, self.detailedmap)
                     self.containerscene.addItem(self.containerConnectLines[lineid])
                 else:
-                    Q1 = self.activeContainersObj[containerId_in].QPos + QPointF(rectheight/2, rectwidth/2)
-                    Q2 = self.activeContainersObj[containerId_out].QPos + QPointF(rectheight/2, rectwidth/2)
+                    Q1 = self.activeContainersObj[containerId_in].containercenter()
+                    Q2 = self.activeContainersObj[containerId_out].containercenter()
                     self.containerConnectLines[lineid].setLine(QLineF(Q1, Q2))
 
 
@@ -99,12 +102,12 @@ class ContainerMap():
                 self.mapdet = yaml.load(mapdets, Loader=yaml.FullLoader)
         except Exception as e:
             print('could not load map data for world map')
-        idx,idy=1,1
+        idx,idy=0,0
         gridsize = math.ceil(math.sqrt(len(self.activeContainers.values())))
         for containerid, container in self.activeContainers.items():
             if  containerid not in  self.mapdet['containerlocations'].keys():
-                xloc = idx * 100
-                yloc = idy * 100
+                xloc = idx * containerRectWidth ## this number should be related to the size of the containericon instead of hard coded
+                yloc = idy * containerRectHeight
                 self.mapdet['containerlocations'][containerid]={'xloc':xloc,'yloc':yloc}# initialize
             else:
                 xloc=self.mapdet['containerlocations'][containerid]['xloc']
@@ -117,6 +120,10 @@ class ContainerMap():
                 idx, idy = 1, idy + 1
         self.drawline()
 
+        ##Setting a 0,0 for understanding.  Delete this for production
+        self.containerscene.addRect(QRectF(-2,-2,4,4),QPen(Qt.black),QBrush(Qt.black))
+
+
     def updatemapcoord(self,containerid, QPos):
         self.mapdet['containerlocations'][containerid]['xloc']=QPos.x()
         self.mapdet['containerlocations'][containerid]['yloc']=QPos.y()
@@ -126,13 +133,25 @@ class ContainerMap():
 
 margin =40
 
+
+## Need to set the containerRect to emcompass both the container image and the text
+## Setting the Text to only reach two letters beyond the container img.
+##
+
 class containerRect(QGraphicsRectItem):
-    def __init__(self, idx,idy,container:Container,containermaphandle,rectheight=rectheight, rectwidth=rectwidth):
-        super().__init__(0,0, rectheight, rectwidth)
-        # self.rectheight = rectheight
-        # self.rectwidth = rectwidth
-        self.QPos = QPointF(idx,idy)
-        self.setPos(self.QPos)
+    # self.pos() is built in function.  This is relative to parent item.
+    # In our case, the parent Item is the Scene.
+    # when the RectItem is initalized below on super().__init__, the coordinates are 0,0 because these are INTERNAL coordinates for the item
+    # and INTERNAL coordinates are relative to the pos().   and pos() is relative to Scene origin
+    # so for example is the rect.pos() is set to 20,10 and the internal coord is set to 3,7
+    # once plotted, the top left coordinate of rectangle will be at 23, 17 relative to scene origin
+    # Note that when you access self.pos() you will get 20,10 and self.rect.x(), you will get 3,7
+    def __init__(self, idx,idy,container:Container,containermaphandle,cont_imgheight=cont_imgheight, cont_imgwidth=cont_imgwidth):
+        super().__init__(0,0, cont_imgheight+2*contmargin, cont_imgwidth+2*contmargin) ## this sets scenepos.  Scenepos cannot be changed.
+        self.cont_imgheight = cont_imgheight
+        self.cont_imgwidth = cont_imgwidth
+        # self.QPos = QPointF(idx,idy)  #self.scenePos() or is it pos().... built in function does same thing
+        self.setPos(QPointF(idx,idy))
         self.setBrush(QBrush(Qt.transparent))
         self.setPen(QPen(Qt.black))
         self.containerName = container.containerName
@@ -154,59 +173,101 @@ class containerRect(QGraphicsRectItem):
     def boundingRect(self):
         return self.rect()
 
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget = None):
-        rect = self.boundingRect()
-        additionalwidth = 100
-        textRect = QRectF(rect.topLeft().x() - additionalwidth / 2, rect.topLeft().y() + rectheight,
-                          rectwidth+ additionalwidth, 20)
-        picRect = QRectF(rect.topLeft().x(), rect.topLeft().y(), rectwidth , rectheight )
-        # picRect.moveCenter(rect.center())
+    def containercenter(self):
+        return QPointF(self.pos().x() + containerRectWidth/2,self.pos().y() + containerRectHeight/2)
 
+
+    def handleFontChanged(self, font):
+        layout = self.layout()
+        font.setPointSize(20)
+        metrics = QFontMetrics(font)
+        for index in range(1, layout.rowCount()):
+            field = layout.itemAt(index, QFormLayout.FieldRole).widget()
+            label = layout.itemAt(index, QFormLayout.LabelRole).widget()
+            method = label.text().split(' ')[0]
+            text = field.text()
+            if method == 'width':
+                width = metrics.width(text)
+            elif method == 'size':
+                width = metrics.size(field.alignment(), text).width()
+            else:
+                width = metrics.boundingRect(text).width()
+            field.setFixedWidth(width)
+            field.setFont(font)
+            label.setText('%s (%d):' % (method, width))
+
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget = None):
+        # Painter paints everything from self.pos(), meaning that if self.pos is 20,10, and you
+        # give PAINTER coordinates of 0.0
+        # Painter will paint at 20,10 RELATIVE to parent(which in our case is scene origin)
+        rect = self.boundingRect()
+        textRect = QRectF(textmargin, contmargin+cont_imgheight,containerRectWidth-textmargin*2, 15)
+        contRect = QRectF(contmargin, contmargin, cont_imgwidth , cont_imgheight )
+        # contRect = self.boundingRect()
         # Draw type Background color
-        painter.setPen(QPen(QBrush(Qt.white), 4))
-        painter.setBrush(QBrush(Qt.white))
+        painter.setPen(QPen(QBrush(Qt.transparent), 4))
+        painter.setBrush(QBrush(Qt.transparent))
         painter.drawRect(rect)
+
         # Draw text
-        painter.setPen(QPen(QBrush(Qt.black), 6))
-        painter.drawText(textRect, Qt.AlignCenter, self.containerName)
+        # pxwidth = QFontMetrics(QFont("times", fontsize)).width()
+        def producedotdotdotstring(text, pxlimit, fontfamily, fontsize):
+            pxwidthoftext = QFontMetrics(QFont(fontfamily, fontsize)).width(text)
+            indx=-1
+            if QFontMetrics(QFont("times", fontsize)).width('...') > pxlimit:
+                print('fontsize for knowledge network container text is set too large.  Str ... functionality failed.')
+                return text
+            if pxwidthoftext>pxlimit:
+                while pxwidthoftext>pxlimit:
+                    dottext = text[0:indx] + '...'#needs to add dots to string
+                    pxwidthoftext = QFontMetrics(QFont("times", fontsize)).width(dottext)
+                    indx+=-1
+                return dottext
+            else:
+                return text
+
+        containerdisplayname= producedotdotdotstring(self.containerName, textRect.width(), "times", fontsize)
+        painter.setPen(QPen(QBrush(Qt.black), 1))
+        painter.drawText(textRect, Qt.AlignCenter, containerdisplayname)
+        painter.setBrush(QBrush(Qt.transparent))
+        # painter.drawRect(textRect)
         # Draw Picture
         qpic = QImage('Graphics/FileIcons/Container.png')
-        painter.drawImage(picRect, qpic)
+        # print(contRect)
+        painter.drawImage(contRect, qpic)
 
 
     def mouseMoveEvent(self,event):
         orig_cursor_position = event.lastScenePos()
         updated_cursor_position = event.scenePos()
-        orig_position = self.scenePos()
-        updated_cursor_x = updated_cursor_position.x()- orig_cursor_position.x()+ orig_position.x()
-        updated_cursor_y = updated_cursor_position.y() - orig_cursor_position.y() + orig_position.y()
-        self.QPos =QPointF(updated_cursor_x, updated_cursor_y)
-        # self.QPos = QPointF(updated_cursor_position.x(), updated_cursor_position.y())
-        self.setPos(self.QPos)
+        deltamoved = updated_cursor_position- orig_cursor_position  #this measured how much the item has been moved
+        ## the reason why it has to be delta instead of straight on using event point is because you don't know where on the item you clicked
+        ##  You COULD calculated the delta between item 0,0 versus here you clicked but see, a delta is needed
+        # deltamoved_y = updated_cursor_position.y() - orig_cursor_position.y()#+ orig_position.y()
+        self.setPos(deltamoved+self.pos())
+        # self.mapFromScene
         self.update()
         # self.text.setPos(self.QPos)
 
     def mouseReleaseEvent(self,event):
-        self.drawline()
-
         self.selecteddetail['selectedobjname']=self.containerName
         self.detailedmap.selectedobj(self.containerName)
-
-        for containerid, rect in self.activeContainersObj.items():
+        for containerid, rectitem in self.activeContainersObj.items():
             if containerid==self.containerid:
                 continue
-            if self.collidesWithItem(rect):
-                # print('herewego')
-                delta = self.pos()-rect.pos()
-                xtomove = rectwidth - delta.x() if delta.x() > 0 else -1 * (rectheight + delta.x())
-                ytomove= rectheight - delta.y() if delta.y()>0 else -1*(rectheight + delta.y())
+            if self.collidesWithItem(rectitem):
+                delta = self.pos()-rectitem.pos()
+                xtomove = containerRectWidth - delta.x() if delta.x() > 0 else -1 * (containerRectWidth + delta.x())
+                ytomove= containerRectHeight - delta.y() if delta.y()>0 else -1*(containerRectHeight + delta.y())
                 if abs(xtomove)>abs(ytomove):
                     newpos = self.pos() + QPointF(0, (abs(ytomove)+RECTMARGINpx)*abs(ytomove)/ytomove)
                 else:
                     newpos = self.pos() + QPointF((abs(xtomove)+RECTMARGINpx)*abs(xtomove)/xtomove, 0)
 
                 self.setPos(newpos)
-        self.updatemapcoord(self.containerid, self.QPos)
+        self.updatemapcoord(self.containerid, self.pos())
+        self.drawline()
+        self.update()
 
 class containerLine(QGraphicsLineItem):
     def __init__(self, Q1,Q2,lineid,detailedmap):

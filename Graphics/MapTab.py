@@ -42,8 +42,6 @@ class MapTab():
         ###########Gui Variables##############
         self.detailedmap = DetailedMap(self.detailsMapView, self.selecteddetail)
         self.containermap = ContainerMap({}, self.containerMapView, self.selecteddetail, self.detailedmap,self.mainguihandle)
-
-
         # self.mainguihandle.tabWidget.currentChanged.connect(self.refreshMapTab)
 
     # def refreshMapTab(self):

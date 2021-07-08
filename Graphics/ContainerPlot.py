@@ -79,7 +79,6 @@ class ContainerPlot():
         self.title[headerNew].setPos(pos)
 
 
-
 class coolerRectangle(QGraphicsRectItem):
     def __init__(self, xpos, ypos, xwidth, ywidth, \
                  type, curContainer, fileheader, guiHandle, view, change, filetrack):
