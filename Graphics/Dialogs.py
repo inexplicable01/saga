@@ -2,21 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from Graphics.QAbstract.ContainerListModel import ContainerListModel
-from Graphics.QAbstract.ConflictListModel import ConflictListModel
-import yaml
-# from SagaApp.FrameStruct import Frame
-# from SagaApp.Container import Container
 from SagaApp.FileObjects import FileTrack
-from Config import typeInput,typeRequired,typeOutput
-import os
-from shutil import copyfile
-
-import sys
-import requests
-import json
-import copy
-# from SagaApp.Container import Container
 
 class updateDialog(QDialog):
     def __init__(self):
@@ -27,13 +13,6 @@ class updateDialog(QDialog):
             return True
         else:
             return False
-
-class ganttChartFiles(QDialog):
-    def __init__(self):
-        super().__init__()
-        uic.loadUi("Graphics/UI/fileChart.ui", self)
-    def showChart(self):
-        self.exec()
 
 class ganttChartProject(QDialog):
     def __init__(self):
@@ -79,21 +58,21 @@ class ErrorMessage(QMessageBox):
     def showError(self):
         self.exec_()
 
-class inputFileDialog(QDialog):
-    def __init__(self, ContainerId, fileheader):
-        super().__init__()
-        # self.fileName = fileName
-        uic.loadUi("Graphics/UI/inputFileDialog.ui", self)
-        self.ContainerId, = ContainerId,
-        self.fileheader = fileheader
-        self.containerName_label.setText(self.ContainerId,)
-        self.fileNameLabel.setText(fileheader)
-
-    def getInputs(self):
-        if self.exec_() == QDialog.Accepted:
-            return {'Container': self.ContainerId, 'type': typeInput}
-        else:
-            return None
+# class inputFileDialog(QDialog):
+#     def __init__(self, ContainerId, fileheader):
+#         super().__init__()
+#         # self.fileName = fileName
+#         uic.loadUi("Graphics/UI/inputFileDialog.ui", self)
+#         self.ContainerId, = ContainerId,
+#         self.fileheader = fileheader
+#         self.containerName_label.setText(self.ContainerId,)
+#         self.fileNameLabel.setText(fileheader)
+#
+#     def getInputs(self):
+#         if self.exec_() == QDialog.Accepted:
+#             return {'Container': self.ContainerId, 'type': typeInput}
+#         else:
+#             return None
 
 class removeFileDialog(QDialog):
     def __init__(self, fileheader,candelete, candeletemesssage):

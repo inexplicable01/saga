@@ -66,9 +66,9 @@ class selectFileDialog(QDialog):
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:
             if self.fileType == typeRequired or self.fileType == typeOutput:
-                containerFileInfo = {'Container': 'here', 'type':self.fileType}
+                containerfileinfo = {'Container': 'here', 'type':self.fileType}
                 return {'fileheader': self.fileObjHeaderEdit.text(), 'FilePath':self.filePathEdit.text(),
                         'Owner': self.ownerEdit.text(), 'Description': self.descriptionEdit.text(),
-                        'ContainerFileInfo': containerFileInfo, 'ctnrootpathlist':self.ctnrootpathlist}
+                        'containerfileinfo': containerfileinfo, 'ctnrootpathlist':self.ctnrootpathlist}
         else:
             return None

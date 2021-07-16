@@ -6,10 +6,10 @@ from PyQt5.QtCore import *
 headers = ['ID', 'Description', 'Branch name', 'Rev Count']
 
 class ContainerListModel(QAbstractTableModel):
-    def __init__(self, containerinfolist):
+    def __init__(self, containerinfodict):
         super(ContainerListModel, self).__init__()
         containdata=[]
-        for containerid, containvalue in containerinfolist.items():
+        for containerid, containvalue in containerinfodict.items():
             for branch in containvalue['branches']:
                 row = [containerid, containvalue['ContainerDescription'] ,
                        branch['name'],

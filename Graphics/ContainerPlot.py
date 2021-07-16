@@ -3,7 +3,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
-from Config import typeInput,typeOutput,typeRequired, colorscheme, updatedupstream, changemd5, changedate
+from Config import typeInput,typeOutput,typeRequired, colorscheme, UPDATEDUPSTREAM, CHANGEDMD5, DATECHANGED
 import os
 
 containerBoxHeight = 50
@@ -49,7 +49,7 @@ class ContainerPlot():
             change=None
             if fileheader in changes.keys():
                 change = changes[fileheader]
-            self.RectBox[fileheader] = coolerRectangle(150*typeindex[type] , 200 + 100*typecounter[type],  \
+            self.RectBox[fileheader] = FileViewItemRect(150*typeindex[type] , 200 + 100*typecounter[type],  \
                                                        containerBoxWidth, containerBoxHeight,
                                                             type,self.curContainer , fileheader, self.guiHandle, self.view, change,\
                                                        self.curContainer.workingFrame.filestrack[fileheader])
@@ -79,7 +79,7 @@ class ContainerPlot():
         self.title[headerNew].setPos(pos)
 
 
-class coolerRectangle(QGraphicsRectItem):
+class FileViewItemRect(QGraphicsRectItem):
     def __init__(self, xpos, ypos, xwidth, ywidth, \
                  type, curContainer, fileheader, guiHandle, view, change, filetrack):
         super().__init__(xpos, ypos, xwidth, ywidth)
@@ -96,7 +96,7 @@ class coolerRectangle(QGraphicsRectItem):
 
     def mousePressEvent(self,event):
         # print('pressed huh' + self.type)
-        self.guiHandle.coolerRectangleFeedback(self.type, self.view, self.fileheader , self.curContainer)
+        self.guiHandle.FileViewItemRectFeedback(self.type, self.view, self.fileheader , self.curContainer)
         # print('file_name ', self.file_name)
         self.update()
 

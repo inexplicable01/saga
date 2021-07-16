@@ -11,6 +11,7 @@ import json
 from Config import BASE,testerlogin
 from Graphics.PopUps.NewContainerDialog import newContainerDialog
 # from PyQtTesting import BASE
+from SagaGuiModel import sagaguimodel
 
 import random
 import string
@@ -19,7 +20,7 @@ import string
 def random_char(y):
     return ''.join(random.choice(string.ascii_letters) for x in range(y))
 
-class InputDialog(QDialog):
+class SigninDialog(QDialog):
     def __init__(self, mainguihandle, parent=None):
         super().__init__(parent)
         self.mainguihandle=mainguihandle
@@ -35,7 +36,7 @@ class InputDialog(QDialog):
         self.email.setText(testerlogin['email'])
         self.password.setEchoMode(QLineEdit.Password)
         self.password.setText(testerlogin['password'])
-
+        self.signedin=False
 
         buttonBox = QDialogButtonBox(self)
         signinbttn = buttonBox.addButton('Sign In', QDialogButtonBox.ActionRole)
@@ -71,7 +72,7 @@ class InputDialog(QDialog):
 
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:
-            return (self.first.text(), self.second.text(), self.third.text(), self.fourth.text())
+            return {'signinsuccess':self.signedin}
     #
     # def gen(self):
     #     self.username.setText(random_char(7))
@@ -89,7 +90,9 @@ class InputDialog(QDialog):
         print('usertoken[status] ' + signinresp['status'] )
         with open('token.txt', 'w') as tokenfile:
             json.dump(signinresp, tokenfile)
-        self.mainguihandle.checkUserStatus()
+        # self.mainguihandle.checkUserStatus()
         if signinresp['status']=='success':
-            self.mainguihandle.refresh()
-        self.close()
+            self.signedin = True
+            self.accept()
+
+

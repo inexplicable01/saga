@@ -6,81 +6,70 @@ import os
 # BASE = "http://10.0.0.227:9500/"
 BASE = "http://127.0.0.1:5000/"
 
-#
-JimmyDict = {'Whatever': 999}
-
-WorldMapDir = 'ContainerMapWorkDir'
-sagaGuiDir = os.getcwd()
-
 # comment
 typeInput='Input'
 typeOutput='Output'
 typeRequired='Required'
+typeReference='Reference'
+typeCommitSpecific='CommitSpecific'
+typeContainer='Container'
+
 mapdetailstxt='mapdetails.txt'
 
 ServerOrFront = 'FrontEnd'
 
-changenewfile = 'New File Header Added'
-changemd5 = 'MD5 Changed'
-changedate = 'Date Changed'
-changeremoved = 'File Header Removed'
-updatedupstream = 'MD5 Updated Upstream'
-newrevision = 'File updated in newer Revision'
-filedeleted = 'File deleted in newer Revision'
-fileadded = 'New File committed in newer Revision'
+NEWFILEADDED = 'New File Header Added'
+CHANGEDMD5 = 'MD5 Changed'
+DATECHANGED = 'Date Changed'
+CHANGEREMOVED = 'File Header Removed'
+UPDATEDUPSTREAM = 'MD5 Updated Upstream'
+NEWREVISION = 'File updated in newer Revision'
+FILEDELETED = 'File deleted in newer Revision'
+FILEADDED = 'New File committed in newer Revision'
 
-colorscheme = {typeInput: QColor(124, 0, 255 ), typeOutput: QColor(0, 255, 120), typeRequired: Qt.blue, changedate: Qt.cyan,
-                changemd5: Qt.red, updatedupstream: Qt.magenta, changenewfile: Qt.black, changeremoved: Qt.darkCyan,
-               newrevision: QColor(255, 165, 0), filedeleted: Qt.black, fileadded: Qt.black}
+colorscheme = {typeInput: QColor(124, 0, 255 ), typeOutput: QColor(0, 255, 120), typeRequired: Qt.blue, DATECHANGED: Qt.cyan,
+                CHANGEDMD5: Qt.red, UPDATEDUPSTREAM: Qt.magenta, NEWFILEADDED: Qt.black, CHANGEREMOVED: Qt.darkCyan,
+               NEWREVISION: QColor(255, 165, 0), FILEDELETED: Qt.black, FILEADDED: Qt.black}
 
-
+JUSTCREATED="JUSTCREATED"
+UNCHANGED="UNCHANGED"
+MD5CHANGED="MD5CHANGED"
 
 mechuser1login = {'first_name':'Bob',
                    'last_name':'Smith',
                    'email':'user1@mechdemo.com',
                     'password':'user1password',
 }
-
 mechuser2login = {'first_name':'Jane',
                    'last_name':'Doe',
                    'email':'user2@mechdemo.com',
                     'password':'user2password',
 }
-
 userclogin = {'first_name':'default',
                    'last_name':'lee',
                    'email':'usercemail@gmail.com',
                     'password':'passwordC',
 }
-
 oleglogin = {'first_name':'o',
                    'last_name':'oleg',
                    'email':'o.petrenko@gmail.com',
                     'password':'password',
 }
-
-
-
-
 waichak = {'first_name':'Waichak',
                    'last_name':'Luk',
                    'email':'waichak.luk@gmail.com',
                     'password':'passwordW',
 }
-
 jimmy = {'first_name':'Jimmy',
                    'last_name':'Leong',
                    'email':'jimmyleong113@gmail.com',
                     'password':'passwordJ',
 }
-
-
 privatepackagejohnlee = {'first_name':'John',
                    'last_name':'Lee',
                    'email':'member@example.com',
                     'password':'Password1',
 }
-
 privatepackageadmin = {'first_name':'Simon',
                    'last_name':'Genius',
                    'email':'admin@example.com',
@@ -91,7 +80,6 @@ privatepackagejames = {'first_name':'James',
                    'email':'agent@example.com',
                     'password':'Password007',
 }
-
 privatepackagechris = {'first_name':'Chris',
                    'last_name':'Everyman',
                    'email':'usercemail@gmail.com',
@@ -102,13 +90,11 @@ privatepackagedennis = {'first_name':'Dennis',
                    'email':'userdemail@gmail.com',
                     'password':'passwordD',
 }
-
 privatepackageaaron = {'first_name':'aaron',
                    'last_name':'Jones',
                    'email':'useraemail@gmail.com',
                     'password':'passwordA',
 }
-
 privatepackagebeth = {'first_name':'beth',
                    'last_name':'asdf',
                    'email':'userbemail@gmail.com',
@@ -119,7 +105,6 @@ privatepackageevan = {'first_name':'Evan',
                    'email':'usereemail@gmail.com',
                     'password':'passwordE',
 }
-
 privatepackageman = {'first_name':'Mr',
                    'last_name':'Manager',
                    'email':'manager@gmail.com',
@@ -130,15 +115,10 @@ privatepackagecustomer = {'first_name':'Good',
                    'email':'customer@gmail.com',
                     'password':'passwordCust',
 }
-
-
-
 testerlogin=userclogin
 
-
-
 # Read a input file
-sourcefolder = ''
+# sourcefolder = os.getcwd()
 
 TEMPCONTAINERFN='temp_containerstate.yaml'
 TEMPFRAMEFN='temp_frame.yaml'
@@ -147,8 +127,8 @@ NEWFRAMEFN='new_frame.yaml'
 CONTAINERFN='containerstate.yaml'
 
 
-boxwidth = 40
-boxheight = 40
+# boxwidth = 40
+# boxheight = 40
 RECTMARGINpx=5
 
 BANNEDNAMES=['EMPTY']

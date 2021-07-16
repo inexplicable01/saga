@@ -21,7 +21,7 @@ class ConflictListModel(QAbstractTableModel):
         sortdict={}
         self.headers = headers
         for fileheader in self.changes:
-            if fileadded in self.changes[fileheader]['reason']:
+            if FILEADDED in self.changes[fileheader]['reason']:
                 self.conflictdata.append(fileheader)
                 self.conflictfilenames.append(self.newframe.filestrack[fileheader].file_name)
 

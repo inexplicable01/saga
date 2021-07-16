@@ -10,7 +10,7 @@ from datetime import datetime
 from Config import typeOutput,typeRequired
 
 class GanttListModel(QAbstractTableModel):
-    def __init__(self, containerids, guiworkingdir):
+    def __init__(self, containerids, desktopdir):
         super(GanttListModel, self).__init__()
         self.headers = []
         self.historydict={}
@@ -23,13 +23,13 @@ class GanttListModel(QAbstractTableModel):
             # self.historydict[containerid] = []
 
         for containerid in containerids:
-            # contyaml = os.path.join(guiworkingdir, 'ContainerMapWorkDir', containerid, 'containerstate.yaml')
+            # contyaml = os.path.join(desktopdir, 'ContainerMapWorkDir', containerid, 'containerstate.yaml')
             # curcont = Container.LoadContainerFromYaml(contyaml)
             # print(containerid)
-            yamllist = glob.glob(os.path.join(guiworkingdir, 'ContainerMapWorkDir', containerid, 'Main', '*.yaml'))
+            yamllist = glob.glob(os.path.join(desktopdir, 'ContainerMapWorkDir', containerid, 'Main', '*.yaml'))
             containerframes={}
             for yamlfn in yamllist:
-                pastframe = Frame(os.path.join(guiworkingdir, 'ContainerMapWorkDir', containerid, 'Main'),yamlfn)
+                pastframe = Frame(os.path.join(desktopdir, 'ContainerMapWorkDir', containerid, 'Main'),yamlfn)
                 containerframes[pastframe.commitUTCdatetime]= pastframe
             for revi, timestamp in enumerate(sorted(containerframes)):
 

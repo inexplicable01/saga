@@ -8,6 +8,7 @@ from SagaApp.Container import Container
 from Config import typeInput,typeOutput,typeRequired, colorscheme,mapdetailstxt,RECTMARGINpx
 from math import pi
 import os
+from SagaGuiModel import sagaguimodel
 
 containerRectWidth=100
 containerRectHeight=100
@@ -95,13 +96,18 @@ class ContainerMap():
 
     def plot(self):
         try:
-            self.sectionid=self.mainguihandle.userdata['current_sectionid']
-            self.mapdetailtxt = os.path.join(self.mainguihandle.guiworkingdir, 'SagaGuiData', self.sectionid,
+            self.sectionid=sagaguimodel.userdata['current_sectionid']
+            self.mapdetailtxt = os.path.join(sagaguimodel.desktopdir, 'SagaGuiData', self.sectionid,
                                              mapdetailstxt)
             with open(self.mapdetailtxt , 'r') as mapdets:
                 self.mapdet = yaml.load(mapdets, Loader=yaml.FullLoader)
+        except FileNotFoundError:
+            print('could not find map data. Creating new coordinates file')
+            with open(self.mapdetailtxt, 'w') as file:
+                yaml.dump(self.mapdet, file)
         except Exception as e:
-            print('could not load map data for world map')
+            print(e.__str__())
+
         idx,idy=0,0
         gridsize = math.ceil(math.sqrt(len(self.activeContainers.values())))
         for containerid, container in self.activeContainers.items():
@@ -119,10 +125,8 @@ class ContainerMap():
             if idx>gridsize:
                 idx, idy = 1, idy + 1
         self.drawline()
-
         ##Setting a 0,0 for understanding.  Delete this for production
         self.containerscene.addRect(QRectF(-2,-2,4,4),QPen(Qt.black),QBrush(Qt.black))
-
 
     def updatemapcoord(self,containerid, QPos):
         self.mapdet['containerlocations'][containerid]['xloc']=QPos.x()
@@ -154,21 +158,23 @@ class containerRect(QGraphicsRectItem):
         self.setPos(QPointF(idx,idy))
         self.setBrush(QBrush(Qt.transparent))
         self.setPen(QPen(Qt.black))
-        self.containerName = container.containerName
-        self.containerid = container.containerId
+        self.container=container
         # self.text.setPos(self.QPos)
         self.activeContainersObj = containermaphandle.activeContainersObj
         self.drawline=containermaphandle.drawline
         self.detailedmap = containermaphandle.detailedmap
         self.selecteddetail=containermaphandle.selecteddetail
         self.updatemapcoord=containermaphandle.updatemapcoord
+        self.mainguihandle = containermaphandle.mainguihandle
         # self.setFlag(QGraphicsItem.ItemIsMovable, True)
 
     def dragMoveEvent(self, event):
         print(event)
 
     def mousePressEvent(self,event):
-        print('Pressed')
+        self.mainguihandle.dlContainerBttn.setEnabled(True)
+        self.mainguihandle.dlContainerBttn.setText('Click to Download Container ' + self.container.containerName)
+        self.mainguihandle.maptab.dlcontainerid = self.container.containerId
 
     def boundingRect(self):
         return self.rect()
@@ -207,7 +213,7 @@ class containerRect(QGraphicsRectItem):
             else:
                 return text
 
-        containerdisplayname= producedotdotdotstring(self.containerName, textRect.width(), "times", fontsize)
+        containerdisplayname= producedotdotdotstring(self.container.containerName, textRect.width(), "times", fontsize)
         painter.setPen(QPen(QBrush(Qt.black), 1))
         painter.drawText(textRect, Qt.AlignCenter, containerdisplayname)
         painter.setBrush(QBrush(Qt.transparent))
@@ -231,10 +237,10 @@ class containerRect(QGraphicsRectItem):
         # self.text.setPos(self.QPos)
 
     def mouseReleaseEvent(self,event):
-        self.selecteddetail['selectedobjname']=self.containerName
-        self.detailedmap.selectedobj(self.containerName)
+        self.selecteddetail['selectedobjname']=self.container.containerName
+        self.detailedmap.selectedobj(self.container.containerName)
         for containerid, rectitem in self.activeContainersObj.items():
-            if containerid==self.containerid:
+            if containerid==self.container.containerId:
                 continue
             if self.collidesWithItem(rectitem):
                 delta = self.pos()-rectitem.pos()
@@ -246,7 +252,7 @@ class containerRect(QGraphicsRectItem):
                     newpos = self.pos() + QPointF((abs(xtomove)+RECTMARGINpx)*abs(xtomove)/xtomove, 0)
 
                 self.setPos(newpos)
-        self.updatemapcoord(self.containerid, self.pos())
+        self.updatemapcoord(self.container.containerId, self.pos())
         self.drawline()
         self.update()
 
@@ -269,10 +275,7 @@ class containerLine(QGraphicsLineItem):
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget = None):
         painter.setPen(QPen(QBrush(QColor(92, 85, 233)), 3))
         painter.drawLine(self.line())
-        # p1 = self.line().center()
-        # p2 = p1 + QPointF(0,10)
-        # p3 = p1 + QPointF(10,0)
-        # self.line()
+
 
         a = (self.line().angle()+90)/180.0*pi
         p1 = self.line().center() + QPointF(5*math.cos(a),-5*math.sin(a))

@@ -61,7 +61,7 @@ class permissionsDialog(QDialog):
 
     def adduser(self):
         response = requests.post(BASE + 'PERMISSIONS/AddUserToContainer',
-                                 headers={"Authorization": 'Bearer ' + self.mainguihandle.authtoken},
+                                 headers={"Authorization": 'Bearer ' + sagaguimodel.authtoken},
                                  json={"email": self.mainguihandle.userdata['email'],
                                        "new_email":self.emailedit.text(),
                                         "sectionid":self.mainguihandle.userdata['current_sectionid'],
@@ -95,8 +95,8 @@ class permissionsDialog(QDialog):
         # if os.path.exists(refcontainerpath):
         #     self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         # else:
-        #     refpath = os.path.join(self.mainguihandle.guiworkingdir,'ContainerMapWorkDir')
-        #     Container.downloadContainerInfo(refpath,self.mainguihandle.authtoken, BASE, containerId)
+        #     refpath = os.path.join(sagaguimodel.desktopdir,'ContainerMapWorkDir')
+        #     Container.downloadContainerInfo(refpath,sagaguimodel.authtoken, BASE, containerId)
         #     self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         # # self.tester.setText(self.selectedContainer.containerName)
         # self.refContainerPlot.changeContainer(self.selectedContainer)

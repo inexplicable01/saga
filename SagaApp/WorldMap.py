@@ -1,25 +1,26 @@
-from Config import WorldMapDir, BASE
+from Config import  BASE
 import requests
 import os
 from SagaApp.Container import Container
 import json
 
 class WorldMap:
-    def __init__(self ):
-        self.WorldMapDir = WorldMapDir
+    def __init__(self , desktopdir):
+        # self.desktopdir = desktopdir\
+        pass
 
 
     @staticmethod
-    def CheckContainerCanDeleteOutput(curcontainerid,  fileheader, guiworkingdir,authtoken):
+    def CheckContainerCanDeleteOutput(curcontainerid,  fileheader, desktopdir,authtoken):
         response = requests.get(BASE + 'CONTAINERS/List',headers={"Authorization": 'Bearer ' + authtoken})
-        containerinfolist = json.loads(response.headers['containerinfolist'])
-        for containerid in containerinfolist.keys():
+        containerinfodict = json.loads(response.headers['containerinfolist'])
+        for containerid in containerinfodict.keys():
             if containerid==curcontainerid:
                 continue
             if not os.path.exists(
-                    os.path.join(guiworkingdir, 'ContainerMapWorkDir', containerid, 'containerstate.yaml')):
+                    os.path.join(desktopdir, 'ContainerMapWorkDir', containerid, 'containerstate.yaml')):
                 response = requests.get(BASE + 'CONTAINERS/containerID', data={'containerID': containerid})
-                os.mkdir(os.path.join(guiworkingdir, 'ContainerMapWorkDir', containerid))
+                os.mkdir(os.path.join(desktopdir, 'ContainerMapWorkDir', containerid))
                 open(os.path.join('ContainerMapWorkDir', containerid, response.headers['file_name']), 'wb').write(
                     response.content)
             downstreamcont = Container.LoadContainerFromYaml(

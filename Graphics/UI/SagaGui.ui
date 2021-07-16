@@ -2,13 +2,11 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>1385</width>
-    <height>796</height>
-   </rect>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="font">
    <font>
@@ -19,7 +17,23 @@
    <string>MainWindow</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QMainWindow
+   <string notr="true">QWidget
+{	background-color: #3d3d3d;
+	color: white;
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="cursor">
+    <cursorShape>IBeamCursor</cursorShape>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QMainWindow
 {
 	background-color: #3d3d3d
 
@@ -65,1171 +79,497 @@ QMenu {
 
 
 </string>
-  </property>
-  <widget class="QWidget" name="centralwidget">
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
    </property>
-   <property name="cursor">
-    <cursorShape>IBeamCursor</cursorShape>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">QWidget
-{	background-color: #3d3d3d;
-	color: white;
-}</string>
-   </property>
-   <widget class="QLabel" name="userstatuslbl">
-    <property name="geometry">
-     <rect>
-      <x>220</x>
-      <y>0</y>
-      <width>1041</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>User Status</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="revlabel">
-    <property name="geometry">
-     <rect>
-      <x>9</x>
-      <y>340</y>
-      <width>1262</width>
-      <height>330</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
-   <widget class="QTabWidget" name="tabWidget">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>10</y>
-      <width>1280</width>
-      <height>701</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Open Sans</family>
-      <pointsize>16</pointsize>
-      <weight>75</weight>
-      <italic>false</italic>
-      <bold>true</bold>
-      <kerning>true</kerning>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QTabBar::Tab {
-    background: rgb(61, 61, 61);
-	color: White;
-	border: 1px solid rgb(20, 20, 20);
-	border-radius: 3px;
-	padding: 3px;
-
-}
-
-QTabWidget::pane &gt; QWidget { /* The tab widget frame */
-    background: rgb(61, 61, 61);
-}
-
-QTabBar::tab:disabled {
-	color: rgb(139, 139, 139)
-}
-
-
-QTabBar::tab:selected, QTabBar::tab:hover {
-background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3d3d3d, stop: 0.4 rgb(141, 141, 141), stop: 0.5 rgb(141, 141, 141), stop: 1.0 #3d3d3d);
-}
-
-QTabBar::tab:!selected {
-margin-top: 4px; /* make non-selected tabs look smaller */
-}
-
-QTabBar::tab:selected {
-/* expand/overlap to the left and right by 4px */
-margin-left: -3px;
-margin-right: -3px;
-}
-QTabBar::tab:first:selected {
-margin-left: 0; /* the first selected tab has nothing to overlap with on the left */
-}
-QTabBar::tab:last:selected {
-margin-right: 0; /* the last selected tab has nothing to overlap with on the right */
-}
-QTabBar::tab:only-one {
-margin: 0; /* if there is only one tab, we don't want overlapping margins */
-}
-
-
-QWidget
-{
-	background-color: #fff;
-
-
-}
-
-
-/*-----QLabel-----*/
-QLabel
-{
-	background-color: transparent;
-	color: #454544;
-	font-weight: bold;
-	font-size: 16px;
-
-}
-#mapTitle {
-	font-size: 24px
-}
-
-#containerlabel {
-	font-size: 24px
-}
-
-/*-----QPushButton-----*/
-QPushButton
-{
-	background-color: #5c55e9;
-	color: #fff;
-	font-size: 13px;
-	font-weight: bold;
-	border-top-right-radius: 15px;
-	border-top-left-radius: 0px;
-	border-bottom-right-radius: 0px;
-	border-bottom-left-radius: 15px;
-	padding: 10px;
-
-}
-
-
-QPushButton::disabled
-{
-	background-color: #5c5c5c;
-	color: rgb(158, 158, 158)
-
-}
-
-
-QPushButton::hover
-{
-	background-color: #5564f2;
-
-}
-
-
-QPushButton::pressed
-{
-	background-color: #3d4ef2;
-
-}
-
-
-/*-----QCheckBox-----*/
-QCheckBox
-{
-	background-color: transparent;
-	color: #5c55e9;
-	font-size: 10px;
-	font-weight: bold;
-	border: none;
-	border-radius: 5px;
-
-}
-
-
-/*-----QCheckBox-----*/
-QCheckBox::indicator
-{
-    background-color: #323232;
-    border: 1px solid darkgray;
-    width: 12px;
-    height: 12px;
-
-}
-
-
-QCheckBox::indicator:checked
-{
-    image:url(&quot;./ressources/check.png&quot;);
-	background-color: #5c55e9;
-    border: 1px solid #5c55e9;
-
-}
-
-
-QCheckBox::indicator:unchecked:hover
-{
-    border: 1px solid #5c55e9;
-
-}
-
-
-QCheckBox::disabled
-{
-	color: #656565;
-
-}
-
-
-QCheckBox::indicator:disabled
-{
-	background-color: #656565;
-	color: #656565;
-    border: 1px solid #656565;
-
-}
-
-
-/*-----QLineEdit-----*/
-QLineEdit
-{
-	background-color: #c2c7d5;
-	color: #2a547f;
-	border: none;
-	padding: 5px;
-
-}
-
-
-/*-----QListView-----*/
-QListView
-{
-	background-color: #5c55e9;
-	color: #fff;
-	font-size: 14px;
-	font-weight: bold;
-	show-decoration-selected: 0;
-	border-radius: 4px;
-	padding-left: -15px;
-	padding-right: -15px;
-	padding-top: 5px;
-
-}
-
-
-QListView:disabled
-{
-	background-color: #5c5c5c;
-
-}
-
-
-QListView::item
-{
-	background-color: #454e5e;
-	border: none;
-	padding: 10px;
-	border-radius: 0px;
-	padding-left : 10px;
-	height: 32px;
-
-}
-
-
-QListView::item:selected
-{
-	color: #000;
-	background-color: #fff;
-
-}
-
-
-QListView::item:!selected
-{
-	color:white;
-	background-color: transparent;
-	border: none;
-	padding-left : 10px;
-
-}
-
-
-QListView::item:!selected:hover
-{
-	color: #fff;
-	background-color: #5564f2;
-	border: none;
-	padding-left : 10px;
-
-}
-
-
-/*-----QTreeView-----*/
-QTreeView
-{
-	background-color: #fff;
-	show-decoration-selected: 0;
-	color: #454544;
-
-}
-
-
-QTreeView:disabled
-{
-	background-color: #242526;
-	show-decoration-selected: 0;
-
-}
-
-
-QTreeView::item
-{
-	border-top-color: transparent;
-	border-bottom-color: transparent;
-
-}
-
-
-QTreeView::item:hover
-{
-	background-color: #bcbdbb;
-	color: #000;
-
-}
-
-
-QTreeView::item:selected
-{
-	background-color: #5c55e9;
-	color: #fff;
-
-}
-
-
-QTreeView::item:selected:active
-{
-	background-color: #5c55e9;
-	color: #fff;
-
-}
-
-
-QTreeView::item:selected:disabled
-{
-	background-color: #525251;
-	color: #656565;
-
-}
-
-
-QTreeView::branch:has-children:!has-siblings:closed,
-QTreeView::branch:closed:has-children:has-siblings
-{
-	image: url(://tree-closed.png);
-
-}
-
-QTreeView::branch:open:has-children:!has-siblings,
-QTreeView::branch:open:has-children:has-siblings
-{
-	image: url(://tree-open.png);
-
-}
-
-QTextEdit
-{
-	color: black;
-}
-
-QTextBrowser
-{
-	color: #ffb113;
-}
-
-/*-----QTableView &amp; QTableWidget-----*/
-QTableView
-{
-    background-color: #fff;
-	border: 1px solid gray;
-    color: #454544;
-    gridline-color: gray;
-    outline : 0;
-
-}
-
-
-QTableView::item:hover
-{
-    background-color: #bcbdbb;
-    color: #000;
-
-}
-
-
-QTableView::item:selected
-{
-	background-color: #5c55e9;
-    color: #fff;
-
-}
-
-
-QTableView::item:selected:disabled
-{
-    background-color: #1a1b1c;
-    border: 2px solid #525251;
-    color: #656565;
-
-}
-
-
-QTableCornerButton::section
-{
-	background-color: #ced5e3;
-	border: none;
-    color: #fff;
-
-}
-
-
-QHeaderView::section
-{
-	color: #2a547f;
-	border: 0px;
-	background-color: #ced5e3;
-	padding: 5px;
-
-}
-
-
-QHeaderView::section:disabled
-{
-    background-color: #525251;
-    color: #656565;
-
-}
-
-
-QHeaderView::section:checked
-{
-    color: #fff;
-    background-color: #5c55e9;
-
-}
-
-
-QHeaderView::section:checked:disabled
-{
-    color: #656565;
-    background-color: #525251;
-
-}
-
-
-QHeaderView::section::vertical::first,
-QHeaderView::section::vertical::only-one
-{
-    border-top: 1px solid #353635;
-
-}
-
-
-QHeaderView::section::vertical
-{
-    border-top: 1px solid #353635;
-
-}
-
-
-QHeaderView::section::horizontal::first,
-QHeaderView::section::horizontal::only-one
-{
-    border-left: 1px solid #353635;
-
-}
-
-
-QHeaderView::section::horizontal
-{
-    border-left: 1px solid #353635;
-
-}
-
-
-/*-----QScrollBar-----*/
-QScrollBar:horizontal
-{
-    background-color: transparent;
-    height: 8px;
-    margin: 0px;
-    padding: 0px;
-
-}
-
-
-QScrollBar::handle:horizontal
-{
-    border: none;
-	min-width: 100px;
-    background-color: #7e92b7;
-
-}
-
-
-QScrollBar::add-line:horizontal,
-QScrollBar::sub-line:horizontal,
-QScrollBar::add-page:horizontal,
-QScrollBar::sub-page:horizontal
-{
-    width: 0px;
-    background-color: #d8dce6;
-
-}
-
-
-QScrollBar:vertical
-{
-    background-color: transparent;
-    width: 8px;
-    margin: 0;
-
-}
-
-
-QScrollBar::handle:vertical
-{
-    border: none;
-	min-height: 100px;
-    background-color: #7e92b7;
-
-}
-
-
-QScrollBar::add-line:vertical,
-QScrollBar::sub-line:vertical,
-QScrollBar::add-page:vertical,
-QScrollBar::sub-page:vertical
-{
-    height: 0px;
-    background-color: #d8dce6;
-
-}</string>
-    </property>
-    <property name="currentIndex">
-     <number>1</number>
-    </property>
-    <widget class="QWidget" name="Map">
-     <attribute name="title">
-      <string>Map</string>
-     </attribute>
-     <widget class="QLabel" name="mapTitle">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>0</y>
-        <width>361</width>
-        <height>51</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>-1</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Project Map</string>
-      </property>
-     </widget>
-     <widget class="QGraphicsView" name="detailsMapView">
-      <property name="geometry">
-       <rect>
-        <x>630</x>
-        <y>60</y>
-        <width>601</width>
-        <height>301</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QGraphicsView" name="containerMapView">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>60</y>
-        <width>591</width>
-        <height>511</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QTableView" name="containerlisttable">
-      <property name="geometry">
-       <rect>
-        <x>630</x>
-        <y>370</y>
-        <width>431</width>
-        <height>201</height>
-       </rect>
-      </property>
-      <attribute name="horizontalHeaderDefaultSectionSize">
-       <number>80</number>
-      </attribute>
-      <attribute name="verticalHeaderDefaultSectionSize">
-       <number>24</number>
-      </attribute>
-      <attribute name="verticalHeaderMinimumSectionSize">
-       <number>12</number>
-      </attribute>
-     </widget>
-     <widget class="QPushButton" name="dlContainerBttn">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>630</x>
-        <y>570</y>
-        <width>441</width>
-        <height>36</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Click on Container to Select</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="ganttbttn">
-      <property name="geometry">
-       <rect>
-        <x>420</x>
-        <y>570</y>
-        <width>178</width>
-        <height>36</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Gantt Chart</string>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="ContainerTab">
-     <attribute name="title">
-      <string>Container</string>
-     </attribute>
-     <widget class="QSplitter" name="splitter_14">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>371</width>
-        <height>472</height>
-       </rect>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <widget class="QTextBrowser" name="frametextBrowser">
-       <property name="maximumSize">
-        <size>
-         <width>591</width>
-         <height>51</height>
-        </size>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_2">
-       <property name="font">
-        <font>
-         <pointsize>-1</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Container Commit History</string>
-       </property>
-      </widget>
-      <widget class="QTableView" name="commithisttable">
-       <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>80</number>
-       </attribute>
-       <attribute name="verticalHeaderDefaultSectionSize">
-        <number>24</number>
-       </attribute>
-       <attribute name="verticalHeaderMinimumSectionSize">
-        <number>12</number>
-       </attribute>
-      </widget>
-      <widget class="QSplitter" name="splitter_13">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <widget class="QSplitter" name="splitter_12">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <widget class="QPushButton" name="revertbttn">
-         <property name="text">
-          <string>Revert</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="fileHistoryBttn">
-         <property name="text">
-          <string>File History</string>
-         </property>
-        </widget>
-       </widget>
-       <widget class="QPushButton" name="refreshContainerBttn">
-        <property name="text">
-         <string>Refresh Container</string>
-        </property>
-       </widget>
-      </widget>
-     </widget>
-     <widget class="QSplitter" name="splitter_10">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>490</y>
-        <width>361</width>
-        <height>131</height>
-       </rect>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>431</width>
-        <height>164</height>
-       </size>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <widget class="QSplitter" name="splitter_9">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <widget class="QLabel" name="label_11">
-        <property name="maximumSize">
-         <size>
-          <width>431</width>
-          <height>19</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>New Container Description</string>
-        </property>
-       </widget>
-       <widget class="QTextEdit" name="commitmsgEdit_2">
-        <property name="maximumSize">
-         <size>
-          <width>431</width>
-          <height>54</height>
-         </size>
-        </property>
-       </widget>
-      </widget>
-      <widget class="QSplitter" name="splitter_7">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <widget class="QLabel" name="label_4">
-        <property name="maximumSize">
-         <size>
-          <width>431</width>
-          <height>19</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Commit Message</string>
-        </property>
-       </widget>
-       <widget class="QSplitter" name="splitter_6">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <widget class="QTextEdit" name="commitmsgEdit">
-         <property name="maximumSize">
-          <size>
-           <width>314</width>
-           <height>54</height>
-          </size>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="commitBttn">
-         <property name="maximumSize">
-          <size>
-           <width>112</width>
-           <height>54</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Commit</string>
-         </property>
-        </widget>
-       </widget>
-      </widget>
-     </widget>
-     <widget class="QGraphicsView" name="maincontainerview">
-      <property name="geometry">
-       <rect>
-        <x>440</x>
-        <y>136</y>
-        <width>831</width>
-        <height>421</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QSplitter" name="splitter">
-      <property name="geometry">
-       <rect>
-        <x>440</x>
-        <y>570</y>
-        <width>391</width>
-        <height>51</height>
-       </rect>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <widget class="QPushButton" name="checkChangesBttn">
-       <property name="font">
-        <font>
-         <pointsize>-1</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Check Changes</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="checkUpstreamBttn">
-       <property name="font">
-        <font>
-         <pointsize>-1</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Check Upstream</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="updateInputsBttn">
-       <property name="font">
-        <font>
-         <pointsize>-1</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Update Inputs</string>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QLabel" name="containerlabel">
-      <property name="geometry">
-       <rect>
-        <x>440</x>
-        <y>-10</y>
-        <width>391</width>
-        <height>51</height>
-       </rect>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>431</width>
-        <height>431</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>-1</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Container Name</string>
-      </property>
-     </widget>
-     <widget class="QSplitter" name="splitter_4">
-      <property name="geometry">
-       <rect>
-        <x>440</x>
-        <y>30</y>
-        <width>371</width>
-        <height>62</height>
-       </rect>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <widget class="QSplitter" name="splitter_3">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <widget class="QLabel" name="frameName">
-        <property name="maximumSize">
-         <size>
-          <width>121</width>
-          <height>62</height>
-         </size>
-        </property>
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="0" column="0">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
+      <item>
+       <widget class="QTabWidget" name="tabWidget">
         <property name="font">
          <font>
-          <pointsize>-1</pointsize>
+          <family>Open Sans</family>
+          <pointsize>16</pointsize>
           <weight>75</weight>
+          <italic>false</italic>
           <bold>true</bold>
+          <kerning>true</kerning>
          </font>
         </property>
-        <property name="text">
-         <string>Frame Name:</string>
+        <property name="styleSheet">
+         <string notr="true">QTabBar::Tab {
+    background: rgb(61, 61, 61);\n	color: White;\n	border: 1px solid rgb(20, 20, 20);\n	border-radius: 3px;\n	padding: 3px;\n\n}\n\nQTabWidget::pane &gt; QWidget { /* The tab widget frame */\n    background: rgb(61, 61, 61);\n}\n\nQTabBar::tab:disabled {\n	color: rgb(139, 139, 139)\n}\n\n\nQTabBar::tab:selected, QTabBar::tab:hover {\nbackground: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3d3d3d, stop: 0.4 rgb(141, 141, 141), stop: 0.5 rgb(141, 141, 141), stop: 1.0 #3d3d3d);\n}\n\nQTabBar::tab:!selected {\nmargin-top: 4px; /* make non-selected tabs look smaller */\n}\n\nQTabBar::tab:selected {\n/* expand/overlap to the left and right by 4px */\nmargin-left: -3px;\nmargin-right: -3px;\n}\nQTabBar::tab:first:selected {\nmargin-left: 0; /* the first selected tab has nothing to overlap with on the left */\n}\nQTabBar::tab:last:selected {\nmargin-right: 0; /* the last selected tab has nothing to overlap with on the right */\n}\nQTabBar::tab:only-one {\nmargin: 0; /* if there is only one tab, we don't want overlapping margins */\n}\n\n\nQWidget\n{\n	background-color: #fff;\n\n\n}\n\n\n/*-----QLabel-----*/\nQLabel\n{\n	background-color: transparent;\n	color: #454544;\n	font-weight: bold;\n	font-size: 16px;\n\n}\n#mapTitle {\n	font-size: 24px\n}\n\n#containerlabel {\n	font-size: 24px\n}\n\n/*-----QPushButton-----*/\nQPushButton\n{\n	background-color: #5c55e9;\n	color: #fff;\n	font-size: 13px;\n	font-weight: bold;\n	border-top-right-radius: 15px;\n	border-top-left-radius: 0px;\n	border-bottom-right-radius: 0px;\n	border-bottom-left-radius: 15px;\n	padding: 10px;\n\n}\n\n\nQPushButton::disabled\n{\n	background-color: #5c5c5c;\n	color: rgb(158, 158, 158)\n\n}\n\n\nQPushButton::hover\n{\n	background-color: #5564f2;\n\n}\n\n\nQPushButton::pressed\n{\n	background-color: #3d4ef2;\n\n}\n\n\n/*-----QCheckBox-----*/\nQCheckBox\n{\n	background-color: transparent;\n	color: #5c55e9;\n	font-size: 10px;\n	font-weight: bold;\n	border: none;\n	border-radius: 5px;\n\n}\n\n\n/*-----QCheckBox-----*/\nQCheckBox::indicator\n{\n    background-color: #323232;\n    border: 1px solid darkgray;\n    width: 12px;\n    height: 12px;\n\n}\n\n\nQCheckBox::indicator:checked\n{\n    image:url(&quot;./ressources/check.png&quot;);\n	background-color: #5c55e9;\n    border: 1px solid #5c55e9;\n\n}\n\n\nQCheckBox::indicator:unchecked:hover\n{\n    border: 1px solid #5c55e9;\n\n}\n\n\nQCheckBox::disabled\n{\n	color: #656565;\n\n}\n\n\nQCheckBox::indicator:disabled\n{\n	background-color: #656565;\n	color: #656565;\n    border: 1px solid #656565;\n\n}\n\n\n/*-----QLineEdit-----*/\nQLineEdit\n{\n	background-color: #c2c7d5;\n	color: #2a547f;\n	border: none;\n	padding: 5px;\n\n}\n\n\n/*-----QListView-----*/\nQListView\n{\n	background-color: #5c55e9;\n	color: #fff;\n	font-size: 14px;\n	font-weight: bold;\n	show-decoration-selected: 0;\n	border-radius: 4px;\n	padding-left: -15px;\n	padding-right: -15px;\n	padding-top: 5px;\n\n}\n\n\nQListView:disabled\n{\n	background-color: #5c5c5c;\n\n}\n\n\nQListView::item\n{\n	background-color: #454e5e;\n	border: none;\n	padding: 10px;\n	border-radius: 0px;\n	padding-left : 10px;\n	height: 32px;\n\n}\n\n\nQListView::item:selected\n{\n	color: #000;\n	background-color: #fff;\n\n}\n\n\nQListView::item:!selected\n{\n	color:white;\n	background-color: transparent;\n	border: none;\n	padding-left : 10px;\n\n}\n\n\nQListView::item:!selected:hover\n{\n	color: #fff;\n	background-color: #5564f2;\n	border: none;\n	padding-left : 10px;\n\n}\n\n\nQTextEdit\n{\n	color: black;\n}\n\nQTextBrowser\n{\n	color: #ffb113;\n}\n\n\n/*-----QTableView &amp; QTableWidget-----*/\nQTableView\n{\n    background-color: #fff;\n	border: 1px solid gray;\n    color: #454544;\n    gridline-color: gray;\n    outline : 0;\n\n}\n\n\nQTableView::item:hover\n{\n    background-color: #bcbdbb;\n    color: #000;\n\n}\n\n\nQTableView::item:selected\n{\n	background-color: #5c55e9;\n    color: #fff;\n\n}\n\n\nQTableView::item:selected:disabled\n{\n    background-color: #1a1b1c;\n    border: 2px solid #525251;\n    color: #656565;\n\n}\n\n\nQTableCornerButton::section\n{\n	background-color: #ced5e3;\n	border: none;\n    color: #fff;\n\n}\n\n\nQHeaderView::section\n{\n	color: #2a547f;\n	border: 0px;\n	background-color: #ced5e3;\n	padding: 5px;\n\n}\n\n\nQHeaderView::section:disabled\n{\n    background-color: #525251;\n    color: #656565;\n\n}\n\n\nQHeaderView::section:checked\n{\n    color: #fff;\n    background-color: #5c55e9;\n\n}\n\n\nQHeaderView::section:checked:disabled\n{\n    color: #656565;\n    background-color: #525251;\n\n}\n\n\nQHeaderView::section::vertical::first,\nQHeaderView::section::vertical::only-one\n{\n    border-top: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::vertical\n{\n    border-top: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::horizontal::first,\nQHeaderView::section::horizontal::only-one\n{\n    border-left: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::horizontal\n{\n    border-left: 1px solid #353635;\n\n}\n\n\n/*-----QScrollBar-----*/\nQScrollBar:horizontal\n{\n    background-color: transparent;\n    height: 8px;\n    margin: 0px;\n    padding: 0px;\n\n}\n\n\nQScrollBar::handle:horizontal\n{\n    border: none;\n	min-width: 100px;\n    background-color: #7e92b7;\n\n}\n\n\nQScrollBar::add-line:horizontal,\nQScrollBar::sub-line:horizontal,\nQScrollBar::add-page:horizontal,\nQScrollBar::sub-page:horizontal\n{\n    width: 0px;\n    background-color: #d8dce6;\n\n}\n\n\nQScrollBar:vertical\n{\n    background-color: transparent;\n    width: 8px;\n    margin: 0;\n\n}\n\n\nQScrollBar::handle:vertical\n{\n    border: none;\n	min-height: 100px;\n    background-color: #7e92b7;\n\n}\n\n\nQScrollBar::add-line:vertical,\nQScrollBar::sub-line:vertical,\nQScrollBar::add-page:vertical,\nQScrollBar::sub-page:vertical\n{\n    height: 0px;\n    background-color: #d8dce6;\n\n}</string>
         </property>
+        <property name="currentIndex">
+         <number>1</number>
+        </property>
+        <widget class="QWidget" name="Map">
+         <property name="styleSheet">
+          <string notr="true">QTabBar::Tab {
+    background: rgb(61, 61, 61);\n	color: White;\n	border: 1px solid rgb(20, 20, 20);\n	border-radius: 3px;\n	padding: 3px;\n\n}\n\nQTabWidget::pane &gt; QWidget { /* The tab widget frame */\n    background: rgb(61, 61, 61);\n}\n\nQTabBar::tab:disabled {\n	color: rgb(139, 139, 139)\n}\n\n\nQTabBar::tab:selected, QTabBar::tab:hover {\nbackground: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3d3d3d, stop: 0.4 rgb(141, 141, 141), stop: 0.5 rgb(141, 141, 141), stop: 1.0 #3d3d3d);\n}\n\nQTabBar::tab:!selected {\nmargin-top: 4px; /* make non-selected tabs look smaller */\n}\n\nQTabBar::tab:selected {\n/* expand/overlap to the left and right by 4px */\nmargin-left: -3px;\nmargin-right: -3px;\n}\nQTabBar::tab:first:selected {\nmargin-left: 0; /* the first selected tab has nothing to overlap with on the left */\n}\nQTabBar::tab:last:selected {\nmargin-right: 0; /* the last selected tab has nothing to overlap with on the right */\n}\nQTabBar::tab:only-one {\nmargin: 0; /* if there is only one tab, we don't want overlapping margins */\n}\n\n\nQWidget\n{\n	background-color: #fff;\n\n\n}\n\n\n/*-----QLabel-----*/\nQLabel\n{\n	background-color: transparent;\n	color: #454544;\n	font-weight: bold;\n	font-size: 16px;\n\n}\n#mapTitle {\n	font-size: 24px\n}\n\n#containerlabel {\n	font-size: 24px\n}\n\n/*-----QPushButton-----*/\nQPushButton\n{\n	background-color: #5c55e9;\n	color: #fff;\n	font-size: 13px;\n	font-weight: bold;\n	border-top-right-radius: 15px;\n	border-top-left-radius: 0px;\n	border-bottom-right-radius: 0px;\n	border-bottom-left-radius: 15px;\n	padding: 10px;\n\n}\n\n\nQPushButton::disabled\n{\n	background-color: #5c5c5c;\n	color: rgb(158, 158, 158)\n\n}\n\n\nQPushButton::hover\n{\n	background-color: #5564f2;\n\n}\n\n\nQPushButton::pressed\n{\n	background-color: #3d4ef2;\n\n}\n\n\n/*-----QCheckBox-----*/\nQCheckBox\n{\n	background-color: transparent;\n	color: #5c55e9;\n	font-size: 10px;\n	font-weight: bold;\n	border: none;\n	border-radius: 5px;\n\n}\n\n\n/*-----QCheckBox-----*/\nQCheckBox::indicator\n{\n    background-color: #323232;\n    border: 1px solid darkgray;\n    width: 12px;\n    height: 12px;\n\n}\n\n\nQCheckBox::indicator:checked\n{\n    image:url(&quot;./ressources/check.png&quot;);\n	background-color: #5c55e9;\n    border: 1px solid #5c55e9;\n\n}\n\n\nQCheckBox::indicator:unchecked:hover\n{\n    border: 1px solid #5c55e9;\n\n}\n\n\nQCheckBox::disabled\n{\n	color: #656565;\n\n}\n\n\nQCheckBox::indicator:disabled\n{\n	background-color: #656565;\n	color: #656565;\n    border: 1px solid #656565;\n\n}\n\n\n/*-----QLineEdit-----*/\nQLineEdit\n{\n	background-color: #c2c7d5;\n	color: #2a547f;\n	border: none;\n	padding: 5px;\n\n}\n\n\n/*-----QListView-----*/\nQListView\n{\n	background-color: #5c55e9;\n	color: #fff;\n	font-size: 14px;\n	font-weight: bold;\n	show-decoration-selected: 0;\n	border-radius: 4px;\n	padding-left: -15px;\n	padding-right: -15px;\n	padding-top: 5px;\n\n}\n\n\nQListView:disabled\n{\n	background-color: #5c5c5c;\n\n}\n\n\nQListView::item\n{\n	background-color: #454e5e;\n	border: none;\n	padding: 10px;\n	border-radius: 0px;\n	padding-left : 10px;\n	height: 32px;\n\n}\n\n\nQListView::item:selected\n{\n	color: #000;\n	background-color: #fff;\n\n}\n\n\nQListView::item:!selected\n{\n	color:white;\n	background-color: transparent;\n	border: none;\n	padding-left : 10px;\n\n}\n\n\nQListView::item:!selected:hover\n{\n	color: #fff;\n	background-color: #5564f2;\n	border: none;\n	padding-left : 10px;\n\n}\n\n\nQTextEdit\n{\n	color: black;\n}\n\nQTextBrowser\n{\n	color: #ffb113;\n}\n\n\n/*-----QTableView &amp; QTableWidget-----*/\nQTableView\n{\n    background-color: #fff;\n	border: 1px solid gray;\n    color: #454544;\n    gridline-color: gray;\n    outline : 0;\n\n}\n\n\nQTableView::item:hover\n{\n    background-color: #bcbdbb;\n    color: #000;\n\n}\n\n\nQTableView::item:selected\n{\n	background-color: #5c55e9;\n    color: #fff;\n\n}\n\n\nQTableView::item:selected:disabled\n{\n    background-color: #1a1b1c;\n    border: 2px solid #525251;\n    color: #656565;\n\n}\n\n\nQTableCornerButton::section\n{\n	background-color: #ced5e3;\n	border: none;\n    color: #fff;\n\n}\n\n\nQHeaderView::section\n{\n	color: #2a547f;\n	border: 0px;\n	background-color: #ced5e3;\n	padding: 5px;\n\n}\n\n\nQHeaderView::section:disabled\n{\n    background-color: #525251;\n    color: #656565;\n\n}\n\n\nQHeaderView::section:checked\n{\n    color: #fff;\n    background-color: #5c55e9;\n\n}\n\n\nQHeaderView::section:checked:disabled\n{\n    color: #656565;\n    background-color: #525251;\n\n}\n\n\nQHeaderView::section::vertical::first,\nQHeaderView::section::vertical::only-one\n{\n    border-top: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::vertical\n{\n    border-top: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::horizontal::first,\nQHeaderView::section::horizontal::only-one\n{\n    border-left: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::horizontal\n{\n    border-left: 1px solid #353635;\n\n}\n\n\n/*-----QScrollBar-----*/\nQScrollBar:horizontal\n{\n    background-color: transparent;\n    height: 8px;\n    margin: 0px;\n    padding: 0px;\n\n}\n\n\nQScrollBar::handle:horizontal\n{\n    border: none;\n	min-width: 100px;\n    background-color: #7e92b7;\n\n}\n\n\nQScrollBar::add-line:horizontal,\nQScrollBar::sub-line:horizontal,\nQScrollBar::add-page:horizontal,\nQScrollBar::sub-page:horizontal\n{\n    width: 0px;\n    background-color: #d8dce6;\n\n}\n\n\nQScrollBar:vertical\n{\n    background-color: transparent;\n    width: 8px;\n    margin: 0;\n\n}\n\n\nQScrollBar::handle:vertical\n{\n    border: none;\n	min-height: 100px;\n    background-color: #7e92b7;\n\n}\n\n\nQScrollBar::add-line:vertical,\nQScrollBar::sub-line:vertical,\nQScrollBar::add-page:vertical,\nQScrollBar::sub-page:vertical\n{\n    height: 0px;\n    background-color: #d8dce6;\n\n}</string>
+         </property>
+         <attribute name="title">
+          <string>Map</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QLabel" name="mapTitle">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Project Network</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTabWidget" name="networktabwidget">
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <widget class="QWidget" name="networkmaptab">
+             <attribute name="title">
+              <string>Tab 1</string>
+             </attribute>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QGraphicsView" name="containerMapView"/>
+              </item>
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_2">
+                <item>
+                 <widget class="QTableView" name="containerlisttable">
+                  <attribute name="horizontalHeaderDefaultSectionSize">
+                   <number>80</number>
+                  </attribute>
+                  <attribute name="verticalHeaderDefaultSectionSize">
+                   <number>24</number>
+                  </attribute>
+                  <attribute name="verticalHeaderMinimumSectionSize">
+                   <number>12</number>
+                  </attribute>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGraphicsView" name="detailsMapView"/>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="dlContainerBttn">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>Click on Container to Select</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="sagafoldertreetab">
+             <attribute name="title">
+              <string>Tab 2</string>
+             </attribute>
+             <layout class="QVBoxLayout" name="verticalLayout_4">
+              <item>
+               <widget class="QTreeView" name="sagatreeview">
+                <property name="autoFillBackground">
+                 <bool>true</bool>
+                </property>
+                <property name="showDropIndicator" stdset="0">
+                 <bool>true</bool>
+                </property>
+                <property name="expandsOnDoubleClick">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton">
+                <property name="text">
+                 <string>Saga Eject</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="networkganttcharttab">
+             <attribute name="title">
+              <string>Page</string>
+             </attribute>
+             <layout class="QVBoxLayout" name="verticalLayout_5">
+              <item>
+               <widget class="QPushButton" name="ganttbttn">
+                <property name="text">
+                 <string>Gantt Chart</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="ContainerTab">
+         <attribute name="title">
+          <string>Container</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_7" stretch="1,10">
+          <property name="rightMargin">
+           <number>5</number>
+          </property>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_6">
+              <item>
+               <widget class="QLabel" name="containerlabel">
+                <property name="maximumSize">
+                 <size>
+                  <width>431</width>
+                  <height>431</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Container Name</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_4">
+                <item>
+                 <widget class="QLabel" name="label_11">
+                  <property name="maximumSize">
+                   <size>
+                    <width>431</width>
+                    <height>19</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>New Container Description</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QTextEdit" name="commitmsgEdit_2">
+                  <property name="maximumSize">
+                   <size>
+                    <width>431</width>
+                    <height>54</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_5">
+                <item>
+                 <widget class="QLabel" name="framelabel">
+                  <property name="maximumSize">
+                   <size>
+                    <width>71</width>
+                    <height>62</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Rev</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Item Selected:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="selectedFileHeader">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>FileName</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QGraphicsView" name="indexView1">
+              <property name="maximumSize">
+               <size>
+                <width>229</width>
+                <height>90</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QTabWidget" name="container_subtab">
+            <property name="currentIndex">
+             <number>1</number>
+            </property>
+            <widget class="QWidget" name="filesdetailtab">
+             <attribute name="title">
+              <string>File Details</string>
+             </attribute>
+             <layout class="QVBoxLayout" name="verticalLayout_9" stretch="0,10">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_7">
+                <item>
+                 <widget class="QSplitter" name="splitter_7">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <widget class="QLabel" name="label_4">
+                   <property name="maximumSize">
+                    <size>
+                     <width>431</width>
+                     <height>19</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Commit Message</string>
+                   </property>
+                  </widget>
+                  <widget class="QSplitter" name="splitter_6">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <widget class="QTextEdit" name="commitmsgEdit">
+                    <property name="maximumSize">
+                     <size>
+                      <width>314</width>
+                      <height>54</height>
+                     </size>
+                    </property>
+                   </widget>
+                   <widget class="QPushButton" name="commitBttn">
+                    <property name="maximumSize">
+                     <size>
+                      <width>112</width>
+                      <height>54</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string>Commit</string>
+                    </property>
+                   </widget>
+                  </widget>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QTextBrowser" name="frametextBrowser">
+                  <property name="maximumSize">
+                   <size>
+                    <width>1200</width>
+                    <height>200</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QVBoxLayout" name="verticalLayout_8">
+                  <property name="spacing">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QPushButton" name="addtocontainerbttn">
+                    <property name="maximumSize">
+                     <size>
+                      <width>271</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string>Add To Container</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="refreshContainerBttn">
+                    <property name="text">
+                     <string>Refresh Container</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="removefilebttn">
+                    <property name="maximumSize">
+                     <size>
+                      <width>271</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string>Remove From Container</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QGraphicsView" name="maincontainerview"/>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="commithistorytab">
+             <attribute name="title">
+              <string>Commit History</string>
+             </attribute>
+             <layout class="QVBoxLayout" name="verticalLayout_10">
+              <item>
+               <widget class="QLabel" name="label_2">
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Container Commit History</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QTableView" name="commithisttable">
+                <attribute name="horizontalHeaderDefaultSectionSize">
+                 <number>80</number>
+                </attribute>
+                <attribute name="verticalHeaderDefaultSectionSize">
+                 <number>24</number>
+                </attribute>
+                <attribute name="verticalHeaderMinimumSectionSize">
+                 <number>12</number>
+                </attribute>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="revertbttn">
+                <property name="text">
+                 <string>Revert</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </widget>
-       <widget class="QLabel" name="framelabel">
-        <property name="maximumSize">
-         <size>
-          <width>71</width>
-          <height>62</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>-1</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="text">
-         <string>Rev</string>
-        </property>
-       </widget>
-      </widget>
-      <widget class="QGraphicsView" name="indexView1">
-       <property name="maximumSize">
-        <size>
-         <width>229</width>
-         <height>62</height>
-        </size>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QLabel" name="label_5">
-      <property name="geometry">
-       <rect>
-        <x>830</x>
-        <y>0</y>
-        <width>184</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>211</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>-1</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Container Edit Options</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="inputFileButton_2">
-      <property name="geometry">
-       <rect>
-        <x>830</x>
-        <y>30</y>
-        <width>214</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>271</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Add Input File from Reference</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="outputFileButton_2">
-      <property name="geometry">
-       <rect>
-        <x>1050</x>
-        <y>30</y>
-        <width>214</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>271</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Add Output File</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="RequiredButton_2">
-      <property name="geometry">
-       <rect>
-        <x>830</x>
-        <y>70</y>
-        <width>214</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>271</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Add Working File</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="removeFileButton_2">
-      <property name="geometry">
-       <rect>
-        <x>1050</x>
-        <y>70</y>
-        <width>214</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>271</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Remove File</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label">
-      <property name="geometry">
-       <rect>
-        <x>860</x>
-        <y>590</y>
-        <width>162</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>-1</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Currently Selected: </string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="selectedFileHeader">
-      <property name="geometry">
-       <rect>
-        <x>1020</x>
-        <y>590</y>
-        <width>251</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>-1</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>FileName</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="containerStatusLabel">
-      <property name="geometry">
-       <rect>
-        <x>440</x>
-        <y>90</y>
-        <width>821</width>
-        <height>51</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-    </widget>
-   </widget>
-   <widget class="QLabel" name="versionLabel">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>720</y>
-      <width>481</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Version:</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="sourcefolderlbl">
-    <property name="geometry">
-     <rect>
-      <x>510</x>
-      <y>20</y>
-      <width>281</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>TextLabel</string>
-    </property>
-   </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,1,10">
+        <item>
+         <widget class="QLabel" name="versionLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Version:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="userstatuslbl">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>User Status</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1385</width>
-     <height>24</height>
+     <width>1664</width>
+     <height>26</height>
     </rect>
    </property>
    <property name="font">
-    <font>
-     <pointsize>-1</pointsize>
-    </font>
+    <font/>
    </property>
    <widget class="QMenu" name="menuProfile">
     <property name="font">
@@ -1275,7 +615,20 @@ QScrollBar::sub-page:vertical
    <addaction name="menuContainer"/>
    <addaction name="menuSection"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::LeftToRight</enum>
+   </property>
+   <property name="autoFillBackground">
+    <bool>true</bool>
+   </property>
+  </widget>
   <action name="actionSign_In">
    <property name="text">
     <string>Sign In</string>

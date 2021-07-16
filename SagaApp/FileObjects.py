@@ -11,10 +11,6 @@ class FileTrack:
                  ):
         self.FileHeader = FileHeader
         self.file_name = file_name
-        if md5 is None:
-            fileb = open(os.path.join(containerworkingfolder, file_name) , 'rb')
-            md5=hashlib.md5(fileb.read()).hexdigest()
-        self.lastEdited= os.path.getmtime(os.path.join(containerworkingfolder, file_name)) if lastEdited is None else lastEdited
         self.committedby = committedby
         self.md5 = md5
         self.style = style
@@ -26,6 +22,10 @@ class FileTrack:
             self.ctnrootpath=os.path.join(*ctnrootpathlist)
         else:
             self.ctnrootpath='.'
+        if md5 is None:
+            fileb = open(os.path.join(containerworkingfolder, self.ctnrootpath,file_name) , 'rb')
+            md5=hashlib.md5(fileb.read()).hexdigest()
+        self.lastEdited= os.path.getmtime(os.path.join(containerworkingfolder,  self.ctnrootpath,file_name)) if lastEdited is None else lastEdited
 
     def dictify(self):
         ###Should__dict__be used instead?

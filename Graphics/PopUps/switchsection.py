@@ -4,38 +4,12 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-
-
-
 import os
 import sys
 import requests
 import json
 from Config import BASE
-
-# from PyQtTesting import BASE
-
-import random
-import string
-from SagaApp.Section import Section
-
-
-def enterSection(mainguihandle):
-    # response = requests.get(BASE + 'user/getusersections', )
-    headers = {'Authorization': 'Bearer ' + mainguihandle.authtoken}
-    response = requests.get(BASE + 'USER/getusersections', headers=headers)
-
-    resp = json.loads(response.content)
-    sectioninfo = resp['sectioninfo']
-    currentsection = resp['currentsection']
-
-    switchsectiongui = switchSectionDialog(mainguihandle,sectioninfo,currentsection)
-    needtoupdateworldmap = switchsectiongui.waitfordone()
-    if needtoupdateworldmap:
-        # print(inputs)
-        mainguihandle.refresh()
-        # mainguihandle.getWorldContainers()
-
+from SagaGuiModel import sagaguimodel
 
 class switchSectionDialog(QDialog):
     def __init__(self, mainguihandle,sectioninfo,currentsection):
@@ -53,12 +27,10 @@ class switchSectionDialog(QDialog):
         self.existingsectionbox.activated.connect(self.switchusersection)
         self.donebttn.clicked.connect(self.accept)
 
-    # def done(self):
-
     def switchusersection(self):
         # print(self.comboboxid[self.existingsectionbox.currentIndex()])
         payload = {'newsectionid': self.comboboxid[self.existingsectionbox.currentIndex()]}
-        headers = {'Authorization': 'Bearer ' + self.mainguihandle.authtoken}
+        headers = {'Authorization': 'Bearer ' + sagaguimodel.authtoken}
         response = requests.post(BASE + 'USER/switchusersection', headers=headers, data=payload)
         resp = json.loads(response.content)
         report = resp['report']
@@ -74,14 +46,7 @@ class switchSectionDialog(QDialog):
         if self.exec_() == QDialog.Accepted:
             if not self.oldsection==self.newsection:
                 return True
-            # formentry={}
-            # for key, edit in self.checkedits.items():
-            #     if key=='sectionid':
-            #         formentry[key]=self.comboboxid[self.existingsectionbox.currentIndex()]
-            #     else:
-            #         formentry[key]=edit.text()
             return False
-            #
         else:
             return False
 

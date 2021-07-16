@@ -15,7 +15,7 @@ import requests
 from Graphics.Dialogs import downloadProgressBar
 from SagaApp.SagaUtil import getFramePathbyRevnum,ensureFolderExist, makefilehidden
 # from Config import typeInput,typeOutput,typeRequired, sagaGuiDir
-from Config import BASE,changenewfile, changemd5,changedate , changeremoved, CONTAINERFN, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
+from Config import BASE,NEWFILEADDED, CHANGEDMD5,DATECHANGED , CHANGEREMOVED, CONTAINERFN, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
 
 blankFrame = {'parentcontainerid':"",'FrameName': NEWFRAMEFN, 'FrameInstanceId': "",'commitMessage': "",'inlinks': "",'outlinks': "",'AttachedFiles': "", 'commitUTCdatetime': "",'filestrack': ""}
 import shutil
@@ -214,7 +214,8 @@ class Frame:
             raise(filefullpath + ' does not exist')
 
 
-    def addfromOutputtoInputFileTotrack(self, fullpath, fileheader, reffiletrack:FileTrack,style,refContainerId,branch,rev):
+    def addfromOutputtoInputFileTotrack(self, fullpath, fileheader, reffiletrack:FileTrack,style,refContainerId,rev,containerworkingfolder,branch='Main'):
+
         [path, file_name] = os.path.split(fullpath)
         conn = FileConnection(refContainerId,
                               connectionType=ConnectionTypes.Input,
@@ -229,7 +230,7 @@ class Frame:
                                         # file_id=reffiletrack.file_id,
                                         commitUTCdatetime=reffiletrack.commitUTCdatetime,
                                         connection=conn,
-                                        containerworkingfolder=path,
+                                        containerworkingfolder=containerworkingfolder,
                                         lastEdited=os.path.getmtime(fullpath))
             self.filestrack[fileheader] = newfiletrackobj
             self.writeoutFrameYaml()
@@ -283,7 +284,7 @@ class Frame:
 
             if fileheader not in refframe.filestrack.keys() and fileheader in self.filestrack.keys():
                 # check if fileheader is in the refframe, If not in frame, that means user just added a new fileheader
-                changes[fileheader]= {'reason': [changenewfile]}
+                changes[fileheader]= {'reason': [NEWFILEADDED]}
                 continue
             refframefileheaders.remove(fileheader)
             filename = os.path.join(self.containerworkingfolder, self.filestrack[fileheader].ctnrootpath, self.filestrack[fileheader].file_name)
@@ -293,7 +294,7 @@ class Frame:
 
             if refframe.filestrack[fileheader].md5 != self.filestrack[fileheader].md5:
                 self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
-                changes[fileheader] = {'reason': [changemd5]}
+                changes[fileheader] = {'reason': [CHANGEDMD5]}
                 if self.filestrack[fileheader].connection:
                     if self.filestrack[fileheader].connection.connectionType==ConnectionTypes.Input:
                         alterfiletracks.append(self.filestrack[fileheader])
@@ -301,13 +302,13 @@ class Frame:
                     self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
                     continue
             elif self.filestrack[fileheader].lastEdited != refframe.filestrack[fileheader].lastEdited:
-                changes[fileheader] = {'reason': [changedate]}
+                changes[fileheader] = {'reason': [DATECHANGED]}
                 self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
                 print('Date changed without Md5 changing')
                 continue
 
         for removedheaders in refframefileheaders:
-            changes[removedheaders] = {'reason': [changeremoved]}
+            changes[removedheaders] = {'reason': [CHANGEREMOVED]}
         return changes, alterfiletracks
 
     def downloadInputFile(self, fileheader, workingdir):

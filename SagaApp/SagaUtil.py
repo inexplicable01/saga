@@ -7,6 +7,7 @@ import json
 import ctypes
 FILE_ATTRIBUTE_HIDDEN = 0x02
 
+
 def makefilehidden(entitypath):
     ret = ctypes.windll.kernel32.SetFileAttributesW(entitypath,
                                                     FILE_ATTRIBUTE_HIDDEN)
@@ -29,6 +30,8 @@ def latestFrameInBranch(path):
         return latestrev, revnum
     except:
         return latestrev, revnum
+
+
 
 
 def getFramePathbyRevnum(path, revnum):
@@ -59,12 +62,7 @@ def getFramePathbyRevnum(path, revnum):
     #         warnings.warn("Can't find frame in Container", Warning)
     #     return os.path.join(path, 'Rev' + str(revnum) + ".yaml"), revnum
 
-def getContainerInfo(authtoken):
-    response = requests.get(BASE + 'CONTAINERS/List',headers={"Authorization": 'Bearer ' + authtoken})
-    containerinfolist = json.loads(response.headers['containerinfolist'])
-    if not containerinfolist:
-        containerinfolist= {'EMPTY': {'ContainerDescription': 'empty', 'branches': [{'name': 'Empty', 'revcount': 0}]}}
-    return containerinfolist
+
 
 def ensureFolderExist(fn):
     if os.path.exists(fn):

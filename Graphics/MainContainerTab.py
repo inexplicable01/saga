@@ -4,29 +4,26 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Graphics.QAbstract.HistoryListModel import HistoryListModel
 from Graphics.QAbstract.ConflictListModel import ConflictListModel
+from Graphics.QAbstract.historycelldelegate import HistoryCellDelegate
 from Graphics.Dialogs import alteredinputFileDialog
 from Graphics.ContainerPlot import ContainerPlot
-from Graphics.Dialogs import ganttChartFiles, ErrorMessage, removeFileDialog, commitDialog,alteredinputFileDialog, refreshContainerPopUp, downloadProgressBar,commitConflictCheck
+from Graphics.Dialogs import ErrorMessage, removeFileDialog, commitDialog,alteredinputFileDialog, refreshContainerPopUp, downloadProgressBar,commitConflictCheck
 from functools import partial
 from Graphics.PopUps.selectFileDialog import selectFileDialog
 
 import requests
 import os
 import hashlib
-from Config import *
+from Config import BASE,NEWREVISION,FILEADDED,FILEDELETED,NEWCONTAINERFN, TEMPCONTAINERFN,NEWFILEADDED,TEMPFRAMEFN
 from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
 from SagaApp.WorldMap import WorldMap
 from Graphics.GuiUtil import AddIndexToView
-from Graphics.PopUps.AddInputPopUp import AddInputPopUp
+from Graphics.PopUps.AddFileToContainerPopUp import AddFileToContainerPopUp
 from os import listdir
 from os.path import isfile, join
-import shutil
-# import threading
-# import time
-import random
-import string
 import json
+from SagaGuiModel import sagaguimodel
 
 class MainContainerTab():
     def __init__(self,mainguihandle):
@@ -36,10 +33,10 @@ class MainContainerTab():
         self.revertbttn = mainguihandle.revertbttn
         self.commitmsgEdit = mainguihandle.commitmsgEdit
         self.commithisttable = mainguihandle.commithisttable
-        self.refreshBttn = mainguihandle.checkChangesBttn
-        self.downloadUpstreamBttn = mainguihandle.updateInputsBttn
+        # self.refreshBttn = mainguihandle.checkChangesBttn
+        # self.downloadUpstreamBttn = mainguihandle.updateInputsBttn
         self.refreshContainerBttn = mainguihandle.refreshContainerBttn
-        self.downloadUpstreamBttn.setDisabled(True)
+        # self.downloadUpstreamBttn.setDisabled(True)
         self.refreshContainerBttn.setDisabled(True)
         self.framelabel = mainguihandle.framelabel
         self.maincontainerview = mainguihandle.maincontainerview
@@ -47,17 +44,17 @@ class MainContainerTab():
         self.menuContainer = mainguihandle.menuContainer
         self.frametextBrowser = mainguihandle.frametextBrowser
         self.containerlabel = mainguihandle.containerlabel
-        self.inputFileButton_2 = mainguihandle.inputFileButton_2
-        self.RequiredButton_2 = mainguihandle.RequiredButton_2
-        self.outputFileButton_2 = mainguihandle.outputFileButton_2
+        self.addtocontainerbttn = mainguihandle.addtocontainerbttn
+        # self.RequiredButton_2 = mainguihandle.RequiredButton_2
+        # self.outputFileButton_2 = mainguihandle.outputFileButton_2
         self.commitmsgEdit_2=mainguihandle.commitmsgEdit_2
         self.selectedFileHeader = mainguihandle.selectedFileHeader
         # self.editFileButton_2 = mainguihandle.editFileButton_2
-        self.removeFileButton_2 = mainguihandle.removeFileButton_2
+        # self.removeFileButton_2 = mainguihandle.removeFileButton_2
         # self.testbttn= mainguihandle.testbttn
-        # self.testremovebttn = mainguihandle.testremovebttn
-        self.fileHistoryBttn = mainguihandle.fileHistoryBttn
-        self.fileHistoryBttn.setDisabled(True)
+        self.removefilebttn = mainguihandle.removefilebttn
+        # self.fileHistoryBttn = mainguihandle.fileHistoryBttn
+        # self.fileHistoryBttn.setDisabled(True)
 
         self.descriptionText = mainguihandle.commitmsgEdit_2
 
@@ -71,15 +68,10 @@ class MainContainerTab():
         # self.openContainerBttn = mainguihandle.openContainerBttn
         self.commitBttn.setEnabled(False)
         self.workingdir=''
-        # self.openContainerBttn.setText('Open Container')
-        # self.openContainerBttn.clicked.connect(self.readcontainer)
-        # self.fileHistoryBttn.clicked.connect(self.fileGanttChart)
-        self.RequiredButton_2.clicked.connect(partial(self.AddToTempContainer, 'Required'))
-        self.outputFileButton_2.clicked.connect(partial(self.AddToTempContainer, 'Output'))
-        self.removeFileButton_2.clicked.connect(self.removeFileInfo)
-        self.inputFileButton_2.clicked.connect(self.AddInputFile)
-        self.refreshBttn.clicked.connect(self.checkdelta)
-        self.downloadUpstreamBttn.clicked.connect(self.downloadUpstream)
+        self.removefilebttn.clicked.connect(self.removeFileInfo)
+        self.addtocontainerbttn.clicked.connect(self.addToContainer)
+        # self.refreshBttn.clicked.connect(self.checkdelta)
+        # self.downloadUpstreamBttn.clicked.connect(self.downloadUpstream)
         self.refreshContainerBttn.clicked.connect(self.updateToLatestRevision)
         # self.testbttn.clicked.connect(self.numeroustest)
         # self.testremovebttn.clicked.connect(self.removenumeroustest)
@@ -90,7 +82,7 @@ class MainContainerTab():
         self.revertbttn.clicked.connect(self.revert)
         self.revertbttn.setEnabled(False)
         # self.editFileButton_2.setEnabled(False)
-        self.removeFileButton_2.setEnabled(False)
+        # self.removeFileButton_2.setEnabled(False)
         self.commitmsgEdit.setDisabled(True)
         self.descriptionText.setDisabled(True)
         ###########History Info####
@@ -100,7 +92,7 @@ class MainContainerTab():
         self.changes = {}
         self.containerLoaded = False
         self.newContainerStatus = False
-        self.containerstatuslabel = self.mainguihandle.containerStatusLabel
+        # self.containerstatuslabel = self.mainguihandle.containerStatusLabel
         self.refreshedrevision = 0
         self.refreshedcheck = False
         AddIndexToView(self.indexView1)
@@ -111,7 +103,7 @@ class MainContainerTab():
         payload = {'containerID': self.mainContainer.containerId}
 
         headers = {
-            'Authorization': 'Bearer ' + self.mainguihandle.authtoken
+            'Authorization': 'Bearer ' + sagaguimodel.authtoken
         }
 
         response = requests.get(BASE + 'CONTAINERS/newestrevnum', headers=headers, data=payload)
@@ -135,20 +127,20 @@ class MainContainerTab():
                 if fileheader in self.mainContainer.workingFrame.filestrack.keys():
                     if self.newestframe.filestrack[fileheader].md5 != self.mainContainer.workingFrame.filestrack[fileheader].md5:
                         if fileheader in self.changes.keys():
-                            self.changes[fileheader]['reason'].append(newrevision)
+                            self.changes[fileheader]['reason'].append(NEWREVISION)
                         else:
-                            self.changes[fileheader] = {'reason': [newrevision]}
+                            self.changes[fileheader] = {'reason': [NEWREVISION]}
                         #if 'File updated....' is within changes reason dictionary, display delta in GUI
                 else:
-                    self.changes[fileheader] = {'reason': fileadded}
+                    self.changes[fileheader] = {'reason': FILEADDED}
 
             # Loop through working frame to check if any files have been deleted in new revision
             for fileheader in self.mainContainer.workingFrame.filestrack.keys():
                 if fileheader not in self.newestframe.filestrack.keys():
                     if fileheader in self.changes.keys():
-                        self.changes[fileheader]['reason'].append(filedeleted)
+                        self.changes[fileheader]['reason'].append(FILEDELETED)
                     else:
-                        self.changes[fileheader] = {'reason': [filedeleted]}
+                        self.changes[fileheader] = {'reason': [FILEDELETED]}
 
     def updateToLatestRevision(self):
         self.refreshedcheck = True
@@ -211,8 +203,8 @@ class MainContainerTab():
                             percentDone = 100 * dataDownloaded / len(response.content)
                             self.progress.updateProgress(percentDone)
                             QGuiApplication.processEvents()
-                    containerFileInfo = {'Container': 'here', 'type': self.newestframe.filestrack[fileheader].style}
-                    self.mainContainer.addFileObject(fileheader, containerFileInfo, filePath, self.newestframe.filestrack[fileheader].style, '')
+                    containerfileinfo = {'Container': 'here', 'type': self.newestframe.filestrack[fileheader].style}
+                    self.mainContainer.addFileObject(fileheader, containerfileinfo, filePath, self.newestframe.filestrack[fileheader].style, '')
 
                 elif filestodownload[fileheader] == 'Delete':
                     filePath = os.path.join(
@@ -223,12 +215,7 @@ class MainContainerTab():
                         self.mainContainer.removeFileHeader(fileheader)
                     else:
                         print("The file does not exist")
-
-
-
-
-
-        #         TO DO add to commit function check of conflicting files and spit out error message or have user choose which file to commit
+        # TO DO add to commit function check of conflicting files and spit out error message or have user choose which file to commit
 
         # pass along list of files different to pop up screen
 
@@ -246,17 +233,9 @@ class MainContainerTab():
         #     reload contain state into SAGA GUI
 
 
-    def fileGanttChart(self):
-        self.ganttChart = ganttChartFiles()
-        self.ganttChart.showChart()
-
-    def resetrequest(self):
-        response = requests.get(BASE + 'RESET')
-        print(response.content)
-
-    def rebaserequest(self):
-        response = requests.post(BASE + 'RESET')
-        print(response.content)
+    # def fileGanttChart(self):
+    #     self.ganttChart = ganttChartFiles()
+    #     self.ganttChart.showChart()
 
     def setTab(self, tabon):
         self.GuiTab.setEnabled(tabon)
@@ -289,7 +268,6 @@ class MainContainerTab():
         self.maincontainerplot.plot(self.changes)
 
 
-
     def checkUpstream(self):
         workingFrame = self.mainContainer.workingFrame
         refFrame = Frame.loadRefFramefromYaml(self.mainContainer.refframefullpath,self.mainContainer.workingFrame.containerworkingfolder)
@@ -301,12 +279,12 @@ class MainContainerTab():
                         containerID = workingFrame.filestrack[fileheader].connection.refContainerId
 
                         # this is super slow and inefficient.
-                        inputContainerPath = os.path.join(self.mainguihandle.guiworkingdir, 'ContainerMapWorkDir')
-                        inputContainerPathID = os.path.join(self.mainguihandle.guiworkingdir, 'ContainerMapWorkDir', containerID)
-                        dlcontainyaml = Container.downloadContainerInfo(inputContainerPath, self.mainguihandle.authtoken, BASE,
+                        inputContainerPath = os.path.join(sagaguimodel.desktopdir, 'ContainerMapWorkDir')
+                        inputContainerPathID = os.path.join(sagaguimodel.desktopdir, 'ContainerMapWorkDir', containerID)
+                        dlcontainyaml = Container.downloadContainerInfo(inputContainerPath, sagaguimodel.authtoken, BASE,
                                                                             containerID)
                         dlcontainer = Container.LoadContainerFromYaml(containerfn=dlcontainyaml)
-                        dlcontainer.downloadbranch('Main', BASE, self.mainguihandle.authtoken, inputContainerPathID)
+                        dlcontainer.downloadbranch('Main', BASE, sagaguimodel.authtoken, inputContainerPathID)
                         framePath = os.path.join(inputContainerPathID,'Main','Rev' + str(dlcontainer.revnum) + '.yaml')
                         inputFrame = Frame.loadRefFramefromYaml(framePath, dlcontainer.containerworkingfolder)
                         # ##Above Chuck of Code should be done in one line or two
@@ -330,10 +308,10 @@ class MainContainerTab():
                                                     'md5': inputFrame.filestrack[fileheader].md5,
                                                    'inputframe': inputFrame}
 
-        if len(self.changes.keys())>0:
-            self.downloadUpstreamBttn.setEnabled(True)
-        else:
-            print('No Upstream Updates')
+        # if len(self.changes.keys())>0:
+        #     # self.downloadUpstreamBttn.setEnabled(True)
+        # else:
+        #     print('No Upstream Updates')
 
 
     def checkdelta(self):
@@ -401,7 +379,7 @@ class MainContainerTab():
                     containerName = self.mainContainer.containerName
                     commitmessage = self.commitmsgEdit.toPlainText()
                     success = self.mainContainer.CommitNewContainer(containerName, commitmessage,
-                                                                    self.mainguihandle.authtoken, BASE)
+                                                                    sagaguimodel.authtoken, BASE)
                     if success:
                         self.newContainerStatus = False
                         containeryaml = os.path.join(self.mainContainer.containerworkingfolder, TEMPCONTAINERFN)
@@ -431,7 +409,7 @@ class MainContainerTab():
                     commitconflictpopup = commitConflictCheck(conflictfiles)
                     commitconflictpopup.showconflicts()
                     return
-            committed = self.mainContainer.commit(self.commitmsgEdit.toPlainText(), self.mainguihandle.authtoken, BASE)
+            committed = self.mainContainer.commit(self.commitmsgEdit.toPlainText(), sagaguimodel.authtoken, BASE)
 
         if committed:
             self.mainContainer.save()
@@ -454,7 +432,7 @@ class MainContainerTab():
         # section check
 
         payload = {'containerid': loadingcontainer.containerId}
-        headers = {'Authorization': 'Bearer ' + self.mainguihandle.authtoken}
+        headers = {'Authorization': 'Bearer ' + sagaguimodel.authtoken}
         permissionsresponse = requests.get(BASE + 'USER/checkcontainerpermissions', headers=headers, data=payload)
         print(permissionsresponse.headers['message'])
         permissionsresponsecontent = json.loads(permissionsresponse.content)
@@ -466,7 +444,7 @@ class MainContainerTab():
             # All the py in pop up guis are technically views and there should be another place for model.
             ## I'm not sure what the Model organization should actually look like yet.  It might reside in SagaApp folder
             payload = {'newsectionid': permissionsresponsecontent['sectionid']}
-            headers = {'Authorization': 'Bearer ' + self.mainguihandle.authtoken}
+            headers = {'Authorization': 'Bearer ' + sagaguimodel.authtoken}
             switchresponse = requests.post(BASE + 'USER/switchusersection', headers=headers, data=payload)
             resp = json.loads(switchresponse.content)
             report = resp['report']
@@ -490,22 +468,21 @@ class MainContainerTab():
                 msg.exec_()
                 return
         self.mainContainer = loadingcontainer
-        [self.workingdir, file_name] = os.path.split(path)
+        [self.workingdir, file_name] = os.path.split(path)  ## working dir should be app level
         self.containerlabel.setText('Container Name : ' + self.mainContainer.containerName)
 
         self.framelabel.setText(self.mainContainer.workingFrame.FrameName)
         self.histModel = HistoryListModel(self.mainContainer.commithistory())
+        historydelegate = HistoryCellDelegate()
         self.commithisttable.setModel(self.histModel)
-        self.commithisttable.setColumnWidth(0, self.commithisttable.width()*0.1)
-        self.commithisttable.setColumnWidth(1, self.commithisttable.width() * 0.6)
-        self.commithisttable.setColumnWidth(2, self.commithisttable.width() * 0.29)
+        self.commithisttable.setItemDelegate(historydelegate)
         self.maincontainerplot.setContainer(curContainer = self.mainContainer)
         self.maincontainerplot.plot(self.changes)
         ## Grab container history
         changesbyfile=self.mainContainer.commithistorybyfile()
         self.histModel.individualfilehistory(changesbyfile)
 
-        # if self.menuContainer.isEnabled() and self.mainguihandle.authtoken:
+        # if self.menuContainer.isEnabled() and sagaguimodel.authtoken:
         #     self.tabWidget.setEnabled(True)
         self.setTab(True)
         self.containerLoaded = True
@@ -518,7 +495,7 @@ class MainContainerTab():
         ## Enable Permission button since Main Container
         self.mainguihandle.setPermissionsEnable()
 
-    def coolerRectangleFeedback(self, type, view, fileheader , curContainer):
+    def FileViewItemRectFeedback(self, type, view, fileheader , curContainer):
         self.curfileheader = fileheader
         self.curfiletype = type
         self.selectedFileHeader.setText(fileheader)
@@ -530,36 +507,21 @@ class MainContainerTab():
             self.removeFileButton_2.setEnabled(True)
         else:
             self.removeFileButton_2.setEnabled(False)
-        # print(type)
-        # print(fileheader)
-    def AddInputFile(self):
-        addinputwindow = AddInputPopUp(mainguihandle=self.mainguihandle)
-        upstreaminfo = addinputwindow.getInputs()
-        if upstreaminfo:
-            upstreamcontainer = upstreaminfo['UpstreamContainer']
-            branch='Main'
-            fullpath, filetrack = upstreamcontainer.workingFrame.downloadInputFile(upstreaminfo['fileheader'],self.workingdir)
-            self.mainContainer.addInputFileObject(fileheader=upstreaminfo['fileheader'],
-                                                  reffiletrack = filetrack,
-                                                  fullpath=fullpath,
-                                                  refContainerId=upstreamcontainer.containerId,
-                                                  branch=branch,
-                                                  rev='Rev' + str(upstreamcontainer.revnum))
-            self.maincontainerplot.plot(self.changes)
 
-    def AddToTempContainer(self, fileType: str):
-        # self.inputFileButton_2.setEnabled(False)
-        fileInfoDialog = selectFileDialog(fileType, self.mainContainer.containerworkingfolder, self.mainguihandle.worldlist)
-        fileInfo = fileInfoDialog.getInputs()
+
+    def addToContainer(self):
+        addfilegui = AddFileToContainerPopUp(mainguihandle=self.mainguihandle,
+                                            containerworkdir=self.mainContainer.containerworkingfolder,
+                                        maincontainer = self.mainContainer)
+        fileInfo = addfilegui.getInputs()
         if fileInfo:
-            if fileType == 'Required' or fileType == 'Output':
-                self.mainContainer.addFileObject(fileInfo['fileheader'], fileInfo['ContainerFileInfo'], fileInfo['FilePath'], fileType,fileInfo['ctnrootpathlist'])
+            self.mainContainer.addFileObject(fileInfo=fileInfo)
             self.maincontainerplot.plot(self.changes)
 
     def removeFileInfo(self):
         # remove fileheader from current main container
-        wmap = WorldMap()
-        candelete, candeletemesssage = wmap.CheckContainerCanDeleteOutput(curcontainerid=self.mainContainer.containerId, fileheader=self.curfileheader,guiworkingdir=self.mainguihandle.guiworkingdir, authtoken=self.mainguihandle.authtoken)
+        wmap = WorldMap(sagaguimodel.desktopdir)
+        candelete, candeletemesssage = wmap.CheckContainerCanDeleteOutput(curcontainerid=self.mainContainer.containerId, fileheader=self.curfileheader,desktopdir=sagaguimodel.desktopdir, authtoken=sagaguimodel.authtoken)
         fileDialog = removeFileDialog(self.curfileheader, candelete, candeletemesssage) # Dialog to confirm deleting container
         fileheader = fileDialog.removeFile()
 
@@ -579,7 +541,7 @@ class MainContainerTab():
         os.mkdir(inputs['dir'])
         os.mkdir(os.path.join(inputs['dir'], 'Main'))
 
-        self.mainContainer = Container.InitiateContainer(inputs['containername'], inputs['dir'])
+        self.mainContainer = Container.InitiateContainer( inputs['dir'],inputs['containername'])
         self.mainContainer.containerName = inputs['containername']
         self.mainContainer.containerworkingfolder = inputs['dir']
         self.mainContainer.save()

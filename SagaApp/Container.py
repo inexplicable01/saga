@@ -11,7 +11,7 @@ import time
 import requests
 import json
 import warnings
-from Config import typeInput,typeOutput,typeRequired, sagaGuiDir, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN,CONTAINERFN
+from Config import typeInput,typeOutput,typeRequired,  TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN,CONTAINERFN
 from hackpatch import workingdir
 from SagaApp.SagaUtil import getFramePathbyRevnum,makefilehidden
 from datetime import datetime
@@ -41,8 +41,10 @@ class Container:
         self.updatedInputs = False
         self.yamlfn = yamlfn
 
+
+
     @classmethod
-    def InitiateContainer(cls, containerName = '', directory = sagaGuiDir):
+    def InitiateContainer(cls, directory,containerName = ''):
         newcontainer = cls(containerworkingfolder=directory,
                            containerName=containerName,
                            containerId="",
@@ -59,7 +61,7 @@ class Container:
     def LoadContainerFromYaml(cls, containerfn, currentbranch='Main',revnum=None, fullload=True):
         containerworkingfolder = os.path.dirname(containerfn)
         containeryamlfn = os.path.basename(containerfn)
-        with open(containerfn) as file:
+        with open(containerfn, 'r') as file:
             containeryaml = yaml.load(file, Loader=yaml.FullLoader)
 
         FileHeaders={}
@@ -274,7 +276,8 @@ class Container:
         for yamlframefn in yamllist:
             pastframe = Frame.loadRefFramefromYaml(yamlframefn, self.containerworkingfolder)
             historydict[pastframe.FrameName] = {'commitmessage':pastframe.commitMessage,
-                                               'timestamp':pastframe.commitUTCdatetime }
+                                               'timestamp':pastframe.commitUTCdatetime,
+                                                'frame':pastframe}
         return historydict
 
     def commithistorybyfile(self):
@@ -324,22 +327,6 @@ class Container:
     def __repr__(self):
         return json.dumps(self.dictify())
 
-    def addFileObject(self, fileheader, ContainerFileInfo, filepath, fileType:str,ctnrootpathlist):
-        # print(fileType)
-        if fileType ==typeInput:
-            self.FileHeaders[fileheader] = ContainerFileInfo
-            # print(self.FileHeaders)
-            # self.workingFrame.addfromOutputtoInputFileTotrack(fileheader, fileInfo, fileType,refContainerId,branch,rev)
-        elif fileType == typeRequired:
-            self.FileHeaders[fileheader] = ContainerFileInfo
-            self.workingFrame.addFileTotrack(fileheader, filepath,fileType,ctnrootpathlist)
-        elif fileType == typeOutput:
-            self.FileHeaders[fileheader] = ContainerFileInfo
-            self.workingFrame.addFileTotrack(fileheader, filepath,fileType,ctnrootpathlist)
-        self.workingFrame.writeoutFrameYaml()
-        self.save(fn=self.yamlfn)
-            # print(self.FileHeaders)
-
     def removeFileHeader(self, fileheader):
         if fileheader in self.FileHeaders.keys():
             del self.FileHeaders[fileheader]
@@ -352,12 +339,30 @@ class Container:
         self.workingFrame.writeoutFrameYaml()
         self.save(fn=self.yamlfn)
 
-    def addInputFileObject(self, fileheader,reffiletrack, fullpath,refContainerId,branch,rev):
-
-        self.FileHeaders[fileheader] = {'Container': refContainerId, 'type': typeInput}
-        self.workingFrame.addfromOutputtoInputFileTotrack(fileheader=fileheader,
-        style=typeInput, fullpath=fullpath, reffiletrack=reffiletrack,
-        refContainerId=refContainerId, branch=branch, rev=rev)
+    # def addInputFileObject(self, fileheader,reffiletrack, fullpath,refContainerId,branch,rev):
+    def addFileObject(self, fileinfo):
+        # fileheader, containerfileinfo, filepath, filetype: str, ctnrootpathlist, rev=None):
+        filetype = fileinfo['filetype']
+        fileheader = fileinfo['fileheader']
+        if filetype ==typeInput:
+            upstreamcontainer = fileinfo['UpstreamContainer']
+            fullpath, filetrack = upstreamcontainer.workingFrame.downloadInputFile(fileinfo['fileheader'],
+                                                                                   self.workingdir)
+            self.FileHeaders[fileheader] = fileinfo['containerfileinfo']
+            self.workingFrame.addfromOutputtoInputFileTotrack(fileheader=fileheader,
+                                                              style=typeInput, fullpath=fullpath,
+                                                              reffiletrack=filetrack,
+                                                              containerworkingfolder=self.containerworkingfolder,
+                                                              refContainerId=fileinfo['containerfileinfo']['containerid'],
+                                                              rev='Rev' + str(upstreamcontainer.revnum))
+        elif filetype == typeRequired:
+            self.FileHeaders[fileheader] = fileinfo['containerfileinfo']
+            self.workingFrame.addFileTotrack(fileheader, fileinfo['FilePath'],filetype,fileinfo['ctnrootpathlist'])
+        elif filetype == typeOutput:
+            self.FileHeaders[fileheader] = fileinfo['containerfileinfo']
+            self.workingFrame.addFileTotrack(fileheader, fileinfo['FilePath'],filetype,fileinfo['ctnrootpathlist'])
+        else:
+            raise ('Doesnt recognize filetype.')
         self.workingFrame.writeoutFrameYaml()
         self.save(fn=self.yamlfn)
         # self.filestomonitor['fileheader'] =  typeInput

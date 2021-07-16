@@ -5,9 +5,9 @@ from PyQt5.QtCore import *
 import time
 import os
 import glob
-from Config import typeRequired, typeInput, typeOutput, colorscheme
+from Config import typeRequired, typeInput, typeOutput, colorscheme,  JUSTCREATED, UNCHANGED, MD5CHANGED
 
-headers = ['Rev', 'Commit Msg', 'Time']
+
 
 class HistoryListModel(QAbstractTableModel):
     def __init__(self, historyinfodict):
@@ -17,15 +17,71 @@ class HistoryListModel(QAbstractTableModel):
         sortdict={}
         self.filetype=typeRequired
         if len(historyinfodict.keys()) == 0:
-            containdata.append(['Rev0', 'Container Not Yet Committed', ''])
+            containdata.append([ 'Container Not Yet Committed'])
+            self.headers=['Null']
         else:
-            for rev, revdetails in historyinfodict.items():
-                row = [rev, revdetails['commitmessage'] , time.ctime(revdetails['timestamp'])]
+            revheaders = []
+            for rev, revdetails  in historyinfodict.items():
                 sortdict[rev] = revdetails['timestamp']
-                containdata.append(row)
+                revheaders.append(rev)
             def mysort(element):
-                return sortdict[element[0]]
-            containdata.sort(key=mysort)
+                return sortdict[element]
+            revheaders.sort(key=mysort)
+            self.headers = ['File'] + revheaders
+            # sortdict[rev] = revdetails['timestamp']
+            # containdata.append(row)
+            # def mysort(element):
+            #     return sortdict[element[0]]
+            # containdata.sort(key=mysort)
+
+            fileheaderlist = []
+            for revs in historyinfodict.keys():
+                # fileheaderlist =  historyinfodict[revs]['frame'].filestrack.keys() + fileheaderlist
+                fileheaderlist = fileheaderlist + list(set(historyinfodict[revs]['frame'].filestrack.keys() )-set(fileheaderlist))
+            blahdict={}
+            for fileheader in fileheaderlist:
+                blahdict[fileheader] = []
+                for revi,rev in enumerate(revheaders):  ## Rev headers already sorted by timestamp
+                    if fileheader in historyinfodict[rev]['frame'].filestrack.keys():
+                        ## if rev has fileheader,  we need to find out whether it was just created
+                        if revi==0: ## assumes first rev is history dict is rev1
+                            status = JUSTCREATED
+                        else:  ## if it exists, and not Rev1, first check if it exists in last rev
+                            if fileheader in historyinfodict[revheaders[revi-1]]['frame'].filestrack.keys(): ## if fileheader exists in last rev
+                                previousmd5 =historyinfodict[revheaders[revi-1]]['frame'].filestrack[fileheader].md5
+                                thismd5=historyinfodict[rev]['frame'].filestrack[fileheader].md5
+                                if thismd5!=previousmd5:
+                                    status = MD5CHANGED
+                                else:
+                                    status=UNCHANGED
+                            else:# Doesn't exist in last rev, so just created
+                                status = JUSTCREATED
+                        if revi==(len(revheaders)-1):## latest rev
+                            existsInNext = True  ## just assumes it exists in the next rev.
+                        else:### not latest rev
+                            if fileheader in historyinfodict[revheaders[revi+1]]['frame'].filestrack.keys():
+                                existsInNext=True
+                            else:
+                                existsInNext=False
+                        md5 = historyinfodict[rev]['frame'].filestrack[fileheader].md5
+                        if historyinfodict[rev]['frame'].filestrack[fileheader].connection:
+                            style = historyinfodict[rev]['frame'].filestrack[fileheader].connection.connectionType.name
+                        else:
+                            style = typeRequired
+                    else:
+                        md5 = None
+                        style = None
+                        status = None
+                        existsInNext = None
+                    blahdict[fileheader].append({"md5":md5, "style":style, "status":status, "existsInNext":existsInNext})
+
+
+
+            for fileheader in  fileheaderlist:
+                row = [fileheader]
+                row = row + blahdict[fileheader]
+                containdata.append(row)
+
 
         self.containdata = containdata
 
@@ -78,7 +134,7 @@ class HistoryListModel(QAbstractTableModel):
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return headers[section]
+            return self.headers[section]
             # return 'Column {}'.format(section + 1)
         # if orientation == Qt.Vertical and role == Qt.DisplayRole:
         #     return 'Row {}'.format(section + 1)

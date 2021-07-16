@@ -9,6 +9,7 @@ from Graphics.ContainerPlot import ContainerPlot
 from Graphics.QAbstract.GanttListModel import GanttListModel
 from SagaApp.FileObjects import FileTrack
 from Config import typeInput,typeRequired,typeOutput
+from SagaGuiModel import sagaguimodel
 import os
 import sys
 import requests
@@ -41,26 +42,16 @@ class RotatedHeaderView(QHeaderView):
         size.transpose()
         return size
 
-class Delegate(QItemDelegate):
-    def __init__(self,parent):
-        QItemDelegate.__init__(self,parent)
-
-    def createEditor(self, parent, option, index):
-        return parent
-
-
-
-
 class GanttChartPopUp(QDialog):
-    def __init__(self, mainguihandle):
+    def __init__(self):
         super().__init__()
         uic.loadUi("Graphics/UI/ganttchart.ui", self)
         # self.containerpathlbl.setText(path)
-        # mainguihandle.getContainerInfo(self.containerlisttable)
+
 
         self.ganttview.clicked.connect(self.updateCommitMessages)
 
-        self.ganttview.setModel(GanttListModel(mainguihandle.worldlist, mainguihandle.guiworkingdir))
+        self.ganttview.setModel(GanttListModel(sagaguimodel.containernetworkkeys, sagaguimodel.desktopdir))
         self.ganttview.setHorizontalHeader(RotatedHeaderView(self.ganttview))
         # delegate = Delegate(self.ganttview)
         # self.ganttview.setItemDelegate(delegate)
