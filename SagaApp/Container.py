@@ -16,6 +16,7 @@ from hackpatch import workingdir
 from SagaApp.SagaUtil import getFramePathbyRevnum,makefilehidden
 from datetime import datetime
 import ctypes
+from os.path import join
 
 FILE_ATTRIBUTE_HIDDEN = 0x02
 
@@ -73,14 +74,14 @@ class Container:
         if 'readingUsers' not in containeryaml.keys():
             containeryaml['readingUsers']=[]
         if fullload:
-            workingFrame = Frame.loadFramefromYaml(containerworkingfolder=containerworkingfolder, containfn=containeryamlfn)
+            workingFrame = Frame.LoadCurrentFrame(containerworkingfolder=containerworkingfolder, containfn=containeryamlfn)
         else:
             workingFrame=None
 
         if containerfn==NEWCONTAINERFN:
-            refframefullpath, revnum = os.path.join(containerworkingfolder, NEWFRAMEFN), 0
+            refframefullpath, revnum = join(containerworkingfolder, NEWFRAMEFN), 0
         else:
-            refframefullpath, revnum = getFramePathbyRevnum(os.path.join(containerworkingfolder, currentbranch), revnum)
+            refframefullpath, revnum = getFramePathbyRevnum(join(containerworkingfolder, currentbranch), revnum)
 
         container = cls(containerworkingfolder=containerworkingfolder,
                            containerName=containeryaml['containerName'],
@@ -114,7 +115,7 @@ class Container:
 
                 # if self.updatedInputs == False:
                 #     continue
-            filepath = os.path.join(self.containerworkingfolder,filetrack.ctnrootpath, filetrack.file_name)
+            filepath = join(self.containerworkingfolder,filetrack.ctnrootpath, filetrack.file_name)
             # Should file be committed?
             commit_file, md5 = self.CheckCommit(filetrack, filepath, frameRef)
             if fileheader not in self.FileHeaders.keys():
@@ -149,7 +150,7 @@ class Container:
 
         if 'commitsuccess' in response.headers.keys():
             # Updating new frame information
-            yamlframefn = os.path.join(self.containerworkingfolder, self.currentbranch, response.headers['file_name'])
+            yamlframefn = join(self.containerworkingfolder, self.currentbranch, response.headers['file_name'])
             open(yamlframefn, 'wb').write(response.content)
             makefilehidden(yamlframefn)
             self.workingFrame = Frame.loadRefFramefromYaml(yamlframefn, self.containerworkingfolder)
@@ -183,7 +184,7 @@ class Container:
         filesToUpload={}
         for fileheader, filetrack in self.workingFrame.filestrack.items():
             if filetrack.style in [typeOutput,typeRequired]:
-                filepath = os.path.join(self.containerworkingfolder, filetrack.file_name)
+                filepath = join(self.containerworkingfolder, filetrack.file_name)
                 filesToUpload[fileheader] = open(filepath, 'rb')
                 fileb = open(filepath, 'rb')
                 filetrack.md5 = hashlib.md5(fileb.read()).hexdigest()
@@ -222,15 +223,15 @@ class Container:
         # This returns a container Yaml File
         if not os.path.exists(refpath):
             os.mkdir(refpath)
-        if not os.path.exists(os.path.join(refpath, containerId)):
-            os.mkdir(os.path.join(refpath, containerId))
-        if os.path.exists(os.path.join(refpath, containerId, 'containerstate.yaml')):
-            open(os.path.join(refpath, containerId, 'containerstate.yaml'), 'rb+').write(response.content)
+        if not os.path.exists(join(refpath, containerId)):
+            os.mkdir(join(refpath, containerId))
+        if os.path.exists(join(refpath, containerId, 'containerstate.yaml')):
+            open(join(refpath, containerId, 'containerstate.yaml'), 'rb+').write(response.content)
         else:
-            open(os.path.join(refpath, containerId, 'containerstate.yaml'), 'wb').write(response.content)
-        makefilehidden(os.path.join(refpath, containerId, 'containerstate.yaml'))
+            open(join(refpath, containerId, 'containerstate.yaml'), 'wb').write(response.content)
+        makefilehidden(join(refpath, containerId, 'containerstate.yaml'))
         cls.downloadFrame(refpath, authtoken,containerId,BASE)
-        return os.path.join(refpath, containerId, 'containerstate.yaml')
+        return join(refpath, containerId, 'containerstate.yaml')
 
     @classmethod
     def downloadFrame(cls,refpath,authtoken, containerId, BASE, branch='Main'):
@@ -245,15 +246,35 @@ class Container:
         # request to FRAMES to get the latest frame from the branch as specified in currentbranch
         branch = 'Main'
         # response also returned the name of the branch
-        if not os.path.exists(os.path.join(refpath, containerId, branch)):
-            os.mkdir(os.path.join(refpath, containerId,branch))
-        makefilehidden(os.path.join(refpath, containerId,branch))
-        frameyamlDL = os.path.join(refpath,containerId, branch, response.headers['file_name'])
+        if not os.path.exists(join(refpath, containerId, branch)):
+            os.mkdir(join(refpath, containerId,branch))
+        makefilehidden(join(refpath, containerId,branch))
+        frameyamlDL = join(refpath,containerId, branch, response.headers['file_name'])
         if os.path.exists(frameyamlDL):
             open(frameyamlDL, 'rb+').write(response.content)
         else:
             open(frameyamlDL, 'wb').write(response.content)
         return frameyamlDL
+
+    def latestRevFor(self, fileheader):
+        if fileheader not in self.FileHeaders.keys():
+            return fileheader + " not in Container " + self.containerName
+        curmd5 = self.workingFrame.filestrack[fileheader].md5
+        # print(self.revnum, self.workingFrame.FrameName)
+        lastsamerevnum=self.revnum
+        while lastsamerevnum>1:
+            lastsamerevnum-=1
+            framefullpathyaml = join(self.containerworkingfolder, 'Main','Rev'+str(lastsamerevnum) +'.yaml')
+            pastframe = Frame.LoadFrameFromYaml(framefullpathyaml, self.containerworkingfolder)
+            if fileheader in pastframe.filestrack.keys():
+                if curmd5 != pastframe.filestrack[fileheader].md5:
+                    return 'Rev'+str(lastsamerevnum+1), pastframe.commitMessage
+                if lastsamerevnum == 1:
+                    return 'Rev' + str(lastsamerevnum), pastframe.commitMessage
+            else:
+                return 'Rev'+str(lastsamerevnum+1), pastframe.commitMessage
+        return 'work in progress'
+
 
     def CheckCommit(self, filetrack, filepath, frameRef):
         fileb = open(filepath, 'rb')
@@ -272,7 +293,7 @@ class Container:
     def commithistory(self):
         historydict = {}
         # glob.glob() +'/'+ Rev + revnum + ".yaml"
-        yamllist = glob.glob(os.path.join(self.containerworkingfolder, self.currentbranch , 'Rev*.yaml'))
+        yamllist = glob.glob(join(self.containerworkingfolder, self.currentbranch , 'Rev*.yaml'))
         for yamlframefn in yamllist:
             pastframe = Frame.loadRefFramefromYaml(yamlframefn, self.containerworkingfolder)
             historydict[pastframe.FrameName] = {'commitmessage':pastframe.commitMessage,
@@ -287,7 +308,7 @@ class Container:
             changesbyfile[fileheader] =[]
         containerframes={}
         # glob.glob() +'/'+ Rev + revnum + ".yaml"
-        yamllist = glob.glob(os.path.join(self.containerworkingfolder, self.currentbranch , 'Rev*.yaml'))
+        yamllist = glob.glob(join(self.containerworkingfolder, self.currentbranch , 'Rev*.yaml'))
         for yamlframefn in yamllist:
             pastframe = Frame.loadRefFramefromYaml(yamlframefn, self.containerworkingfolder)
             containerframes[pastframe.commitUTCdatetime]= pastframe
@@ -303,13 +324,13 @@ class Container:
 
     def save(self, fn = TEMPCONTAINERFN):
 #https://stackoverflow.com/questions/13215716/ioerror-errno-13-permission-denied-when-trying-to-open-hidden-file-in-w-mod
-        if os.path.exists(os.path.join(self.containerworkingfolder, fn)):
-            outyaml = open(os.path.join(self.containerworkingfolder, fn), 'r+')
+        if os.path.exists(join(self.containerworkingfolder, fn)):
+            outyaml = open(join(self.containerworkingfolder, fn), 'r+')
         else:
-            outyaml = open(os.path.join(self.containerworkingfolder, fn), 'w')
+            outyaml = open(join(self.containerworkingfolder, fn), 'w')
         yaml.dump(self.dictify(), outyaml)
         outyaml.close()
-        makefilehidden(os.path.join(self.containerworkingfolder, fn))
+        makefilehidden(join(self.containerworkingfolder, fn))
         self.yamlfn=fn
 
     def setAllowedUser(self, allowedUserList):
@@ -387,9 +408,9 @@ class Container:
         headers = {
             'Authorization': 'Bearer ' + authtoken
         }
-        if not os.path.exists(os.path.join(refpath,branch)):
-            os.mkdir(os.path.join(refpath,branch))
-        makefilehidden(os.path.join(refpath,branch))
+        if not os.path.exists(join(refpath,branch)):
+            os.mkdir(join(refpath,branch))
+        makefilehidden(join(refpath,branch))
         response = requests.get(BASE + 'CONTAINERS/fullbranch', headers=headers, data=payload)
         fullbranchlist = response.json()
         for rev in fullbranchlist:
@@ -397,15 +418,15 @@ class Container:
                        'branch': branch,
                        'rev':rev}
             revyaml = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
-            if os.path.exists(os.path.join(refpath,branch, rev)):
-                open(os.path.join(refpath, branch, rev), 'rb+').write(revyaml.content)
+            if os.path.exists(join(refpath,branch, rev)):
+                open(join(refpath, branch, rev), 'rb+').write(revyaml.content)
             else:
-                open(os.path.join(refpath, branch, rev), 'wb').write(revyaml.content)
-            makefilehidden(os.path.join(refpath,branch, rev))
+                open(join(refpath, branch, rev), 'wb').write(revyaml.content)
+            makefilehidden(join(refpath,branch, rev))
 
 
     def yamlpath(self):
-        return os.path.join(self.containerworkingfolder,self.yamlfn)
+        return join(self.containerworkingfolder,self.yamlfn)
 
     def editusers(self, userlist):
         for user in userlist:

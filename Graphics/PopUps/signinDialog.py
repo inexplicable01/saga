@@ -73,6 +73,8 @@ class SigninDialog(QDialog):
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:
             return {'signinsuccess':self.signedin}
+        else:
+            return {'signinsuccess': False}
     #
     # def gen(self):
     #     self.username.setText(random_char(7))
@@ -80,7 +82,7 @@ class SigninDialog(QDialog):
     #     self.password.setText(random_char(7))
 
     def signin(self):
-        print(self.email.text())
+        # print(self.email.text())
         payload = {'email': self.email.text(),
                    'password': self.password.text()}
         response = requests.post(BASE + 'auth/login',
@@ -94,5 +96,3 @@ class SigninDialog(QDialog):
         if signinresp['status']=='success':
             self.signedin = True
             self.accept()
-
-

@@ -23,7 +23,7 @@ import shutil
 class Frame:
 
     @classmethod
-    def loadFramefromYaml(cls, containerworkingfolder,containfn):
+    def LoadCurrentFrame(cls, containerworkingfolder,containfn):
         CONTAINERLIST = [TEMPCONTAINERFN, CONTAINERFN]
         if containfn in CONTAINERLIST:
             workingyamlfn = TEMPFRAMEFN
@@ -56,6 +56,25 @@ class Frame:
                      containerworkingfolder=containerworkingfolder,
                      filestracklist=framedict['filestrack'],
                      workingyamlfn=workingyamlfn)
+        return cframe
+
+    @classmethod
+    def LoadFrameFromYaml(cls, frameyamlfullpath, containerworkingfolder):
+        frameyaml = os.path.basename(frameyamlfullpath)
+        with open(frameyamlfullpath,'r') as file:
+            framedict = yaml.load(file, Loader=yaml.FullLoader)
+
+        cframe = cls(parentcontainerid=framedict['parentcontainerid'],
+                     FrameName=framedict['FrameName'],
+                     FrameInstanceId=framedict['FrameInstanceId'],
+                     commitMessage=framedict['commitMessage'],
+                     inlinks=framedict['inlinks'],
+                     outlinks=framedict['outlinks'],
+                     AttachedFiles=framedict['AttachedFiles'],
+                     commitUTCdatetime=framedict['commitUTCdatetime'],
+                     containerworkingfolder=containerworkingfolder,
+                     filestracklist=framedict['filestrack'],
+                     workingyamlfn=frameyaml)
         return cframe
 
     @classmethod

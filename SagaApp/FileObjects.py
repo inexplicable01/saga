@@ -12,7 +12,7 @@ class FileTrack:
         self.FileHeader = FileHeader
         self.file_name = file_name
         self.committedby = committedby
-        self.md5 = md5
+
         self.style = style
         # self.file_id = file_id
         self.commitUTCdatetime = commitUTCdatetime
@@ -22,9 +22,11 @@ class FileTrack:
             self.ctnrootpath=os.path.join(*ctnrootpathlist)
         else:
             self.ctnrootpath='.'
-        if md5 is None:
-            fileb = open(os.path.join(containerworkingfolder, self.ctnrootpath,file_name) , 'rb')
+        fullfilepath = os.path.join(containerworkingfolder, self.ctnrootpath, file_name)
+        if md5 is None and os.path.isfile(fullfilepath):
+            fileb = open(fullfilepath, 'rb')
             md5=hashlib.md5(fileb.read()).hexdigest()
+        self.md5 = md5
         self.lastEdited= os.path.getmtime(os.path.join(containerworkingfolder,  self.ctnrootpath,file_name)) if lastEdited is None else lastEdited
 
     def dictify(self):

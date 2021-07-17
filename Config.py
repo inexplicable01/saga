@@ -13,6 +13,7 @@ typeRequired='Required'
 typeReference='Reference'
 typeCommitSpecific='CommitSpecific'
 typeContainer='Container'
+typeUnversioned='Unversioned'
 
 mapdetailstxt='mapdetails.txt'
 
@@ -26,10 +27,13 @@ UPDATEDUPSTREAM = 'MD5 Updated Upstream'
 NEWREVISION = 'File updated in newer Revision'
 FILEDELETED = 'File deleted in newer Revision'
 FILEADDED = 'New File committed in newer Revision'
+CHANGEREASONORDER=[CHANGEDMD5, NEWREVISION, UPDATEDUPSTREAM,DATECHANGED,FILEADDED , FILEDELETED]
 
-colorscheme = {typeInput: QColor(124, 0, 255 ), typeOutput: QColor(0, 255, 120), typeRequired: Qt.blue, DATECHANGED: Qt.cyan,
+colorscheme = {typeInput: QColor(124, 0, 255 ), typeOutput: QColor(Qt.darkMagenta), typeRequired:QColor(Qt.blue) , DATECHANGED: Qt.cyan,
                 CHANGEDMD5: Qt.red, UPDATEDUPSTREAM: Qt.magenta, NEWFILEADDED: Qt.black, CHANGEREMOVED: Qt.darkCyan,
-               NEWREVISION: QColor(255, 165, 0), FILEDELETED: Qt.black, FILEADDED: Qt.black}
+               NEWREVISION: QColor(255, 165, 0), FILEDELETED: Qt.black,
+               FILEADDED: Qt.black,
+               typeUnversioned:QColor(Qt.gray)}
 
 JUSTCREATED="JUSTCREATED"
 UNCHANGED="UNCHANGED"
@@ -132,3 +136,5 @@ CONTAINERFN='containerstate.yaml'
 RECTMARGINpx=5
 
 BANNEDNAMES=['EMPTY']
+
+sagaworkingfiles=[CONTAINERFN,TEMPCONTAINERFN,NEWCONTAINERFN,'Main']

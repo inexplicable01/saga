@@ -92,7 +92,7 @@ class FileViewItemRect(QGraphicsRectItem):
         self.view = view
         # self.file_name = filetrack.file_name
         self.filetrack = filetrack
-        print(filetrack.ctnrootpath)
+        # print(filetrack.ctnrootpath)
 
     def mousePressEvent(self,event):
         # print('pressed huh' + self.type)
@@ -101,10 +101,7 @@ class FileViewItemRect(QGraphicsRectItem):
         self.update()
 
     def boundingRect(self):
-
         return self.rect()
-
-
 
 ##Paint handles the actual drawing of the rect
     def paint(self, painter:QPainter, option: QStyleOptionGraphicsItem, widget:QWidget=None):

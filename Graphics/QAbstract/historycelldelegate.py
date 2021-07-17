@@ -7,12 +7,6 @@ import os
 import glob
 from Config import typeRequired, typeInput, typeOutput, colorscheme , JUSTCREATED, UNCHANGED, MD5CHANGED
 
-class HistoryEditor():
-    def editingFinished(self):
-        print('editingFinished')
-    def commitandCloseEditor(self):
-        print('commit and close editor')
-
 
 def createBeginRect(painter, cellrect, qtbrushcolor, squaresidepx, pxlinewidth):
     # center = cellrect.center()

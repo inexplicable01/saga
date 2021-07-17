@@ -3,6 +3,7 @@ from Graphics.DetailedMap import DetailedMap
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from Config import BASE,  CONTAINERFN
+from Graphics.GuiUtil import RotatedHeaderView
 import shutil
 
 import os
@@ -10,7 +11,8 @@ import os
 from Graphics.QAbstract.SagaTreeDelegate import SagaTreeDelegate
 from Graphics.QAbstract.SagaTreeModel import SagaTreeModel, SagaTreeNode
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
-from Graphics.PopUps.GanttChartPopUp import GanttChartPopUp
+# from Graphics.PopUps.GanttChartPopUp import GanttChartPopUp
+from Graphics.QAbstract.GanttListModel import GanttListModel
 from SagaApp.Container import Container
 from SagaGuiModel import sagaguimodel
 
@@ -27,6 +29,9 @@ class MapTab():
         self.dlContainerBttn = mainguihandle.dlContainerBttn
         self.ganttbttn=mainguihandle.ganttbttn
         self.sagatreeview=mainguihandle.sagatreeview
+        self.ganttview = mainguihandle.ganttview
+        self.commitmsglbl = mainguihandle.commitmsglbl
+
 
         # self.ganttChartBttn = mainguihandle.ganttChartBttn
         # self.ganttChartBttn.clicked.connect(self.showGanttChart)
@@ -46,13 +51,43 @@ class MapTab():
         self.detailedmap = DetailedMap(self.detailsMapView, self.selecteddetail)
         self.containermap = ContainerMap({}, self.containerMapView, self.selecteddetail, self.detailedmap,self.mainguihandle)
         # self.mainguihandle.tabWidget.currentChanged.connect(self.refreshMapTab)
+        self.ganttview.clicked.connect(self.updateCommitMessages)
+        self.ganttview.setModel(GanttListModel(sagaguimodel.containernetworkkeys, sagaguimodel.desktopdir))
+        self.ganttview.setHorizontalHeader(RotatedHeaderView(self.ganttview))
 
+    def updateCommitMessages(self, listtable):
+        rownumber = listtable.row()
+        weeksago = listtable.model().rowheaders[rownumber]
+        columnnumber = listtable.column()
+        containerid = listtable.model().headers[columnnumber]
+        # print(listtable.model().commitmessagedict[weeksago][containerid])
+        str = ''
+        if weeksago in listtable.model().commitmessagedict.keys():
+            if containerid in listtable.model().commitmessagedict[weeksago].keys():
+                for commitsummary in listtable.model().commitmessagedict[weeksago][containerid]:
+                    str = str + commitsummary['msg'] + '\n'
+
+        # columnnumber = listtable.column()
+        # index = listtable.model().index(rownumber, 0)
+        # containerId = listtable.model().data(index, 0)
+        self.commitmsglbl.setText(str)
     # def refreshMapTab(self):
     #     if self.mainguihandle.tabWidget.currentIndex() == self.mainguihandle.tabWidget.indexOf(self.mainguihandle.Map):
 
-    def showGanttChart(self):
-        self.ganttChart  = GanttChartPopUp()
-        # self.ganttChart.showChart()
+    # def showGanttChart(self):
+    #     self.ganttChart  = GanttChartPopUp()
+    #     # self.ganttChart.showChart()
+
+    # class GanttChartPopUp(QDialog):
+    #     def __init__(self):
+    #         super().__init__()
+    #         # uic.loadUi("Graphics/UI/ganttchart.ui", self)
+    #         # self.containerpathlbl.setText(path)
+    #
+    #
+    #         # delegate = Delegate(self.ganttview)
+    #         # self.ganttview.setItemDelegate(delegate)
+    #         self.exec()
 
     def generateContainerMap(self,containerinfodict):
         self.containerlisttable.setModel(ContainerListModel(containerinfodict))
@@ -124,5 +159,6 @@ class MapTab():
             # # print(os.path.join(openDirectoryDialog, self.dlcontainer))
             # if openDirectoryDialog:
             #     print(os.path.split(openDirectoryDialog[0]))
+
 
 

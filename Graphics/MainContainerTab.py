@@ -3,8 +3,10 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Graphics.QAbstract.HistoryListModel import HistoryListModel
+from Graphics.QAbstract.ContainerFileModel import ContainerFileModel,ContainerFileDelegate
 from Graphics.QAbstract.ConflictListModel import ConflictListModel
 from Graphics.QAbstract.historycelldelegate import HistoryCellDelegate
+
 from Graphics.Dialogs import alteredinputFileDialog
 from Graphics.ContainerPlot import ContainerPlot
 from Graphics.Dialogs import ErrorMessage, removeFileDialog, commitDialog,alteredinputFileDialog, refreshContainerPopUp, downloadProgressBar,commitConflictCheck
@@ -14,7 +16,8 @@ from Graphics.PopUps.selectFileDialog import selectFileDialog
 import requests
 import os
 import hashlib
-from Config import BASE,NEWREVISION,FILEADDED,FILEDELETED,NEWCONTAINERFN, TEMPCONTAINERFN,NEWFILEADDED,TEMPFRAMEFN
+from Config import BASE,NEWREVISION,FILEADDED,FILEDELETED,NEWCONTAINERFN, TEMPCONTAINERFN,\
+    NEWFILEADDED,TEMPFRAMEFN, colorscheme, typeOutput,typeInput,typeRequired,UPDATEDUPSTREAM
 from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
 from SagaApp.WorldMap import WorldMap
@@ -40,11 +43,12 @@ class MainContainerTab():
         self.refreshContainerBttn.setDisabled(True)
         self.framelabel = mainguihandle.framelabel
         self.maincontainerview = mainguihandle.maincontainerview
-        self.indexView1 = mainguihandle.indexView1
+        # self.indexView1 = mainguihandle.indexView1
         self.menuContainer = mainguihandle.menuContainer
         self.frametextBrowser = mainguihandle.frametextBrowser
         self.containerlabel = mainguihandle.containerlabel
         self.addtocontainerbttn = mainguihandle.addtocontainerbttn
+        self.containerstatuslabel = mainguihandle.containerstatuslabel
         # self.RequiredButton_2 = mainguihandle.RequiredButton_2
         # self.outputFileButton_2 = mainguihandle.outputFileButton_2
         self.commitmsgEdit_2=mainguihandle.commitmsgEdit_2
@@ -55,6 +59,8 @@ class MainContainerTab():
         self.removefilebttn = mainguihandle.removefilebttn
         # self.fileHistoryBttn = mainguihandle.fileHistoryBttn
         # self.fileHistoryBttn.setDisabled(True)
+        self.containerfiletableview = mainguihandle.containerfiletableview
+        self.containerfiletableview.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         self.descriptionText = mainguihandle.commitmsgEdit_2
 
@@ -64,7 +70,7 @@ class MainContainerTab():
 
         self.GuiTab = mainguihandle.ContainerTab
 
-        self.maincontainerplot = ContainerPlot(self, self.maincontainerview, container=None)
+        # self.maincontainerplot = ContainerPlot(self, self.maincontainerview, container=None)
         # self.openContainerBttn = mainguihandle.openContainerBttn
         self.commitBttn.setEnabled(False)
         self.workingdir=''
@@ -95,7 +101,24 @@ class MainContainerTab():
         # self.containerstatuslabel = self.mainguihandle.containerStatusLabel
         self.refreshedrevision = 0
         self.refreshedcheck = False
-        AddIndexToView(self.indexView1)
+        # AddIndexToView(self.indexView1)
+        # color=
+
+        def setstyleoflabel(color, label):
+            alpha=140
+            values = "{r}, {g}, {b}, {a}".format(r=color.red(),
+                                                 g=color.green(),
+                                                 b=color.blue(),
+                                                 a=alpha
+                                                 )
+            label.setStyleSheet("QLabel { background-color: rgba(" + values + "); }")
+
+        setstyleoflabel(colorscheme[typeInput], self.mainguihandle.inputlbl)
+        setstyleoflabel(colorscheme[typeOutput], self.mainguihandle.outputlbl)
+        setstyleoflabel(colorscheme[typeRequired], self.mainguihandle.requiredlbl)
+        # self.mainguihandle.outputlbl.setStyleSheet("QLabel { background-color : red; color : black; }")
+        # self.mainguihandle.requiredlbl.setStyleSheet("QLabel { background-color : red; color : black; }")
+
         # self.t = threading.Timer(1.0, self.checkingFileDelta)
 
 
@@ -232,11 +255,6 @@ class MainContainerTab():
         #           download updated files
         #     reload contain state into SAGA GUI
 
-
-    # def fileGanttChart(self):
-    #     self.ganttChart = ganttChartFiles()
-    #     self.ganttChart.showChart()
-
     def setTab(self, tabon):
         self.GuiTab.setEnabled(tabon)
 
@@ -264,8 +282,9 @@ class MainContainerTab():
         wf.writeoutFrameYaml()
         self.mainContainer.updatedInputs = True
         self.frametextBrowser.setText(chgstr)
-        self.downloadUpstreamBttn.setDisabled(True)
-        self.maincontainerplot.plot(self.changes)
+        # self.downloadUpstreamBttn.setDisabled(True)
+        # self.maincontainerplot.plot(self.changes)
+        self.containerfiletableview.model().updateFromChanges(self.changes)
 
 
     def checkUpstream(self):
@@ -297,22 +316,14 @@ class MainContainerTab():
                         # Is it necessary that we get the existing file's md5.   Why does checking upstream require knowledge the change in the current md5?
                         # This should really have two parts, one is to simply compare the last commit Rev of Downstream container to the last committed Rev of the Upstream container.
 
-                        # workingFrame.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
-
                         if refFrame.filestrack[fileheader].md5 != inputFrame.filestrack[fileheader].md5:
                             if fileheader in self.changes.keys():
-                                self.changes[fileheader]['reason'].append('MD5 Updated Upstream')
+                                self.changes[fileheader]['reason'].append(UPDATEDUPSTREAM)
                             else:
-                                self.changes[fileheader] = {'reason': ['MD5 Updated Upstream'],
+                                self.changes[fileheader] = {'reason': [UPDATEDUPSTREAM],
                                                    'revision': inputFrame.FrameName,
                                                     'md5': inputFrame.filestrack[fileheader].md5,
                                                    'inputframe': inputFrame}
-
-        # if len(self.changes.keys())>0:
-        #     # self.downloadUpstreamBttn.setEnabled(True)
-        # else:
-        #     print('No Upstream Updates')
-
 
     def checkdelta(self):
         allowCommit = False
@@ -342,7 +353,8 @@ class MainContainerTab():
         self.commitBttn.setEnabled(allowCommit)
         self.commitmsgEdit.setDisabled(not allowCommit)
         # refresh plot
-        self.maincontainerplot.plot(self.changes)
+        # self.maincontainerplot.plot(self.changes)
+        self.containerfiletableview.model().updateFromChanges(self.changes)
 
         chgstr = ''
         for fileheader, change in self.changes.items():
@@ -476,8 +488,12 @@ class MainContainerTab():
         historydelegate = HistoryCellDelegate()
         self.commithisttable.setModel(self.histModel)
         self.commithisttable.setItemDelegate(historydelegate)
-        self.maincontainerplot.setContainer(curContainer = self.mainContainer)
-        self.maincontainerplot.plot(self.changes)
+        # self.maincontainerplot.setContainer(curContainer = self.mainContainer)
+        # self.maincontainerplot.plot(self.changes)
+
+        self.containerfiletableview.setModel(ContainerFileModel(self.mainContainer))
+        self.containerfiletableview.setItemDelegate(ContainerFileDelegate())
+        self.containerfiletableview.model().updateFromChanges(self.changes)
         ## Grab container history
         changesbyfile=self.mainContainer.commithistorybyfile()
         self.histModel.individualfilehistory(changesbyfile)
@@ -516,7 +532,8 @@ class MainContainerTab():
         fileInfo = addfilegui.getInputs()
         if fileInfo:
             self.mainContainer.addFileObject(fileInfo=fileInfo)
-            self.maincontainerplot.plot(self.changes)
+            # self.maincontainerplot.plot(self.changes)
+            self.containerfiletableview.model().updateFromChanges(self.changes)
 
     def removeFileInfo(self):
         # remove fileheader from current main container
@@ -527,7 +544,8 @@ class MainContainerTab():
 
         if fileheader:
             self.mainContainer.removeFileHeader(self.curfileheader)
-            self.maincontainerplot.plot(self.changes)
+            # self.maincontainerplot.plot(self.changes)
+            self.containerfiletableview.model().updateFromChanges(self.changes)
             self.removeFileButton_2.setEnabled(False)
 
     def alterRevertButton(self,histtable):
@@ -555,8 +573,8 @@ class MainContainerTab():
         self.mainContainer.workingFrame.parentcontainerid = inputs['containername']
         self.mainContainer.workingFrame.FrameName = 'Rev1'
         self.mainContainer.workingFrame.writeoutFrameYaml(os.path.join(inputs['dir'], 'Main', 'Rev1.yaml'))
-        self.maincontainerplot = ContainerPlot(self, self.maincontainerview, self.mainContainer) #Edit to use refContainer
-
+        # self.maincontainerplot = ContainerPlot(self, self.maincontainerview, self.mainContainer) #Edit to use refContainer
+        self.containerfiletableview.setModel(ContainerFileModel(self.mainContainer))
         self.histModel = HistoryListModel({})
         self.commithisttable.setModel(self.histModel)
         self.framelabel.setText('Revision 0 (New Container)')

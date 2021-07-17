@@ -29,7 +29,7 @@ class GanttListModel(QAbstractTableModel):
             yamllist = glob.glob(os.path.join(desktopdir, 'ContainerMapWorkDir', containerid, 'Main', '*.yaml'))
             containerframes={}
             for yamlfn in yamllist:
-                pastframe = Frame(os.path.join(desktopdir, 'ContainerMapWorkDir', containerid, 'Main'),yamlfn)
+                pastframe = Frame.LoadFrameFromYaml(yamlfn,os.path.join(desktopdir, 'ContainerMapWorkDir', containerid))
                 containerframes[pastframe.commitUTCdatetime]= pastframe
             for revi, timestamp in enumerate(sorted(containerframes)):
 

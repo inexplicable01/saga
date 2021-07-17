@@ -41,9 +41,9 @@ class Conflicts:
                     if fileheader in self.mainContainer.workingFrame.filestrack.keys():
                         if self.newestframe.filestrack[fileheader].md5 != self.mainContainer.workingFrame.filestrack[fileheader].md5:
                             if fileheader in self.changes.keys():
-                                self.changes[fileheader]['reason'].append('File updated in newer Revision')
+                                self.changes[fileheader]['reason'].append(NEWREVISION)
                             else:
-                                self.changes[fileheader] = {'reason': ['File updated in newer Revision']}
+                                self.changes[fileheader] = {'reason': [NEWREVISION]}
                             #if 'File updated....' is within changes reason dictionary, display delta in GUI
                     else:
                         self.changes[fileheader] = {'reason': 'New File committed in newer Revision'}
@@ -52,9 +52,9 @@ class Conflicts:
                 for fileheader in self.mainContainer.workingFrame.filestrack.keys():
                     if fileheader not in self.newestframe.filestrack.keys():
                         if fileheader in self.changes.keys():
-                            self.changes[fileheader]['reason'].append('File deleted in newer Revision')
+                            self.changes[fileheader]['reason'].append(FILEDELETED)
                         else:
-                            self.changes[fileheader] = {'reason': ['File deleted in newer Revision']}
+                            self.changes[fileheader] = {'reason': [FILEDELETED]}
 
     def downloadchanges(self, fileheader, filestodownload):
         wf = self.mainContainer.workingFrame

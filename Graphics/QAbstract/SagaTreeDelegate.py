@@ -58,9 +58,6 @@ class SagaTreeDelegate(QStyledItemDelegate):
 
         if index.column()==0:
             if selectedcontainerrownum==currow:
-                # print(index.model().data[0])
-                cellleftmid = QPointF(option.rect.topLeft().x(),option.rect.center().y())
-                cellrightmid = QPointF(option.rect.bottomRight().x(), option.rect.center().y())
                 painter.setPen(QPen(QBrush(Qt.red), 4))
                 painter.setBrush(QBrush(Qt.red))
                 painter.drawRect(option.rect)
@@ -126,8 +123,8 @@ class SagaTreeDelegate(QStyledItemDelegate):
                         painter.setPen(QPen(QBrush(Qt.yellow), 1))
                         painter.drawLine(QLineF(celltop, cellbottom))
             else:
-                painter.setPen(QPen(QBrush(Qt.transparent), 2))
-                painter.setBrush(QBrush(Qt.green))
+                painter.setPen(QPen(QBrush(Qt.gray), 1))
+                painter.setBrush(QBrush(Qt.gray))
                 painter.drawRect(option.rect)
         elif index.column() == 2:
             if len(outputspaths['hori'].keys()) > 0:
@@ -161,8 +158,8 @@ class SagaTreeDelegate(QStyledItemDelegate):
                         painter.setPen(QPen(QBrush(Qt.cyan), 1))
                         painter.drawLine(QLineF(celltop, cellbottom))
             else:
-                painter.setPen(QPen(QBrush(Qt.transparent), 2))
-                painter.setBrush(QBrush(Qt.green))
+                painter.setPen(QPen(QBrush(Qt.gray), 1))
+                painter.setBrush(QBrush(Qt.gray))
                 painter.drawRect(option.rect)
 
 

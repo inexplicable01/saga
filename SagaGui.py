@@ -26,8 +26,11 @@ import traceback
 import yaml
 import warnings
 from functools import partial
-from Config import BASE,mapdetailstxt
+from Config import BASE,mapdetailstxt, testerlogin, CONTAINERFN
 from subprocess import Popen
+
+import sys
+
 
 
 # from NewContainerGraphics import newContainerGraphics
@@ -39,8 +42,10 @@ if os.path.exists("token.txt"):
 logging.basicConfig(filename='error.log', filemode='a',
                     format='%(asctime)s,%(msecs)d - %(name)s - %(levelname)s - %(message)s',
                     datefmt='%H:%M:%S')
-
-
+debugmode=False
+if 'debug' ==sys.argv[1]:
+    debugmode=True
+# print('something')
 
 
 class UI(QMainWindow):
@@ -83,20 +88,34 @@ class UI(QMainWindow):
         self.actionContainer_Permission.triggered.connect(self.containerPermission)
 
 
-        self.maincontainerview.installEventFilter(self)
-
+        # self.maincontainerview.installEventFilter(self)
+        self.ContainerTab.installEventFilter(self)
         self.versionLabel.setText(str(sagaguimodel.versionnumber))
         self.checkUserStatus()
         self.startingcheck = False
 
-        # self.conect(self.testcreatemanyfiles)
-        # self.sourcefolderlbl.setText(sagaguimodel.desktopdir)
+        if debugmode:
+            payload = {'email': testerlogin['email'],
+                       'password': testerlogin['password']}
+            response = requests.post(BASE + 'auth/login',
+                                     data=payload,
+                                     )
+            signinresp = response.json()
+            print('usertoken[status] ' + signinresp['status'])
+            with open('token.txt', 'w') as tokenfile:
+                json.dump(signinresp, tokenfile)
+            # self.mainguihandle.checkUserStatus()
+            if signinresp['status'] == 'success':
+                self.refresh()
+            containerexample = 'C:/Users/waich/LocalGitProjects/testcontainers_saga/AdminPlanningBackUp/'+CONTAINERFN
+        self.maincontainertab.readcontainer(containerexample)
         self.show()
 
     def eventFilter(self, source, event):
-        if (event.type() == QtCore.QEvent.FocusIn and
-            source is self.maincontainerview):
-            print('eventFilter: focus in')
+        if (event.type() in [QtCore.QEvent.FocusIn,QtCore.QEvent.MouseButtonPress]):
+            #     and
+            # source is self.ContainerTab):
+            # print('eventFilter: focus in')
             self.maincontainertab.checkdelta()
             # return true here to bypass default behaviour
         return super(UI, self).eventFilter(source, event)
@@ -119,7 +138,6 @@ class UI(QMainWindow):
         # print(BASE)
         newuserwindow = newUserDialog(mainguihandle=self)
         inputs = newuserwindow.getInputs()
-
         if inputs:
             response = requests.post(BASE + 'auth/register',
                                      data=inputs)
@@ -227,19 +245,19 @@ class UI(QMainWindow):
 
 
 
-def excepthook(exc_type, exc_value, exc_tb):
-    tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
-    print("error caught!:")
-    print("error message:\n", tb)
-    logging.error("Error:", exc_info=(exc_type, exc_value, exc_tb))
-    errorDialog.showMessage("ERROR MESSAGE:" + tb)
-    # QtWidgets.QApplication.quit()
-    # or QtWidgets.QApplication.exit(0)
+# def excepthook(exc_type, exc_value, exc_tb):
+#     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+#     print("error caught!:")
+#     print("error message:\n", tb)
+#     logging.error("Error:", exc_info=(exc_type, exc_value, exc_tb))
+#     errorDialog.showMessage("ERROR MESSAGE:" + tb)
+#     # QtWidgets.QApplication.quit()
+#     # or QtWidgets.QApplication.exit(0)
 
 
-sys.excepthook = excepthook
+# sys.excepthook = excepthook
 app = QApplication([])
 window = UI()
-errorDialog = QtWidgets.QErrorMessage()
+# errorDialog = QtWidgets.QErrorMessage()
 
 sys.exit(app.exec_())

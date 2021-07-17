@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1228</width>
+    <height>826</height>
+   </rect>
+  </property>
   <property name="sizePolicy">
    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
     <horstretch>0</horstretch>
@@ -99,6 +107,9 @@ QMenu {
          <string notr="true">QTabBar::Tab {
     background: rgb(61, 61, 61);\n	color: White;\n	border: 1px solid rgb(20, 20, 20);\n	border-radius: 3px;\n	padding: 3px;\n\n}\n\nQTabWidget::pane &gt; QWidget { /* The tab widget frame */\n    background: rgb(61, 61, 61);\n}\n\nQTabBar::tab:disabled {\n	color: rgb(139, 139, 139)\n}\n\n\nQTabBar::tab:selected, QTabBar::tab:hover {\nbackground: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3d3d3d, stop: 0.4 rgb(141, 141, 141), stop: 0.5 rgb(141, 141, 141), stop: 1.0 #3d3d3d);\n}\n\nQTabBar::tab:!selected {\nmargin-top: 4px; /* make non-selected tabs look smaller */\n}\n\nQTabBar::tab:selected {\n/* expand/overlap to the left and right by 4px */\nmargin-left: -3px;\nmargin-right: -3px;\n}\nQTabBar::tab:first:selected {\nmargin-left: 0; /* the first selected tab has nothing to overlap with on the left */\n}\nQTabBar::tab:last:selected {\nmargin-right: 0; /* the last selected tab has nothing to overlap with on the right */\n}\nQTabBar::tab:only-one {\nmargin: 0; /* if there is only one tab, we don't want overlapping margins */\n}\n\n\nQWidget\n{\n	background-color: #fff;\n\n\n}\n\n\n/*-----QLabel-----*/\nQLabel\n{\n	background-color: transparent;\n	color: #454544;\n	font-weight: bold;\n	font-size: 16px;\n\n}\n#mapTitle {\n	font-size: 24px\n}\n\n#containerlabel {\n	font-size: 24px\n}\n\n/*-----QPushButton-----*/\nQPushButton\n{\n	background-color: #5c55e9;\n	color: #fff;\n	font-size: 13px;\n	font-weight: bold;\n	border-top-right-radius: 15px;\n	border-top-left-radius: 0px;\n	border-bottom-right-radius: 0px;\n	border-bottom-left-radius: 15px;\n	padding: 10px;\n\n}\n\n\nQPushButton::disabled\n{\n	background-color: #5c5c5c;\n	color: rgb(158, 158, 158)\n\n}\n\n\nQPushButton::hover\n{\n	background-color: #5564f2;\n\n}\n\n\nQPushButton::pressed\n{\n	background-color: #3d4ef2;\n\n}\n\n\n/*-----QCheckBox-----*/\nQCheckBox\n{\n	background-color: transparent;\n	color: #5c55e9;\n	font-size: 10px;\n	font-weight: bold;\n	border: none;\n	border-radius: 5px;\n\n}\n\n\n/*-----QCheckBox-----*/\nQCheckBox::indicator\n{\n    background-color: #323232;\n    border: 1px solid darkgray;\n    width: 12px;\n    height: 12px;\n\n}\n\n\nQCheckBox::indicator:checked\n{\n    image:url(&quot;./ressources/check.png&quot;);\n	background-color: #5c55e9;\n    border: 1px solid #5c55e9;\n\n}\n\n\nQCheckBox::indicator:unchecked:hover\n{\n    border: 1px solid #5c55e9;\n\n}\n\n\nQCheckBox::disabled\n{\n	color: #656565;\n\n}\n\n\nQCheckBox::indicator:disabled\n{\n	background-color: #656565;\n	color: #656565;\n    border: 1px solid #656565;\n\n}\n\n\n/*-----QLineEdit-----*/\nQLineEdit\n{\n	background-color: #c2c7d5;\n	color: #2a547f;\n	border: none;\n	padding: 5px;\n\n}\n\n\n/*-----QListView-----*/\nQListView\n{\n	background-color: #5c55e9;\n	color: #fff;\n	font-size: 14px;\n	font-weight: bold;\n	show-decoration-selected: 0;\n	border-radius: 4px;\n	padding-left: -15px;\n	padding-right: -15px;\n	padding-top: 5px;\n\n}\n\n\nQListView:disabled\n{\n	background-color: #5c5c5c;\n\n}\n\n\nQListView::item\n{\n	background-color: #454e5e;\n	border: none;\n	padding: 10px;\n	border-radius: 0px;\n	padding-left : 10px;\n	height: 32px;\n\n}\n\n\nQListView::item:selected\n{\n	color: #000;\n	background-color: #fff;\n\n}\n\n\nQListView::item:!selected\n{\n	color:white;\n	background-color: transparent;\n	border: none;\n	padding-left : 10px;\n\n}\n\n\nQListView::item:!selected:hover\n{\n	color: #fff;\n	background-color: #5564f2;\n	border: none;\n	padding-left : 10px;\n\n}\n\n\nQTextEdit\n{\n	color: black;\n}\n\nQTextBrowser\n{\n	color: #ffb113;\n}\n\n\n/*-----QTableView &amp; QTableWidget-----*/\nQTableView\n{\n    background-color: #fff;\n	border: 1px solid gray;\n    color: #454544;\n    gridline-color: gray;\n    outline : 0;\n\n}\n\n\nQTableView::item:hover\n{\n    background-color: #bcbdbb;\n    color: #000;\n\n}\n\n\nQTableView::item:selected\n{\n	background-color: #5c55e9;\n    color: #fff;\n\n}\n\n\nQTableView::item:selected:disabled\n{\n    background-color: #1a1b1c;\n    border: 2px solid #525251;\n    color: #656565;\n\n}\n\n\nQTableCornerButton::section\n{\n	background-color: #ced5e3;\n	border: none;\n    color: #fff;\n\n}\n\n\nQHeaderView::section\n{\n	color: #2a547f;\n	border: 0px;\n	background-color: #ced5e3;\n	padding: 5px;\n\n}\n\n\nQHeaderView::section:disabled\n{\n    background-color: #525251;\n    color: #656565;\n\n}\n\n\nQHeaderView::section:checked\n{\n    color: #fff;\n    background-color: #5c55e9;\n\n}\n\n\nQHeaderView::section:checked:disabled\n{\n    color: #656565;\n    background-color: #525251;\n\n}\n\n\nQHeaderView::section::vertical::first,\nQHeaderView::section::vertical::only-one\n{\n    border-top: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::vertical\n{\n    border-top: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::horizontal::first,\nQHeaderView::section::horizontal::only-one\n{\n    border-left: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::horizontal\n{\n    border-left: 1px solid #353635;\n\n}\n\n\n/*-----QScrollBar-----*/\nQScrollBar:horizontal\n{\n    background-color: transparent;\n    height: 8px;\n    margin: 0px;\n    padding: 0px;\n\n}\n\n\nQScrollBar::handle:horizontal\n{\n    border: none;\n	min-width: 100px;\n    background-color: #7e92b7;\n\n}\n\n\nQScrollBar::add-line:horizontal,\nQScrollBar::sub-line:horizontal,\nQScrollBar::add-page:horizontal,\nQScrollBar::sub-page:horizontal\n{\n    width: 0px;\n    background-color: #d8dce6;\n\n}\n\n\nQScrollBar:vertical\n{\n    background-color: transparent;\n    width: 8px;\n    margin: 0;\n\n}\n\n\nQScrollBar::handle:vertical\n{\n    border: none;\n	min-height: 100px;\n    background-color: #7e92b7;\n\n}\n\n\nQScrollBar::add-line:vertical,\nQScrollBar::sub-line:vertical,\nQScrollBar::add-page:vertical,\nQScrollBar::sub-page:vertical\n{\n    height: 0px;\n    background-color: #d8dce6;\n\n}</string>
         </property>
+        <property name="tabPosition">
+         <enum>QTabWidget::West</enum>
+        </property>
         <property name="currentIndex">
          <number>1</number>
         </property>
@@ -108,7 +119,7 @@ QMenu {
     background: rgb(61, 61, 61);\n	color: White;\n	border: 1px solid rgb(20, 20, 20);\n	border-radius: 3px;\n	padding: 3px;\n\n}\n\nQTabWidget::pane &gt; QWidget { /* The tab widget frame */\n    background: rgb(61, 61, 61);\n}\n\nQTabBar::tab:disabled {\n	color: rgb(139, 139, 139)\n}\n\n\nQTabBar::tab:selected, QTabBar::tab:hover {\nbackground: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3d3d3d, stop: 0.4 rgb(141, 141, 141), stop: 0.5 rgb(141, 141, 141), stop: 1.0 #3d3d3d);\n}\n\nQTabBar::tab:!selected {\nmargin-top: 4px; /* make non-selected tabs look smaller */\n}\n\nQTabBar::tab:selected {\n/* expand/overlap to the left and right by 4px */\nmargin-left: -3px;\nmargin-right: -3px;\n}\nQTabBar::tab:first:selected {\nmargin-left: 0; /* the first selected tab has nothing to overlap with on the left */\n}\nQTabBar::tab:last:selected {\nmargin-right: 0; /* the last selected tab has nothing to overlap with on the right */\n}\nQTabBar::tab:only-one {\nmargin: 0; /* if there is only one tab, we don't want overlapping margins */\n}\n\n\nQWidget\n{\n	background-color: #fff;\n\n\n}\n\n\n/*-----QLabel-----*/\nQLabel\n{\n	background-color: transparent;\n	color: #454544;\n	font-weight: bold;\n	font-size: 16px;\n\n}\n#mapTitle {\n	font-size: 24px\n}\n\n#containerlabel {\n	font-size: 24px\n}\n\n/*-----QPushButton-----*/\nQPushButton\n{\n	background-color: #5c55e9;\n	color: #fff;\n	font-size: 13px;\n	font-weight: bold;\n	border-top-right-radius: 15px;\n	border-top-left-radius: 0px;\n	border-bottom-right-radius: 0px;\n	border-bottom-left-radius: 15px;\n	padding: 10px;\n\n}\n\n\nQPushButton::disabled\n{\n	background-color: #5c5c5c;\n	color: rgb(158, 158, 158)\n\n}\n\n\nQPushButton::hover\n{\n	background-color: #5564f2;\n\n}\n\n\nQPushButton::pressed\n{\n	background-color: #3d4ef2;\n\n}\n\n\n/*-----QCheckBox-----*/\nQCheckBox\n{\n	background-color: transparent;\n	color: #5c55e9;\n	font-size: 10px;\n	font-weight: bold;\n	border: none;\n	border-radius: 5px;\n\n}\n\n\n/*-----QCheckBox-----*/\nQCheckBox::indicator\n{\n    background-color: #323232;\n    border: 1px solid darkgray;\n    width: 12px;\n    height: 12px;\n\n}\n\n\nQCheckBox::indicator:checked\n{\n    image:url(&quot;./ressources/check.png&quot;);\n	background-color: #5c55e9;\n    border: 1px solid #5c55e9;\n\n}\n\n\nQCheckBox::indicator:unchecked:hover\n{\n    border: 1px solid #5c55e9;\n\n}\n\n\nQCheckBox::disabled\n{\n	color: #656565;\n\n}\n\n\nQCheckBox::indicator:disabled\n{\n	background-color: #656565;\n	color: #656565;\n    border: 1px solid #656565;\n\n}\n\n\n/*-----QLineEdit-----*/\nQLineEdit\n{\n	background-color: #c2c7d5;\n	color: #2a547f;\n	border: none;\n	padding: 5px;\n\n}\n\n\n/*-----QListView-----*/\nQListView\n{\n	background-color: #5c55e9;\n	color: #fff;\n	font-size: 14px;\n	font-weight: bold;\n	show-decoration-selected: 0;\n	border-radius: 4px;\n	padding-left: -15px;\n	padding-right: -15px;\n	padding-top: 5px;\n\n}\n\n\nQListView:disabled\n{\n	background-color: #5c5c5c;\n\n}\n\n\nQListView::item\n{\n	background-color: #454e5e;\n	border: none;\n	padding: 10px;\n	border-radius: 0px;\n	padding-left : 10px;\n	height: 32px;\n\n}\n\n\nQListView::item:selected\n{\n	color: #000;\n	background-color: #fff;\n\n}\n\n\nQListView::item:!selected\n{\n	color:white;\n	background-color: transparent;\n	border: none;\n	padding-left : 10px;\n\n}\n\n\nQListView::item:!selected:hover\n{\n	color: #fff;\n	background-color: #5564f2;\n	border: none;\n	padding-left : 10px;\n\n}\n\n\nQTextEdit\n{\n	color: black;\n}\n\nQTextBrowser\n{\n	color: #ffb113;\n}\n\n\n/*-----QTableView &amp; QTableWidget-----*/\nQTableView\n{\n    background-color: #fff;\n	border: 1px solid gray;\n    color: #454544;\n    gridline-color: gray;\n    outline : 0;\n\n}\n\n\nQTableView::item:hover\n{\n    background-color: #bcbdbb;\n    color: #000;\n\n}\n\n\nQTableView::item:selected\n{\n	background-color: #5c55e9;\n    color: #fff;\n\n}\n\n\nQTableView::item:selected:disabled\n{\n    background-color: #1a1b1c;\n    border: 2px solid #525251;\n    color: #656565;\n\n}\n\n\nQTableCornerButton::section\n{\n	background-color: #ced5e3;\n	border: none;\n    color: #fff;\n\n}\n\n\nQHeaderView::section\n{\n	color: #2a547f;\n	border: 0px;\n	background-color: #ced5e3;\n	padding: 5px;\n\n}\n\n\nQHeaderView::section:disabled\n{\n    background-color: #525251;\n    color: #656565;\n\n}\n\n\nQHeaderView::section:checked\n{\n    color: #fff;\n    background-color: #5c55e9;\n\n}\n\n\nQHeaderView::section:checked:disabled\n{\n    color: #656565;\n    background-color: #525251;\n\n}\n\n\nQHeaderView::section::vertical::first,\nQHeaderView::section::vertical::only-one\n{\n    border-top: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::vertical\n{\n    border-top: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::horizontal::first,\nQHeaderView::section::horizontal::only-one\n{\n    border-left: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::horizontal\n{\n    border-left: 1px solid #353635;\n\n}\n\n\n/*-----QScrollBar-----*/\nQScrollBar:horizontal\n{\n    background-color: transparent;\n    height: 8px;\n    margin: 0px;\n    padding: 0px;\n\n}\n\n\nQScrollBar::handle:horizontal\n{\n    border: none;\n	min-width: 100px;\n    background-color: #7e92b7;\n\n}\n\n\nQScrollBar::add-line:horizontal,\nQScrollBar::sub-line:horizontal,\nQScrollBar::add-page:horizontal,\nQScrollBar::sub-page:horizontal\n{\n    width: 0px;\n    background-color: #d8dce6;\n\n}\n\n\nQScrollBar:vertical\n{\n    background-color: transparent;\n    width: 8px;\n    margin: 0;\n\n}\n\n\nQScrollBar::handle:vertical\n{\n    border: none;\n	min-height: 100px;\n    background-color: #7e92b7;\n\n}\n\n\nQScrollBar::add-line:vertical,\nQScrollBar::sub-line:vertical,\nQScrollBar::add-page:vertical,\nQScrollBar::sub-page:vertical\n{\n    height: 0px;\n    background-color: #d8dce6;\n\n}</string>
          </property>
          <attribute name="title">
-          <string>Map</string>
+          <string>Network Maps</string>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
@@ -131,7 +142,7 @@ QMenu {
             </property>
             <widget class="QWidget" name="networkmaptab">
              <attribute name="title">
-              <string>Tab 1</string>
+              <string>Network Graph</string>
              </attribute>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>
@@ -171,7 +182,7 @@ QMenu {
             </widget>
             <widget class="QWidget" name="sagafoldertreetab">
              <attribute name="title">
-              <string>Tab 2</string>
+              <string>Saga Tree</string>
              </attribute>
              <layout class="QVBoxLayout" name="verticalLayout_4">
               <item>
@@ -198,7 +209,7 @@ QMenu {
             </widget>
             <widget class="QWidget" name="networkganttcharttab">
              <attribute name="title">
-              <string>Page</string>
+              <string>Network Gantt Chart</string>
              </attribute>
              <layout class="QVBoxLayout" name="verticalLayout_5">
               <item>
@@ -218,12 +229,12 @@ QMenu {
          <attribute name="title">
           <string>Container</string>
          </attribute>
-         <layout class="QVBoxLayout" name="verticalLayout_7" stretch="1,10">
+         <layout class="QVBoxLayout" name="verticalLayout_7" stretch="1,0,0,10">
           <property name="rightMargin">
            <number>5</number>
           </property>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="4,1">
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_6">
               <item>
@@ -324,125 +335,159 @@ QMenu {
              </layout>
             </item>
             <item>
-             <widget class="QGraphicsView" name="indexView1">
-              <property name="maximumSize">
-               <size>
-                <width>229</width>
-                <height>90</height>
-               </size>
-              </property>
-             </widget>
+             <layout class="QGridLayout" name="gridLayout">
+              <item row="0" column="0">
+               <widget class="QLabel" name="inputlbl">
+                <property name="text">
+                 <string>Input</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="requiredlbl">
+                <property name="text">
+                 <string>Required</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="outputlbl">
+                <property name="text">
+                 <string>Output</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </item>
           <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <item>
+             <widget class="QSplitter" name="splitter_7">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <widget class="QLabel" name="label_4">
+               <property name="maximumSize">
+                <size>
+                 <width>431</width>
+                 <height>19</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Commit Message</string>
+               </property>
+              </widget>
+              <widget class="QSplitter" name="splitter_6">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <widget class="QTextEdit" name="commitmsgEdit">
+                <property name="maximumSize">
+                 <size>
+                  <width>314</width>
+                  <height>54</height>
+                 </size>
+                </property>
+               </widget>
+               <widget class="QPushButton" name="commitBttn">
+                <property name="maximumSize">
+                 <size>
+                  <width>112</width>
+                  <height>54</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Commit</string>
+                </property>
+               </widget>
+              </widget>
+             </widget>
+            </item>
+            <item>
+             <widget class="QTextBrowser" name="frametextBrowser">
+              <property name="maximumSize">
+               <size>
+                <width>1200</width>
+                <height>100</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_8">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QPushButton" name="addtocontainerbttn">
+                <property name="maximumSize">
+                 <size>
+                  <width>271</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Add To Container</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="refreshContainerBttn">
+                <property name="text">
+                 <string>Refresh Container</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="removefilebttn">
+                <property name="maximumSize">
+                 <size>
+                  <width>271</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Remove From Container</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="containerstatuslabel">
+            <property name="text">
+             <string>TextLabel</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QTabWidget" name="container_subtab">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="currentIndex">
-             <number>1</number>
+             <number>2</number>
             </property>
             <widget class="QWidget" name="filesdetailtab">
              <attribute name="title">
               <string>File Details</string>
              </attribute>
-             <layout class="QVBoxLayout" name="verticalLayout_9" stretch="0,10">
+             <layout class="QVBoxLayout" name="verticalLayout_9" stretch="1">
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_7">
-                <item>
-                 <widget class="QSplitter" name="splitter_7">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <widget class="QLabel" name="label_4">
-                   <property name="maximumSize">
-                    <size>
-                     <width>431</width>
-                     <height>19</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>Commit Message</string>
-                   </property>
-                  </widget>
-                  <widget class="QSplitter" name="splitter_6">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <widget class="QTextEdit" name="commitmsgEdit">
-                    <property name="maximumSize">
-                     <size>
-                      <width>314</width>
-                      <height>54</height>
-                     </size>
-                    </property>
-                   </widget>
-                   <widget class="QPushButton" name="commitBttn">
-                    <property name="maximumSize">
-                     <size>
-                      <width>112</width>
-                      <height>54</height>
-                     </size>
-                    </property>
-                    <property name="text">
-                     <string>Commit</string>
-                    </property>
-                   </widget>
-                  </widget>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QTextBrowser" name="frametextBrowser">
-                  <property name="maximumSize">
-                   <size>
-                    <width>1200</width>
-                    <height>200</height>
-                   </size>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <layout class="QVBoxLayout" name="verticalLayout_8">
-                  <property name="spacing">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QPushButton" name="addtocontainerbttn">
-                    <property name="maximumSize">
-                     <size>
-                      <width>271</width>
-                      <height>16777215</height>
-                     </size>
-                    </property>
-                    <property name="text">
-                     <string>Add To Container</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="refreshContainerBttn">
-                    <property name="text">
-                     <string>Refresh Container</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="removefilebttn">
-                    <property name="maximumSize">
-                     <size>
-                      <width>271</width>
-                      <height>16777215</height>
-                     </size>
-                    </property>
-                    <property name="text">
-                     <string>Remove From Container</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
-               </layout>
-              </item>
-              <item>
-               <widget class="QGraphicsView" name="maincontainerview"/>
+               <widget class="QTableView" name="containerfiletableview"/>
               </item>
              </layout>
             </widget>
@@ -483,6 +528,19 @@ QMenu {
                  <string>Revert</string>
                 </property>
                </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="containerschemtab">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <attribute name="title">
+              <string>(Under Construction)</string>
+             </attribute>
+             <layout class="QVBoxLayout" name="verticalLayout_11">
+              <item>
+               <widget class="QGraphicsView" name="maincontainerview"/>
               </item>
              </layout>
             </widget>
@@ -564,7 +622,7 @@ QMenu {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1664</width>
+     <width>1228</width>
      <height>26</height>
     </rect>
    </property>
@@ -626,7 +684,7 @@ QMenu {
     <enum>Qt::LeftToRight</enum>
    </property>
    <property name="autoFillBackground">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
   </widget>
   <action name="actionSign_In">
