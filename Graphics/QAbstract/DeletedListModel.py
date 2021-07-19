@@ -7,9 +7,9 @@ import os
 import glob
 from Config import *
 
-headers = ['File Name', 'Delete?', 'Do Not Delete?']
+headersdeleted = ['File Name', 'Delete?', 'Do Not Delete?']
 
-class ConflictListModel(QAbstractTableModel):
+class DeletedListModel(QAbstractTableModel):
     def __init__(self, changes, newframe):
         super(ConflictListModel, self).__init__()
         self.changes = changes

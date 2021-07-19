@@ -3,15 +3,19 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Graphics.QAbstract.HistoryListModel import HistoryListModel
+
 from Graphics.QAbstract.ContainerFileModel import ContainerFileModel,ContainerFileDelegate
-from Graphics.QAbstract.ConflictListModel import ConflictListModel
-from Graphics.QAbstract.AddedListModel import A
-from Graphics.QAbstract.ConflictListModel import ConflictListModel
 from Graphics.QAbstract.historycelldelegate import HistoryCellDelegate
 
+# from Graphics.Dialogs import alteredinputFileDialog
+# from Graphics.ContainerPlot import ContainerPlot
+
+from Graphics.QAbstract.ConflictListModel import ConflictListModel, AddedListModel, DeletedListModel
 from Graphics.Dialogs import alteredinputFileDialog
 from Graphics.ContainerPlot import ContainerPlot
-from Graphics.Dialogs import ErrorMessage, removeFileDialog, commitDialog,alteredinputFileDialog, refreshContainerPopUp, downloadProgressBar,commitConflictCheck
+from Graphics.Dialogs import  ErrorMessage, removeFileDialog, commitDialog,alteredinputFileDialog,\
+    refreshContainerPopUp, downloadProgressBar,commitConflictCheck
+
 from functools import partial
 from Graphics.PopUps.selectFileDialog import selectFileDialog
 
@@ -120,7 +124,6 @@ class MainContainerTab():
         setstyleoflabel(colorscheme[typeRequired], self.mainguihandle.requiredlbl)
         # self.mainguihandle.outputlbl.setStyleSheet("QLabel { background-color : red; color : black; }")
         # self.mainguihandle.requiredlbl.setStyleSheet("QLabel { background-color : red; color : black; }")
-
         # self.t = threading.Timer(1.0, self.checkingFileDelta)
 
 
@@ -138,9 +141,9 @@ class MainContainerTab():
         self.newestFiles = {}
         if self.mainContainer.revnum < self.newestrevnum:
             self.refreshContainerBttn.setEnabled(True)
-            if self.refreshedcheck:
+            if self.mainContainer.workingFrame.refreshedcheck:
                 self.containerstatuslabel.setText(
-                    'Newer Revision Exists!' + ' Current Rev: ' + self.refreshrevnum
+                    'Newer Revision Exists!' + ' Current Rev: ' + self.mainContainer.workingFrame.refreshrevnum
                     + ', Latest Rev: ' + str(self.newestrevnum))
             else:
                 self.containerstatuslabel.setText('Newer Revision Exists!' + ' Current Rev: ' + str(self.mainContainer.revnum)
@@ -166,81 +169,160 @@ class MainContainerTab():
                         self.changes[fileheader]['reason'].append(FILEDELETED)
                     else:
                         self.changes[fileheader] = {'reason': [FILEDELETED]}
+        else:
+            self.containerstatuslabel.setText('This is the latest revision')
 
     def updateToLatestRevision(self):
-        self.refreshedcheck = True
-        self.refreshContainerBttn.setDisabled(True)
-        self.refreshrevnum = str(self.mainContainer.revnum) + '/' + str(self.newestrevnum)
-        self.containerstatuslabel.setText('Container Refreshed' + ' Current Rev: ' + self.refreshrevnum + ', Latest Rev: ' + str(self.newestrevnum))
+        self.mainContainer.workingFrame.refreshrevnum = str(self.mainContainer.revnum) + '/' + str(self.newestrevnum)
+        # need to update above line to add additional / when refreshing multiple container revisions
+        self.containerstatuslabel.setText('Container Refreshed' + ' Current Rev: ' + self.mainContainer.workingFrame.refreshrevnum + ', Latest Rev: ' + str(self.newestrevnum))
         self.conflictlistmodel = ConflictListModel(self.changes, self.newestframe)
-        conflictpopup = refreshContainerPopUp(self.changes, self.conflictlistmodel)
+        self.addedlistmodel = AddedListModel(self.changes, self.newestframe)
+        self.deletedlistmodel = DeletedListModel(self.changes, self.newestframe)
+        conflictpopup = refreshContainerPopUp(self.changes, self.conflictlistmodel, self.addedlistmodel, self.deletedlistmodel)
         filestodownload = conflictpopup.selectFiles()
-        for fileheader in filestodownload.keys():
-            if filestodownload[fileheader] != 'Do not download':
-                wf = self.mainContainer.workingFrame
-                payload = {'md5': self.newestframe.filestrack[fileheader].md5,
-                           'file_name': self.newestframe.filestrack[fileheader].file_name}
-                headers = {}
-                response = requests.get(BASE + 'FILES', headers=headers, data=payload)
-                self.progress = downloadProgressBar(response.headers['file_name'])
-                dataDownloaded = 0
-                self.progress.updateProgress(dataDownloaded)
-                if filestodownload[fileheader] == 'Overwrite':
-                    fileEditPath = os.path.join(
-                        wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
-                        wf.filestrack[fileheader].file_name)
-                    with open(fileEditPath, 'wb') as f:
-                        for data in response.iter_content(1024):
-                            dataDownloaded += len(data)
-                            f.write(data)
-                            percentDone = 100 * dataDownloaded / len(response.content)
-                            self.progress.updateProgress(percentDone)
-                            QGuiApplication.processEvents()
-                    self.mainContainer.workingFrame.filestrack[fileheader].md5 = self.newestframe.filestrack[fileheader].md5
-                    self.mainContainer.workingFrame.filestrack[fileheader].lastEdited = os.path.getmtime(fileEditPath)
+# <<<<<<< HEAD
+#         for fileheader in filestodownload.keys():
+#             if filestodownload[fileheader] != 'Do not download':
+#                 wf = self.mainContainer.workingFrame
+#                 payload = {'md5': self.newestframe.filestrack[fileheader].md5,
+#                            'file_name': self.newestframe.filestrack[fileheader].file_name}
+#                 headers = {}
+#                 response = requests.get(BASE + 'FILES', headers=headers, data=payload)
+#                 self.progress = downloadProgressBar(response.headers['file_name'])
+#                 dataDownloaded = 0
+#                 self.progress.updateProgress(dataDownloaded)
+#                 if filestodownload[fileheader] == 'Overwrite':
+#                     fileEditPath = os.path.join(
+#                         wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+#                         wf.filestrack[fileheader].file_name)
+#                     with open(fileEditPath, 'wb') as f:
+#                         for data in response.iter_content(1024):
+#                             dataDownloaded += len(data)
+#                             f.write(data)
+#                             percentDone = 100 * dataDownloaded / len(response.content)
+#                             self.progress.updateProgress(percentDone)
+#                             QGuiApplication.processEvents()
+#                     self.mainContainer.workingFrame.filestrack[fileheader].md5 = self.newestframe.filestrack[fileheader].md5
+#                     self.mainContainer.workingFrame.filestrack[fileheader].lastEdited = os.path.getmtime(fileEditPath)
+#
+#                 elif filestodownload[fileheader] == 'Download Copy':
+#                     filePath = os.path.join(
+#                         wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+#                         wf.filestrack[fileheader].file_name)
+#                     filecopy_name = os.path.splitext(filePath)[0] + '_' + self.newestframe.FrameName + 'Copy' + \
+#                                     os.path.splitext(filePath)[1]
+#                     fileEditPath = os.path.join(
+#                         wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+#                         filecopy_name)
+#                     with open(fileEditPath, 'wb') as f:
+#                         for data in response.iter_content(1024):
+#                             dataDownloaded += len(data)
+#                             f.write(data)
+#                             percentDone = 100 * dataDownloaded / len(response.content)
+#                             self.progress.updateProgress(percentDone)
+#                             QGuiApplication.processEvents()
+#                     print('No changes to Frame')
+#
+#                 elif filestodownload[fileheader] == 'Download':
+#                     filePath = os.path.join(
+#                         wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+#                         self.newestframe.filestrackk[fileheader].file_name)
+#                     with open(filePath, 'wb') as f:
+#                         for data in response.iter_content(1024):
+#                             dataDownloaded += len(data)
+#                             f.write(data)
+#                             percentDone = 100 * dataDownloaded / len(response.content)
+#                             self.progress.updateProgress(percentDone)
+#                             QGuiApplication.processEvents()
+#                     containerfileinfo = {'Container': 'here', 'type': self.newestframe.filestrack[fileheader].style}
+#                     self.mainContainer.addFileObject(fileheader, containerfileinfo, filePath, self.newestframe.filestrack[fileheader].style, '')
+#
+#                 elif filestodownload[fileheader] == 'Delete':
+#                     filePath = os.path.join(
+#                         wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+#                         wf.filestrack[fileheader].file_name)
+#                     if os.path.exists(filePath):
+#                         os.remove(filePath)
+#                         self.mainContainer.removeFileHeader(fileheader)
+#                     else:
+#                         print("The file does not exist")
+#         # TO DO add to commit function check of conflicting files and spit out error message or have user choose which file to commit
+# =======
+        if len(filestodownload.keys())>0:
+            self.mainContainer.workingFrame.refreshedcheck = True
+            self.refreshContainerBttn.setDisabled(True)
+            for fileheader in filestodownload.keys():
+                if filestodownload[fileheader] != 'Do not download':
+                    wf = self.mainContainer.workingFrame
+                    payload = {'md5': self.newestframe.filestrack[fileheader].md5,
+                               'file_name': self.newestframe.filestrack[fileheader].file_name}
+                    headers = {}
+                    response = requests.get(BASE + 'FILES', headers=headers, data=payload)
+                    self.progress = downloadProgressBar(response.headers['file_name'])
+                    dataDownloaded = 0
+                    self.progress.updateProgress(dataDownloaded)
+                    if filestodownload[fileheader] == 'Overwrite':
+                        fileEditPath = os.path.join(
+                            wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+                            wf.filestrack[fileheader].file_name)
+                        with open(fileEditPath, 'wb') as f:
+                            for data in response.iter_content(1024):
+                                dataDownloaded += len(data)
+                                f.write(data)
+                                percentDone = 100 * dataDownloaded / len(response.content)
+                                self.progress.updateProgress(percentDone)
+                                QGuiApplication.processEvents()
+                        self.mainContainer.workingFrame.filestrack[fileheader].md5 = self.newestframe.filestrack[fileheader].md5
+                        self.mainContainer.workingFrame.filestrack[fileheader].lastEdited = os.path.getmtime(fileEditPath)
 
-                elif filestodownload[fileheader] == 'Download Copy':
-                    filePath = os.path.join(
-                        wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
-                        wf.filestrack[fileheader].file_name)
-                    filecopy_name = os.path.splitext(filePath)[0] + '_' + self.newestframe.FrameName + 'Copy' + \
-                                    os.path.splitext(filePath)[1]
-                    fileEditPath = os.path.join(
-                        wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
-                        filecopy_name)
-                    with open(fileEditPath, 'wb') as f:
-                        for data in response.iter_content(1024):
-                            dataDownloaded += len(data)
-                            f.write(data)
-                            percentDone = 100 * dataDownloaded / len(response.content)
-                            self.progress.updateProgress(percentDone)
-                            QGuiApplication.processEvents()
-                    print('No changes to Frame')
+                    elif filestodownload[fileheader] == 'Download Copy':
+                        filePath = os.path.join(
+                            wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+                            wf.filestrack[fileheader].file_name)
+                        filecopy_name = os.path.splitext(filePath)[0] + '_' + self.newestframe.FrameName + 'Copy' + \
+                                        os.path.splitext(filePath)[1]
+                        fileEditPath = os.path.join(
+                            wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+                            filecopy_name)
+                        with open(fileEditPath, 'wb') as f:
+                            for data in response.iter_content(1024):
+                                dataDownloaded += len(data)
+                                f.write(data)
+                                percentDone = 100 * dataDownloaded / len(response.content)
+                                self.progress.updateProgress(percentDone)
+                                QGuiApplication.processEvents()
+                        print('No changes to Frame')
 
-                elif filestodownload[fileheader] == 'Download':
-                    filePath = os.path.join(
-                        wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
-                        self.newestframe.filestrackk[fileheader].file_name)
-                    with open(filePath, 'wb') as f:
-                        for data in response.iter_content(1024):
-                            dataDownloaded += len(data)
-                            f.write(data)
-                            percentDone = 100 * dataDownloaded / len(response.content)
-                            self.progress.updateProgress(percentDone)
-                            QGuiApplication.processEvents()
-                    containerfileinfo = {'Container': 'here', 'type': self.newestframe.filestrack[fileheader].style}
-                    self.mainContainer.addFileObject(fileheader, containerfileinfo, filePath, self.newestframe.filestrack[fileheader].style, '')
+                    elif filestodownload[fileheader] == 'Download':
+                        filePath = os.path.join(
+                            wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+                            self.newestframe.filestrackk[fileheader].file_name)
+                        with open(filePath, 'wb') as f:
+                            for data in response.iter_content(1024):
+                                dataDownloaded += len(data)
+                                f.write(data)
+                                percentDone = 100 * dataDownloaded / len(response.content)
+                                self.progress.updateProgress(percentDone)
+                                QGuiApplication.processEvents()
+                        containerFileInfo = {'Container': 'here', 'type': self.newestframe.filestrack[fileheader].style}
+                        self.mainContainer.addFileObject(fileheader, containerFileInfo, filePath, self.newestframe.filestrack[fileheader].style, '')
 
-                elif filestodownload[fileheader] == 'Delete':
-                    filePath = os.path.join(
-                        wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
-                        wf.filestrack[fileheader].file_name)
-                    if os.path.exists(filePath):
-                        os.remove(filePath)
-                        self.mainContainer.removeFileHeader(fileheader)
-                    else:
-                        print("The file does not exist")
-        # TO DO add to commit function check of conflicting files and spit out error message or have user choose which file to commit
+                    elif filestodownload[fileheader] == 'Delete':
+                        filePath = os.path.join(
+                            wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+                            wf.filestrack[fileheader].file_name)
+                        if os.path.exists(filePath):
+                            os.remove(filePath)
+                            self.mainContainer.removeFileHeader(fileheader)
+                        else:
+                            print("The file does not exist")
+
+
+
+
+
+        #         TO DO add to commit function check of conflicting files and spit out error message or have user choose which file to commit
 
         # pass along list of files different to pop up screen
 
@@ -413,7 +495,7 @@ class MainContainerTab():
                 error_dialog.exec_()
                 return
             # Check if there are any conflicting files from refresh action with 'RevXCopy' in file name
-            if self.refreshedcheck is True:
+            if self.mainContainer.workingFrame.refreshedcheck is True:
                 filepath = self.mainContainer.workingFrame.containerworkingfolder
                 files =  [f for f in listdir(filepath) if isfile(join(filepath, f))]
                 searchstring = 'Rev' + str(self.newestrevnum) + 'Copy'
@@ -426,6 +508,7 @@ class MainContainerTab():
             committed = self.mainContainer.commit(self.commitmsgEdit.toPlainText(), sagaguimodel.authtoken, BASE)
 
         if committed:
+            self.commitBttn.setDisabled(True)
             self.mainContainer.save()
             self.mainguihandle.refresh()
             self.framelabel.setText(self.mainContainer.workingFrame.FrameName)
