@@ -12,7 +12,8 @@ from Graphics.QAbstract.SagaTreeDelegate import SagaTreeDelegate
 from Graphics.QAbstract.SagaTreeModel import SagaTreeModel, SagaTreeNode
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
 # from Graphics.PopUps.GanttChartPopUp import GanttChartPopUp
-from Graphics.QAbstract.GanttListModel import GanttListModel
+from Graphics.QAbstract.GanttListModel import GanttListModel, GanttListDelegate
+    # GanttListDelegate
 from SagaApp.Container import Container
 from SagaGuiModel import sagaguimodel
 
@@ -27,9 +28,9 @@ class MapTab():
         # self.generateContainerBttn = mainguihandle.generateContainerBttn
         self.mainguihandle = mainguihandle
         self.dlContainerBttn = mainguihandle.dlContainerBttn
-        self.ganttbttn=mainguihandle.ganttbttn
+        # self.ganttbttn=mainguihandle.ganttbttn
         self.sagatreeview=mainguihandle.sagatreeview
-        self.ganttview = mainguihandle.ganttview
+        self.gantttable = mainguihandle.gantttable
         self.commitmsglbl = mainguihandle.commitmsglbl
 
 
@@ -38,12 +39,13 @@ class MapTab():
         # self.generateContainerBttn.clicked.connect(self.generateContainerMap)
         self.containerlisttable.clicked.connect(self.updatecontainertodl)
         self.dlContainerBttn.clicked.connect(self.downloadcontainer)
-        self.ganttbttn.clicked.connect(self.showGanttChart)
+        # self.ganttbttn.clicked.connect(self.showGanttChart)
         # self.sagatreemodel = SagaTreeModel()
         self.sagatreeviewcolumnmoved = False
-        # self.sagatreeview.expandAll()t
+
         # self.sagatreeview.expandAll()
         # self.sagatreeview.setColumnWidth(0,200)
+        self.sagatreeview.header().setSectionResizeMode(QHeaderView.Stretch)
 
         self.selecteddetail = {'selectedobjname': None}
 
@@ -51,21 +53,17 @@ class MapTab():
         self.detailedmap = DetailedMap(self.detailsMapView, self.selecteddetail)
         self.containermap = ContainerMap({}, self.containerMapView, self.selecteddetail, self.detailedmap,self.mainguihandle)
         # self.mainguihandle.tabWidget.currentChanged.connect(self.refreshMapTab)
-        self.ganttview.clicked.connect(self.updateCommitMessages)
-        self.ganttview.setModel(GanttListModel(sagaguimodel.containernetworkkeys, sagaguimodel.desktopdir))
-        self.ganttview.setHorizontalHeader(RotatedHeaderView(self.ganttview))
+        self.gantttable.clicked.connect(self.updateCommitMessages)
+        self.gantttable.setHorizontalHeader(RotatedHeaderView(self.gantttable))
+        self.gantttable.setItemDelegate(GanttListDelegate())
+
+
 
     def updateCommitMessages(self, listtable):
-        rownumber = listtable.row()
-        weeksago = listtable.model().rowheaders[rownumber]
-        columnnumber = listtable.column()
-        containerid = listtable.model().headers[columnnumber]
+        containerid= listtable.model().containerheaders[listtable.row()]
+        weeksago= listtable.model().weeksdictlist[listtable.column()]
         # print(listtable.model().commitmessagedict[weeksago][containerid])
-        str = ''
-        if weeksago in listtable.model().commitmessagedict.keys():
-            if containerid in listtable.model().commitmessagedict[weeksago].keys():
-                for commitsummary in listtable.model().commitmessagedict[weeksago][containerid]:
-                    str = str + commitsummary['msg'] + '\n'
+        str = '\n'.join(listtable.model().commitmessagedict[weeksago][containerid]['msg'])
 
         # columnnumber = listtable.column()
         # index = listtable.model().index(rownumber, 0)
@@ -85,8 +83,8 @@ class MapTab():
     #         # self.containerpathlbl.setText(path)
     #
     #
-    #         # delegate = Delegate(self.ganttview)
-    #         # self.ganttview.setItemDelegate(delegate)
+    #         # delegate = Delegate(self.gantttable)
+    #         # self.gantttable.setItemDelegate(delegate)
     #         self.exec()
 
     def generateContainerMap(self,containerinfodict):
@@ -102,6 +100,8 @@ class MapTab():
             self.containermap.editcontainerConnections()
             self.containermap.plot()
             self.detailedmap.passobj(self.containermap)
+            self.gantttable.setModel(GanttListModel(sagaguimodel.containernetworkkeys, sagaguimodel.desktopdir))
+
 
     def generateSagaTree(self, containerinfodict):
         self.sagatreeview.setModel(SagaTreeModel(containerinfodict, sagaguimodel.desktopdir))
@@ -114,7 +114,7 @@ class MapTab():
         self.sagatreeview.setItemsExpandable(True)
 
     def sagatreeclicked(self, index):
-        print(index.row(), index.column(), index.internalPointer().data(0))
+        # print(index.row(), index.column(), index.internalPointer().data(0))
         # index.internalPointer.setSelected(True)
         index.model().setSelectedRow(index.internalPointer().data(1))
         index.model().setSelectedContainer(index.internalPointer().data(2))
@@ -129,6 +129,7 @@ class MapTab():
         self.detailedmap.reset()
         self.containerlisttable.setModel(ContainerListModel({}))
 
+        # self.gantttable.setHorizontalHeader(RotatedHeaderView(self.gantttable))
 
     def updatecontainertodl(self, listtable):
         rownumber = listtable.row()
@@ -155,7 +156,7 @@ class MapTab():
             dlcontainer.downloadbranch('Main', BASE, sagaguimodel.authtoken,contdir)
             dlcontainer.workingFrame.downloadfullframefiles()
             self.mainguihandle.maincontainertab.readcontainer(dlcontainyaml)
-            self.mainguihandle.tabWidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
+            self.mainguihandle.centralwidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
             # # print(os.path.join(openDirectoryDialog, self.dlcontainer))
             # if openDirectoryDialog:
             #     print(os.path.split(openDirectoryDialog[0]))

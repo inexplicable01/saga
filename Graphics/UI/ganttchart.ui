@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>File Information</string>
   </property>
-  <widget class="QTableView" name="ganttview">
+  <widget class="QTableView" name="gantttable">
    <property name="geometry">
     <rect>
      <x>10</x>

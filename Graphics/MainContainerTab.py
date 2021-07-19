@@ -5,6 +5,8 @@ from PyQt5.QtCore import *
 from Graphics.QAbstract.HistoryListModel import HistoryListModel
 from Graphics.QAbstract.ContainerFileModel import ContainerFileModel,ContainerFileDelegate
 from Graphics.QAbstract.ConflictListModel import ConflictListModel
+from Graphics.QAbstract.AddedListModel import A
+from Graphics.QAbstract.ConflictListModel import ConflictListModel
 from Graphics.QAbstract.historycelldelegate import HistoryCellDelegate
 
 from Graphics.Dialogs import alteredinputFileDialog
@@ -59,8 +61,8 @@ class MainContainerTab():
         self.removefilebttn = mainguihandle.removefilebttn
         # self.fileHistoryBttn = mainguihandle.fileHistoryBttn
         # self.fileHistoryBttn.setDisabled(True)
-        self.containerfiletableview = mainguihandle.containerfiletableview
-        self.containerfiletableview.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.containerfiletable = mainguihandle.containerfiletable
+        self.containerfiletable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         self.descriptionText = mainguihandle.commitmsgEdit_2
 
@@ -284,7 +286,7 @@ class MainContainerTab():
         self.frametextBrowser.setText(chgstr)
         # self.downloadUpstreamBttn.setDisabled(True)
         # self.maincontainerplot.plot(self.changes)
-        self.containerfiletableview.model().updateFromChanges(self.changes)
+        self.containerfiletable.model().updateFromChanges(self.changes)
 
 
     def checkUpstream(self):
@@ -354,7 +356,7 @@ class MainContainerTab():
         self.commitmsgEdit.setDisabled(not allowCommit)
         # refresh plot
         # self.maincontainerplot.plot(self.changes)
-        self.containerfiletableview.model().updateFromChanges(self.changes)
+        self.containerfiletable.model().updateFromChanges(self.changes)
 
         chgstr = ''
         for fileheader, change in self.changes.items():
@@ -436,7 +438,7 @@ class MainContainerTab():
         self.containerlabel.setText('')
         self.histModel = HistoryListModel({})
         self.commithisttable.setModel(self.histModel)
-        self.maincontainerplot.reset()
+        #self.maincontainerplot.reset()
 
     def readcontainer(self,path):
         # path = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
@@ -491,9 +493,9 @@ class MainContainerTab():
         # self.maincontainerplot.setContainer(curContainer = self.mainContainer)
         # self.maincontainerplot.plot(self.changes)
 
-        self.containerfiletableview.setModel(ContainerFileModel(self.mainContainer))
-        self.containerfiletableview.setItemDelegate(ContainerFileDelegate())
-        self.containerfiletableview.model().updateFromChanges(self.changes)
+        self.containerfiletable.setModel(ContainerFileModel(self.mainContainer))
+        self.containerfiletable.setItemDelegate(ContainerFileDelegate())
+        self.containerfiletable.model().updateFromChanges(self.changes)
         ## Grab container history
         changesbyfile=self.mainContainer.commithistorybyfile()
         self.histModel.individualfilehistory(changesbyfile)
@@ -533,7 +535,7 @@ class MainContainerTab():
         if fileInfo:
             self.mainContainer.addFileObject(fileInfo=fileInfo)
             # self.maincontainerplot.plot(self.changes)
-            self.containerfiletableview.model().updateFromChanges(self.changes)
+            self.containerfiletable.model().updateFromChanges(self.changes)
 
     def removeFileInfo(self):
         # remove fileheader from current main container
@@ -545,13 +547,11 @@ class MainContainerTab():
         if fileheader:
             self.mainContainer.removeFileHeader(self.curfileheader)
             # self.maincontainerplot.plot(self.changes)
-            self.containerfiletableview.model().updateFromChanges(self.changes)
+            self.containerfiletable.model().updateFromChanges(self.changes)
             self.removeFileButton_2.setEnabled(False)
 
-    def alterRevertButton(self,histtable):
-        rownumber = histtable.row()
-        index = histtable.model().index(rownumber, 0)
-        self.reverttorev = histtable.model().data(index, 0)
+    def alterRevertButton(self,histableindex):
+        self.reverttorev = histableindex.model().revheaders[histableindex.column()]
         self.revertbttn.setText('Revert back to ' + self.reverttorev)
         self.revertbttn.setEnabled(True)
 
@@ -574,7 +574,7 @@ class MainContainerTab():
         self.mainContainer.workingFrame.FrameName = 'Rev1'
         self.mainContainer.workingFrame.writeoutFrameYaml(os.path.join(inputs['dir'], 'Main', 'Rev1.yaml'))
         # self.maincontainerplot = ContainerPlot(self, self.maincontainerview, self.mainContainer) #Edit to use refContainer
-        self.containerfiletableview.setModel(ContainerFileModel(self.mainContainer))
+        self.containerfiletable.setModel(ContainerFileModel(self.mainContainer))
         self.histModel = HistoryListModel({})
         self.commithisttable.setModel(self.histModel)
         self.framelabel.setText('Revision 0 (New Container)')

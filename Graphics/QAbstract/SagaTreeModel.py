@@ -149,6 +149,8 @@ class SagaTreeModel(QAbstractItemModel):
                         outputspaths['hori'][localfilerow]['length'] = 0.1
                         outputspaths['hori'][localfilerow]['direc'] = 'NoOutput'
                     for tocontainerid in fileinfo['Container']:
+                        if tocontainerid not in self.rowmapper.keys():
+                            continue
                         tocontainerrow = self.rowmapper[tocontainerid]
                         if tocontainerrow in outputspaths['hori'].keys():
                             if outputlinelength[containerid+ '_' + fileheader] >outputspaths['hori'][tocontainerrow]['length']:

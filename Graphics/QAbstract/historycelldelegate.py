@@ -50,41 +50,41 @@ class HistoryCellDelegate(QStyledItemDelegate):
         typecolor = Qt.red
 
 
-        if index.column()==0:
-            QStyledItemDelegate.paint(self, painter, option, index)
+        # if index.column()==0:
+        #     QStyledItemDelegate.paint(self, painter, option, index)
+        # else:
+        thisvalue = containdata[r][c]
+        if thisvalue['type'] is not None:
+            typecolor = colorscheme[thisvalue['type']]
+
+        ### Create Line, draw line first so symbol can go over line. Line is drawn in two parts first half and second half
+        if thisvalue['status'] in [UNCHANGED,MD5CHANGED]: ## unchanged or md5Changed implies an previous existant
+            painter.setPen(QPen(QBrush(typecolor), 2))
+            line = QLineF(QPointF(option.rect.topLeft().x(), option.rect.center().y()),
+                          QPointF(option.rect.center().x(), option.rect.center().y()))
+            painter.drawLine(line);
+
+        if thisvalue['existsInNext']:# second half
+            pass
+            painter.setPen(QPen(QBrush(typecolor), 2))
+            line = QLineF(QPointF(option.rect.center().x(), option.rect.center().y()),
+                          QPointF(option.rect.bottomRight().x(), option.rect.center().y()))
+            painter.drawLine(line)
+        elif thisvalue['md5'] is not None: # this means that its reaching an end.
+            createSmallEndLine(painter, option.rect, Qt.black)
+
+
+        if thisvalue['status'] is None:
+            createEmptyCell(painter, option.rect)
+        elif thisvalue['status']==JUSTCREATED:
+            createBeginRect(painter, option.rect, typecolor, 12, pxlinewidth=2)
+        elif thisvalue['status']==UNCHANGED:
+            pass
+        elif thisvalue['status'] == MD5CHANGED:
+            createChangedcircle(painter, option.rect, typecolor, pxradius=6, pxlinewidth=2)
         else:
-            thisvalue = containdata[r][c]
-            if thisvalue['style'] is not None:
-                typecolor = colorscheme[thisvalue['style']]
-
-            ### Create Line, draw line first so symbol can go over line. Line is drawn in two parts first half and second half
-            if thisvalue['status'] in [UNCHANGED,MD5CHANGED]: ## unchanged or md5Changed implies an previous existant
-                painter.setPen(QPen(QBrush(typecolor), 2))
-                line = QLineF(QPointF(option.rect.topLeft().x(), option.rect.center().y()),
-                              QPointF(option.rect.center().x(), option.rect.center().y()))
-                painter.drawLine(line);
-
-            if thisvalue['existsInNext']:# second half
-                pass
-                painter.setPen(QPen(QBrush(typecolor), 2))
-                line = QLineF(QPointF(option.rect.center().x(), option.rect.center().y()),
-                              QPointF(option.rect.bottomRight().x(), option.rect.center().y()))
-                painter.drawLine(line)
-            elif thisvalue['md5'] is not None: # this means that its reaching an end.
-                createSmallEndLine(painter, option.rect, Qt.black)
-
-
-            if thisvalue['status'] is None:
-                createEmptyCell(painter, option.rect)
-            elif thisvalue['status']==JUSTCREATED:
-                createBeginRect(painter, option.rect, typecolor, 12, pxlinewidth=2)
-            elif thisvalue['status']==UNCHANGED:
-                pass
-            elif thisvalue['status'] == MD5CHANGED:
-                createChangedcircle(painter, option.rect, typecolor, pxradius=6, pxlinewidth=2)
-            else:
-                painter.setBrush(QBrush(Qt.red))# code should never get here
-                painter.drawRect(option.rect)
+            painter.setBrush(QBrush(Qt.red))# code should never get here
+            painter.drawRect(option.rect)
 
 
             # if index.model().containdata[index.row()][index.column()]==NOTEXIST:

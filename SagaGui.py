@@ -1,3 +1,7 @@
+# Needles Broken. Feelings Awoken.
+# Should we just let it all fade?
+# Is it just time?
+
 from PyQt5.QtWidgets import *
 from PyQt5 import uic, QtWidgets, QtCore
 from PyQt5.QtGui import *
@@ -13,6 +17,7 @@ from Graphics.PopUps.signinDialog import SigninDialog
 from Graphics.PopUps.permissionsDialog import permissionsDialog
 from Graphics.PopUps.newuser import newUserDialog
 from Graphics.PopUps.switchsection import switchSectionDialog
+
 # from SagaApp.SagaUtil import getContainerInfo
 
 from SagaGuiModel import sagaguimodel
@@ -72,7 +77,7 @@ class UI(QMainWindow):
 
         # self.userdata = None
         # self.authtoken = None
-        self.tabWidget.setEnabled(False)
+        self.maintabwidget.setEnabled(False)
         self.menuContainer.setEnabled(False)
         self.menuSection.setEnabled(False)
 
@@ -94,6 +99,28 @@ class UI(QMainWindow):
         self.checkUserStatus()
         self.startingcheck = False
 
+        txt = os.path.join(sagaguimodel.sourcecodedir,'Graphics','StyleSheet', 'tab.stylesheet')
+        with open (txt, 'r') as txth:
+            self.maintabwidget.setStyleSheet(txth.read())
+        with open(txt, 'r') as txth:
+            self.container_subtab.setStyleSheet(txth.read())
+        with open(txt, 'r') as txth:
+            self.networktabwidget.setStyleSheet(txth.read())
+
+        txt = os.path.join(sagaguimodel.sourcecodedir,'Graphics','StyleSheet', 'table.stylesheet')
+        with open (txt, 'r') as txth:
+            self.containerfiletable.setStyleSheet(txth.read())
+        with open(txt, 'r') as txth:
+            self.gantttable.setStyleSheet(txth.read())
+        with open(txt, 'r') as txth:
+            self.commithisttable.setStyleSheet(txth.read())
+        with open(txt, 'r') as txth:
+            self.containerlisttable.setStyleSheet(txth.read())
+
+
+        #
+        #
+
         if debugmode:
             payload = {'email': testerlogin['email'],
                        'password': testerlogin['password']}
@@ -107,7 +134,7 @@ class UI(QMainWindow):
             # self.mainguihandle.checkUserStatus()
             if signinresp['status'] == 'success':
                 self.refresh()
-            containerexample = 'C:/Users/waich/LocalGitProjects/testcontainers_saga/AdminPlanningBackUp/'+CONTAINERFN
+            containerexample = 'C:/Users/waich/LocalGitProjects/testcontainers_saga/CustomerRequirements/'+CONTAINERFN
         self.maincontainertab.readcontainer(containerexample)
         self.show()
 
@@ -155,7 +182,7 @@ class UI(QMainWindow):
         inputs = newcontainergui.getInputs()
         if inputs:
             self.maincontainertab.initiate(inputs)
-            self.tabWidget.setCurrentIndex(self.maincontainertab.index)
+            self.maintabwidget.setCurrentIndex(self.maincontainertab.index)
 
     def find_Local_Container(self):
         # inputwindow = InputDialog(MainGuiHandle=MainGuiHandle)
@@ -164,7 +191,7 @@ class UI(QMainWindow):
         if fname:
             # print(fname)
             self.maincontainertab.readcontainer(fname)
-            self.tabWidget.setCurrentIndex(self.maincontainertab.index)
+            self.maintabwidget.setCurrentIndex(self.maincontainertab.index)
             self.maincontainertab.refreshedcheck = 0
 
     def containerPermission(self):
@@ -178,13 +205,17 @@ class UI(QMainWindow):
         self.maptab.generateContainerMap(containerinfodict)
         self.maptab.generateSagaTree(containerinfodict)
 
+
     def resetguionsectionswitch(self):
         self.maincontainertab.reset()
         self.maptab.reset()
         self.checkUserStatus()
+
+        ##Regenerate Container Ids of new section that got switched to.
         containerinfodict = sagaguimodel.getWorldContainers()
         self.maptab.generateContainerMap(containerinfodict)
         self.maptab.generateSagaTree(containerinfodict)
+        # self.gantttable.setModel(GanttListModel([], sagaguimodel.desktopdir))
 
     def newSection(self):
         newsectiongui = newSectionDialog(self,
@@ -212,9 +243,9 @@ class UI(QMainWindow):
 
         switchsectiongui = switchSectionDialog(self, sectioninfo, currentsection)
         needtoupdateworldmap = switchsectiongui.waitfordone()
-        if needtoupdateworldmap:
-            # print(inputs)
-            self.refresh()
+        # if needtoupdateworldmap:
+        #     # print(inputs)
+        #     self.refresh()
 
     def setPermissionsEnable(self):
         self.actionContainer_Permission.setEnabled(True)
@@ -227,9 +258,9 @@ class UI(QMainWindow):
         self.userstatuslbl.setText(status['userstatusstatement'])
         self.menuContainer.setEnabled(status['signinsuccess'])
         self.menuSection.setEnabled(status['signinsuccess'])
-        self.tabWidget.setEnabled(status['signinsuccess'])
+        self.maintabwidget.setEnabled(status['signinsuccess'])
         if status['signinsuccess']:
-            self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, "Map"))
+            self.maintabwidget.setCurrentWidget(self.maintabwidget.findChild(QWidget, "Map"))
         if status['signinsuccess']:
             serverVersion = sagaguimodel.userdata['version_num']
             if sagaguimodel.versionnumber != serverVersion:

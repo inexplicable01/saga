@@ -3,6 +3,7 @@ import os
 import json
 from datetime import datetime
 from SagaApp.Connection import FileConnection
+from Config import typeRequired
 
 class FileTrack:
     def __init__(self, FileHeader, containerworkingfolder, \
@@ -16,6 +17,10 @@ class FileTrack:
         self.style = style
         # self.file_id = file_id
         self.commitUTCdatetime = commitUTCdatetime
+        if connection is None:
+            connection = FileConnection(
+                None, typeRequired, branch='Main', Rev = None
+            )
         self.connection=connection
         self.persist=persist
         if len(ctnrootpathlist)>0:

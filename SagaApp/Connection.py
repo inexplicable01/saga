@@ -1,19 +1,23 @@
 from enum import Enum,auto
 import json
+from Config import typeRequired, typeInput, typeOutput
 
 class ConnectionTypes(Enum):
     Input=auto()
     Output=auto()
+    Required = auto()
 
 
 
 class FileConnection:
     def __init__(self, ContainerId,connectionType,branch='Main',Rev = None):
         self.refContainerId=ContainerId
-        if connectionType=='Input' or connectionType == ConnectionTypes.Input:
+        if connectionType==typeInput or connectionType == ConnectionTypes.Input:
             self.connectionType = ConnectionTypes.Input
-        elif connectionType=='Output' or connectionType == ConnectionTypes.Output:
+        elif connectionType==typeOutput or connectionType == ConnectionTypes.Output:
             self.connectionType = ConnectionTypes.Output
+        elif connectionType==typeRequired or connectionType == ConnectionTypes.Required:
+            self.connectionType = ConnectionTypes.Required
         else:
             raise('connection type screwed up')
         self.branch=branch

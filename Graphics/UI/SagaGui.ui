@@ -92,7 +92,7 @@ QMenu {
     <item row="0" column="0">
      <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
       <item>
-       <widget class="QTabWidget" name="tabWidget">
+       <widget class="QTabWidget" name="maintabwidget">
         <property name="font">
          <font>
           <family>Open Sans</family>
@@ -211,11 +211,21 @@ QMenu {
              <attribute name="title">
               <string>Network Gantt Chart</string>
              </attribute>
-             <layout class="QVBoxLayout" name="verticalLayout_5">
+             <layout class="QVBoxLayout" name="verticalLayout_5" stretch="10,0,4">
               <item>
-               <widget class="QPushButton" name="ganttbttn">
+               <widget class="QTableView" name="gantttable"/>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_3">
                 <property name="text">
-                 <string>Gantt Chart</string>
+                 <string>Commit Message:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="commitmsglbl">
+                <property name="text">
+                 <string>TextLabel</string>
                 </property>
                </widget>
               </item>
@@ -229,7 +239,7 @@ QMenu {
          <attribute name="title">
           <string>Container</string>
          </attribute>
-         <layout class="QVBoxLayout" name="verticalLayout_7" stretch="1,0,0,10">
+         <layout class="QVBoxLayout" name="verticalLayout_7" stretch="0,0,0,10">
           <property name="rightMargin">
            <number>5</number>
           </property>
@@ -479,7 +489,7 @@ QMenu {
              <bool>true</bool>
             </property>
             <property name="currentIndex">
-             <number>2</number>
+             <number>1</number>
             </property>
             <widget class="QWidget" name="filesdetailtab">
              <attribute name="title">
@@ -487,7 +497,7 @@ QMenu {
              </attribute>
              <layout class="QVBoxLayout" name="verticalLayout_9" stretch="1">
               <item>
-               <widget class="QTableView" name="containerfiletableview"/>
+               <widget class="QTableView" name="containerfiletable"/>
               </item>
              </layout>
             </widget>
@@ -623,7 +633,7 @@ QMenu {
      <x>0</x>
      <y>0</y>
      <width>1228</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="font">

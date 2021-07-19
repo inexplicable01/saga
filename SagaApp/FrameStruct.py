@@ -314,12 +314,11 @@ class Frame:
             if refframe.filestrack[fileheader].md5 != self.filestrack[fileheader].md5:
                 self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
                 changes[fileheader] = {'reason': [CHANGEDMD5]}
-                if self.filestrack[fileheader].connection:
-                    if self.filestrack[fileheader].connection.connectionType==ConnectionTypes.Input:
-                        alterfiletracks.append(self.filestrack[fileheader])
-                    # if file has been updated, update last edited
-                    self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
-                    continue
+                if self.filestrack[fileheader].connection.connectionType==ConnectionTypes.Input:
+                    alterfiletracks.append(self.filestrack[fileheader])
+                # if file has been updated, update last edited
+                self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
+                continue
             elif self.filestrack[fileheader].lastEdited != refframe.filestrack[fileheader].lastEdited:
                 changes[fileheader] = {'reason': [DATECHANGED]}
                 self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)

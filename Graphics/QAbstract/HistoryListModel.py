@@ -13,12 +13,14 @@ class HistoryListModel(QAbstractTableModel):
     def __init__(self, historyinfodict):
         super(HistoryListModel, self).__init__()
         self.currow=[]
+        self.fileheaderlist=[]
         containdata=[]
         sortdict={}
         self.filetype=typeRequired
         if len(historyinfodict.keys()) == 0:
             containdata.append([ 'Container Not Yet Committed'])
-            self.headers=['Null']
+            self.fileheaderlist=['Null']
+            self.revheaders=['Null']
         else:
             revheaders = []
             for rev, revdetails  in historyinfodict.items():
@@ -27,7 +29,7 @@ class HistoryListModel(QAbstractTableModel):
             def mysort(element):
                 return sortdict[element]
             revheaders.sort(key=mysort)
-            self.headers = ['File'] + revheaders
+            self.revheaders = revheaders
             # sortdict[rev] = revdetails['timestamp']
             # containdata.append(row)
             # def mysort(element):
@@ -64,22 +66,18 @@ class HistoryListModel(QAbstractTableModel):
                             else:
                                 existsInNext=False
                         md5 = historyinfodict[rev]['frame'].filestrack[fileheader].md5
-                        if historyinfodict[rev]['frame'].filestrack[fileheader].connection:
-                            style = historyinfodict[rev]['frame'].filestrack[fileheader].connection.connectionType.name
-                        else:
-                            style = typeRequired
+                        type = historyinfodict[rev]['frame'].filestrack[fileheader].connection.connectionType.name
                     else:
                         md5 = None
-                        style = None
+                        type = None
                         status = None
                         existsInNext = None
-                    blahdict[fileheader].append({"md5":md5, "style":style, "status":status, "existsInNext":existsInNext})
-
-
+                    blahdict[fileheader].append({"md5":md5, "type":type, "status":status, "existsInNext":existsInNext})
 
             for fileheader in  fileheaderlist:
                 row = [fileheader]
-                row = row + blahdict[fileheader]
+                self.fileheaderlist.append(fileheader)
+                row = blahdict[fileheader]
                 containdata.append(row)
 
 
@@ -134,7 +132,9 @@ class HistoryListModel(QAbstractTableModel):
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self.headers[section]
+            return self.revheaders[section]
+        if orientation == Qt.Vertical and role == Qt.DisplayRole:
+            return self.fileheaderlist[section]
             # return 'Column {}'.format(section + 1)
         # if orientation == Qt.Vertical and role == Qt.DisplayRole:
         #     return 'Row {}'.format(section + 1)
