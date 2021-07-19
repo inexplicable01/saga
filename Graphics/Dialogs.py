@@ -170,7 +170,7 @@ class commitDialog(QDialog):
 class commitConflictCheck(QDialog):
     def __init__(self, conflictfiles):
         super().__init__()
-        uic.loadUi("Graphics/UI/commitConflictCheck.ui", self)
+        uic.loadUi("Graphics/UI/commitConflictList.ui", self)
         for filename in conflictfiles:
             self.listWidget.addItem(filename)
     def showconflicts(self):

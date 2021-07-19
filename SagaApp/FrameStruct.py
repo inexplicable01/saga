@@ -121,6 +121,8 @@ class Frame:
         self.containerworkingfolder = containerworkingfolder
         self.framefullpath = os.path.join(containerworkingfolder, branch, workingyamlfn)
         self.filestrack = {}
+        self.refreshedcheck = False
+        self.refreshrevnum = ''
         for ftrack in filestracklist:
             FileHeader = ftrack['FileHeader']
             ctnrootpathlist=[]
@@ -263,9 +265,9 @@ class Frame:
     def __repr__(self):
         return json.dumps(self.dictify())
 
-    def revertTo(self, reverttirev):
-        framefn = os.path.join(self.containerworkingfolder, 'Main', reverttirev+'.yaml')
-        revertframe = Frame(containerworkingfolder = self.containerworkingfolder, FrameName=framefn)
+    def revertTo(self, reverttorev):
+        framefn = os.path.join(self.containerworkingfolder, 'Main', reverttorev+'.yaml')
+        revertframe = Frame.loadRefFramefromYaml(refframefullpath=framefn, containerworkingfolder = self.containerworkingfolder)
         for fileheader, filetrack in revertframe.filestrack.items():
             revertframe.getfile(filetrack, self.containerworkingfolder)
 

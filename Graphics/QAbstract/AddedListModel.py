@@ -9,7 +9,7 @@ from Config import *
 
 headers = ['File Name', 'Download?', 'Do Not Download?']
 
-class ConflictListModel(QAbstractTableModel):
+class AddedListModel(QAbstractTableModel):
     def __init__(self, changes, newframe):
         super(ConflictListModel, self).__init__()
         self.changes = changes
