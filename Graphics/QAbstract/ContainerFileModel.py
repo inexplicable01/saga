@@ -1,5 +1,4 @@
 from PyQt5.QtWidgets import *
-from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from SagaApp.Container import Container
@@ -7,6 +6,7 @@ from Config import CHANGEREASONORDER,sagaworkingfiles,typeRequired, typeInput, t
 from datetime import datetime
 import os
 from SagaApp.FileObjects import FileTrack
+from SagaGuiModel import sagaguimodel
 
 STATUSCOLUMNHEADER='Status'
 
@@ -14,12 +14,19 @@ class ContainerFileModel(QAbstractTableModel):
     def __init__(self, maincontainer:Container):
 
         super(ContainerFileModel, self).__init__()
-        filedir = os.listdir(maincontainer.containerworkingfolder)
-        containerfiledict={typeInput:[],typeRequired:[], typeOutput:[]}
-        for fileheader, fileinfo in maincontainer.FileHeaders.items():
-            wf = maincontainer.workingFrame
-            lastcommit, commitmessage = maincontainer.latestRevFor(fileheader)
 
+        self.headers = ['FileHeader', 'Role', 'Status','FileName','From', 'To', 'Last Edited', 'Rev Committed', 'Commit Message']
+        self.maincontainer = maincontainer
+
+        self.gathermodeldatafromContainer()
+
+    def gathermodeldatafromContainer(self):
+        filedir = os.listdir(self.maincontainer.containerworkingfolder)
+        containerfiledict={typeInput:[],typeRequired:[], typeOutput:[]}
+        for fileheader, fileinfo in self.maincontainer.FileHeaders.items():
+            wf = self.maincontainer.workingFrame
+            # lastcommit, commitmessage = maincontainer.latestRevFor(fileheader)
+            lastcommit, commitmessage = sagaguimodel.latestRevFor(self.maincontainer,fileheader)
             filedict = {'fileheader': fileheader,
                 'fileinfo': fileinfo,
                 'change': None,
@@ -29,7 +36,7 @@ class ContainerFileModel(QAbstractTableModel):
                 filedict['filetrack']=wf.filestrack[fileheader]
             else:
                 missingfiletrack = FileTrack(FileHeader='---',
-                                             containerworkingfolder=maincontainer.containerworkingfolder,
+                                             containerworkingfolder=self.maincontainer.containerworkingfolder,
                                              file_name='---', style=None)
                 filedict['filetrack'] = missingfiletrack
 
@@ -41,7 +48,7 @@ class ContainerFileModel(QAbstractTableModel):
         for unbookedfile in filedir:
             if unbookedfile in sagaworkingfiles:
                 continue
-            unversionedfiletrack=FileTrack(FileHeader='---', containerworkingfolder=maincontainer.containerworkingfolder,
+            unversionedfiletrack=FileTrack(FileHeader='---', containerworkingfolder=self.maincontainer.containerworkingfolder,
                           file_name=unbookedfile, style=typeUnversioned)
             self.containerfiles.append({'fileheader': '---',
                 'fileinfo': {'type':typeUnversioned, 'Container':'here'},
@@ -49,7 +56,6 @@ class ContainerFileModel(QAbstractTableModel):
                 'filetrack': unversionedfiletrack ,
                 'lastcommit': None, 'commitmessage': None})
 
-        self.headers = ['FileHeader', 'Role', 'Status','FileName','From', 'To', 'Last Edited', 'Rev Committed', 'Commit Message']
 
     def data(self, index, role):
 
@@ -95,7 +101,9 @@ class ContainerFileModel(QAbstractTableModel):
                 filetype = self.containerfiles[index.row()]['fileinfo']['type']
                 return QColor(colorscheme[filetype])
 
-
+    def update(self):
+        self.gathermodeldatafromContainer()
+        self.dataChanged
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
@@ -110,6 +118,8 @@ class ContainerFileModel(QAbstractTableModel):
             if rowdict['fileheader'] in changes.keys():
                 rowdict['change']  = changes[rowdict['fileheader']]
                 # self.containerfiles[i]['change'] = changes[rowdict['fileheader']]
+            else:
+                rowdict['change'] = None
         self.dataChanged
 
 
@@ -124,15 +134,6 @@ class ContainerFileModel(QAbstractTableModel):
             return 0
         else:
             return len(self.headers)
-
-from PyQt5.QtWidgets import *
-from PyQt5 import uic
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-import time
-import os
-import glob
-from Config import typeRequired, typeInput, typeOutput, colorscheme , JUSTCREATED, UNCHANGED, MD5CHANGED
 
 
 # def createBeginRect(painter, cellrect, qtbrushcolor, squaresidepx, pxlinewidth):

@@ -31,7 +31,7 @@ import traceback
 import yaml
 import warnings
 from functools import partial
-from Config import BASE,mapdetailstxt, testerlogin, CONTAINERFN
+from Config import BASE,mapdetailstxt, testerlogin, TEMPCONTAINERFN
 from subprocess import Popen
 
 import sys
@@ -48,8 +48,9 @@ logging.basicConfig(filename='error.log', filemode='a',
                     format='%(asctime)s,%(msecs)d - %(name)s - %(levelname)s - %(message)s',
                     datefmt='%H:%M:%S')
 debugmode=False
-if 'debug' ==sys.argv[1]:
-    debugmode=True
+if len(sys.argv)>1:
+    if 'debug' ==sys.argv[1]:
+        debugmode=True
 # print('something')
 
 
@@ -91,10 +92,11 @@ class UI(QMainWindow):
         self.actionNew_Section.triggered.connect(self.newSection)
         self.actionEnter_Section.triggered.connect(self.enterSection)
         self.actionContainer_Permission.triggered.connect(self.containerPermission)
+        # l1.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.setCursor(QCursor(Qt.ArrowCursor))
 
-
-        # self.maincontainerview.installEventFilter(self)
         self.ContainerTab.installEventFilter(self)
+        self.containerfiletable.installEventFilter(self)
         self.versionLabel.setText(str(sagaguimodel.versionnumber))
         self.checkUserStatus()
         self.startingcheck = False
@@ -102,10 +104,13 @@ class UI(QMainWindow):
         txt = os.path.join(sagaguimodel.sourcecodedir,'Graphics','StyleSheet', 'tab.stylesheet')
         with open (txt, 'r') as txth:
             self.maintabwidget.setStyleSheet(txth.read())
+        self.maintabwidget.setCursor(QCursor(Qt.ArrowCursor))
         with open(txt, 'r') as txth:
             self.container_subtab.setStyleSheet(txth.read())
+        self.maintabwidget.setCursor(QCursor(Qt.ArrowCursor))
         with open(txt, 'r') as txth:
             self.networktabwidget.setStyleSheet(txth.read())
+        self.maintabwidget.setCursor(QCursor(Qt.ArrowCursor))
 
         txt = os.path.join(sagaguimodel.sourcecodedir,'Graphics','StyleSheet', 'table.stylesheet')
         with open (txt, 'r') as txth:
@@ -117,9 +122,6 @@ class UI(QMainWindow):
         with open(txt, 'r') as txth:
             self.containerlisttable.setStyleSheet(txth.read())
 
-
-        #
-        #
 
         if debugmode:
             payload = {'email': testerlogin['email'],
@@ -134,8 +136,8 @@ class UI(QMainWindow):
             # self.mainguihandle.checkUserStatus()
             if signinresp['status'] == 'success':
                 self.refresh()
-            containerexample = 'C:/Users/waich/LocalGitProjects/testcontainers_saga/CustomerRequirements/'+CONTAINERFN
-        self.maincontainertab.readcontainer(containerexample)
+            containerexample = 'C:/Users/waich/LocalGitProjects/testcontainers_saga/AdminPlanningBackUp/'+TEMPCONTAINERFN
+            self.maincontainertab.readcontainer(containerexample)
         self.show()
 
     def eventFilter(self, source, event):

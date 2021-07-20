@@ -6,11 +6,19 @@ import requests
 import json
 import ctypes
 FILE_ATTRIBUTE_HIDDEN = 0x02
+FILE_ATTRIBUTE_NORMAL = 0x80
 
 
 def makefilehidden(entitypath):
     ret = ctypes.windll.kernel32.SetFileAttributesW(entitypath,
                                                     FILE_ATTRIBUTE_HIDDEN)
+    if not ret:
+        warnings.warn(entitypath+ 'attribute unable to set to Hidden')
+        warnings.warn(ctypes.WinError())
+
+def unhidefile(entitypath):
+    ret = ctypes.windll.kernel32.SetFileAttributesW(entitypath,
+                                                    FILE_ATTRIBUTE_NORMAL)
     if not ret:
         warnings.warn(entitypath+ 'attribute unable to set to Hidden')
         warnings.warn(ctypes.WinError())

@@ -35,7 +35,7 @@ class HistoryListModel(QAbstractTableModel):
             # def mysort(element):
             #     return sortdict[element[0]]
             # containdata.sort(key=mysort)
-
+            self.commitmsg=[]
             fileheaderlist = []
             for revs in historyinfodict.keys():
                 # fileheaderlist =  historyinfodict[revs]['frame'].filestrack.keys() + fileheaderlist
@@ -44,6 +44,7 @@ class HistoryListModel(QAbstractTableModel):
             for fileheader in fileheaderlist:
                 blahdict[fileheader] = []
                 for revi,rev in enumerate(revheaders):  ## Rev headers already sorted by timestamp
+                    self.commitmsg.append(historyinfodict[rev]['frame'].commitMessage)
                     if fileheader in historyinfodict[rev]['frame'].filestrack.keys():
                         ## if rev has fileheader,  we need to find out whether it was just created
                         if revi==0: ## assumes first rev is history dict is rev1
@@ -79,8 +80,6 @@ class HistoryListModel(QAbstractTableModel):
                 self.fileheaderlist.append(fileheader)
                 row = blahdict[fileheader]
                 containdata.append(row)
-
-
         self.containdata = containdata
 
     def individualfilehistory(self,changesbyfile):

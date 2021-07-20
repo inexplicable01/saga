@@ -27,7 +27,7 @@ UPDATEDUPSTREAM = 'MD5 Updated Upstream'
 NEWREVISION = 'File updated in newer Revision'
 FILEDELETED = 'File deleted in newer Revision'
 FILEADDED = 'New File committed in newer Revision'
-CHANGEREASONORDER=[CHANGEDMD5, NEWREVISION, UPDATEDUPSTREAM,DATECHANGED,FILEADDED , FILEDELETED]
+CHANGEREASONORDER=[CHANGEDMD5, NEWFILEADDED, NEWREVISION, UPDATEDUPSTREAM,DATECHANGED,FILEADDED , FILEDELETED]
 
 colorscheme = {typeInput: QColor(124, 0, 255 ), typeOutput: QColor(Qt.darkMagenta), typeRequired:QColor(Qt.blue) , DATECHANGED: Qt.cyan,
                 CHANGEDMD5: Qt.red, UPDATEDUPSTREAM: Qt.magenta, NEWFILEADDED: Qt.black, CHANGEREMOVED: Qt.darkCyan,
@@ -119,7 +119,7 @@ privatepackagecustomer = {'first_name':'Good',
                    'email':'customer@gmail.com',
                     'password':'passwordCust',
 }
-testerlogin=userclogin
+testerlogin=waichak
 
 # Read a input file
 # sourcefolder = os.getcwd()
@@ -138,3 +138,6 @@ RECTMARGINpx=5
 BANNEDNAMES=['EMPTY']
 
 sagaworkingfiles=[CONTAINERFN,TEMPCONTAINERFN,NEWCONTAINERFN,'Main']
+
+hexyellowshades = ['#fefcf3','#faea95','#f5d838','#c2a609','#655604']
+hexblueshades = ['#8cbefc', '#2383fa', '#0350ae', '#012045', '#0a233c']

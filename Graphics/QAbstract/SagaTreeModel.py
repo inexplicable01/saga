@@ -7,7 +7,7 @@ import os
 import glob
 import warnings
 from SagaApp.Container import Container
-from Config import typeRequired, typeInput, typeOutput, colorscheme,  JUSTCREATED, UNCHANGED, MD5CHANGED , CONTAINERFN
+from Config import typeRequired, typeInput, typeOutput, colorscheme,  JUSTCREATED, UNCHANGED, MD5CHANGED , CONTAINERFN,hexyellowshades,hexblueshades
 FOLDERITEMS = 'folderitems'
 FOLDERNAME = 'foldername'
 
@@ -108,7 +108,9 @@ class SagaTreeModel(QAbstractItemModel):
                     containerinputids.append(fromcontainerid)
 
             inputlinelength = {}
+            inputlinecolor={}
             outputlinelength={}
+            outputlinecolor = {}
             inputspaths = {'hori':{},'vert':{}}
             outputspaths = {'hori':{},'vert':{}}
             ipath=1
@@ -123,27 +125,34 @@ class SagaTreeModel(QAbstractItemModel):
                     localfilerow=self.rowmapper[containerid + '_' + fileheader]
                     if fromcontainerid not in inputlinelength.keys():
                         inputlinelength[fromcontainerid]=ipath /(len(containerinputids)+1)
+                        inputlinecolor[fromcontainerid] = hexyellowshades[ipath-1]
                         inputspaths['hori'][fromcontainerrow] = {'direc': 'left',
                                                                  'length': inputlinelength[fromcontainerid],
-                                                                 'linetype': 'container'
+                                                                 'linetype': 'container',
+                                                                 'hexcolor':inputlinecolor[fromcontainerid]
                                                                  }
                         ipath += 1
                     inputspaths['hori'][localfilerow] = {'direc': 'right',
+                                                         'hexcolor': inputlinecolor[fromcontainerid],
                                                          'length': inputlinelength[fromcontainerid],
                                                          'linetype':'file'}
                     rowpair = [fromcontainerrow, localfilerow]
                     for row in range(min(rowpair),max(rowpair)+1):
                         if row in inputspaths['vert'].keys():
                             inputspaths['vert'][row]['xlocs'].append(inputlinelength[fromcontainerid])
+                            inputspaths['vert'][row]['hexcolor'].append(inputlinecolor[fromcontainerid])
                             inputspaths['vert'][row]['length'].append(sortverticalline(fromcontainerrow, localfilerow, row))
                         else:
                             inputspaths['vert'][row] = {'xlocs': [inputlinelength[fromcontainerid]],
-                                                        'length': [sortverticalline(fromcontainerrow, localfilerow, row)]}
+                                                        'length': [sortverticalline(fromcontainerrow, localfilerow, row)],
+                                                        'hexcolor': [inputlinecolor[fromcontainerid]]}
                 elif fileinfo['type'] == typeOutput:
                     localfilerow = self.rowmapper[containerid + '_' + fileheader]
                     outputlinelength[containerid+ '_' + fileheader] = opath/(len(fileoutputs)+1)
+                    outputlinecolor[containerid + '_' + fileheader] = hexblueshades[opath-1]
                     outputspaths['hori'][localfilerow] = {'direc': 'right',
                                                            'length': outputlinelength[containerid+ '_' + fileheader],
+                                                          'hexcolor': outputlinecolor[containerid + '_' + fileheader],
                                                           'linetype': 'file'}
                     if len(fileinfo['Container'])==0:
                         outputspaths['hori'][localfilerow]['length'] = 0.1
@@ -158,6 +167,7 @@ class SagaTreeModel(QAbstractItemModel):
                         else:
                             outputspaths['hori'][tocontainerrow]= {'direc': 'left',
                                                                  'length': outputlinelength[containerid+ '_' + fileheader] ,
+                                                                   'hexcolor':outputlinecolor[containerid+ '_' + fileheader],
                                                                   'linetype': 'container'}
                         rowpair = [tocontainerrow, localfilerow]
                         for row in range(min(rowpair), max(rowpair) + 1):
@@ -165,10 +175,13 @@ class SagaTreeModel(QAbstractItemModel):
                                 outputspaths['vert'][row]['xlocs'].append(outputlinelength[containerid+ '_' + fileheader])
                                 outputspaths['vert'][row]['length'].append(
                                     sortverticalline(tocontainerrow, localfilerow, row))
+                                outputspaths['vert'][row]['hexcolor'].append(
+                                    outputlinecolor[containerid + '_' + fileheader])
                             else:
                                 outputspaths['vert'][row] = {'xlocs': [outputlinelength[containerid+ '_' + fileheader]],
                                                             'length': [
-                                                                sortverticalline(tocontainerrow, localfilerow, row)]}
+                                                                sortverticalline(tocontainerrow, localfilerow, row)],
+                                                             'hexcolor': [outputlinecolor[containerid+ '_' + fileheader]]}
                     opath+=1
 
 

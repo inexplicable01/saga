@@ -12,7 +12,7 @@ import requests
 # Make a regular expression
 # for validating an Email
 regex = '^(\w|\.|\_|\-)+[@](\w|\_|\-|\.)+[.]\w{2,3}$'
-
+from SagaGuiModel import sagaguimodel
 from Config import BASE
 # Define a function for
 # for validating an Email
@@ -34,14 +34,14 @@ class permissionsDialog(QDialog):
         self.mainguihandle= mainguihandle
         self.mainContainer = mainContainer
         response = requests.get(BASE + 'PERMISSIONS/getByContainer',
-                                 json={"email": self.mainguihandle.userdata['email'] ,
-                                        "sectionid":self.mainguihandle.userdata['current_sectionid'],
+                                 json={"email": sagaguimodel.userdata['email'] ,
+                                        "sectionid":sagaguimodel.userdata['current_sectionid'],
                                        "containerId": self.mainContainer.containerId}
                                  )
 
         permissionsresponse = json.loads(response.content)
         self.allowedToAdd = False
-        if mainguihandle.userdata['email'] in permissionsresponse['allowedUser']:
+        if sagaguimodel.userdata['email'] in permissionsresponse['allowedUser']:
             self.allowedToAdd = True
 
         self.usermodel = UserListModel(mainContainer.allowedUser)
@@ -62,9 +62,9 @@ class permissionsDialog(QDialog):
     def adduser(self):
         response = requests.post(BASE + 'PERMISSIONS/AddUserToContainer',
                                  headers={"Authorization": 'Bearer ' + sagaguimodel.authtoken},
-                                 json={"email": self.mainguihandle.userdata['email'],
+                                 json={"email": sagaguimodel.userdata['email'],
                                        "new_email":self.emailedit.text(),
-                                        "sectionid":self.mainguihandle.userdata['current_sectionid'],
+                                        "sectionid":sagaguimodel.userdata['current_sectionid'],
                                        "containerId": self.mainContainer.containerId,
                                        }
                                  )

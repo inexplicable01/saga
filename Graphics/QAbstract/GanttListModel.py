@@ -11,7 +11,7 @@ from datetime import datetime
 from Config import typeOutput,typeRequired, typeInput, colorscheme
 
 def weekstrfromtimestamp(commitUTCdatetime):
-    weeksago = math.floor((datetime.now().timestamp() - commitUTCdatetime) / (3600 * 24 * 7))
+    weeksago = math.floor((datetime.utcnow().timestamp() - commitUTCdatetime) / (3600 * 24 * 7))
     return 'week -' + str(weeksago), weeksago
 
 class GanttListModel(QAbstractTableModel):
@@ -43,7 +43,10 @@ class GanttListModel(QAbstractTableModel):
                     'inputchanged': 0
                 }}
                 initdictmes[containerid] = {'msg': []}
-            weekstr = 'week '+str(i)
+            if i ==0:
+                weekstr = 'week -0'
+            else:
+                weekstr = 'week '+str(i)
             self.weeksdict[weekstr]= initdict
             self.commitmessagedict[weekstr] = initdictmes
 

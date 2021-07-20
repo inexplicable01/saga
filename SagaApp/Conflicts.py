@@ -2,9 +2,10 @@ from Graphics.Dialogs import downloadProgressBar
 from PyQt5.QtGui import QGuiApplication
 import requests
 import os
-from Config import BASE
+from Config import BASE, FILEDELETED, NEWREVISION, FILEADDED
 from SagaApp.FrameStruct import Frame
-
+import json
+from SagaGuiModel import sagaguimodel
 class Conflicts:
     def __init__(self, maincontainer, authtoken, filelist = None,  refframe = None, newestframe = None):
         self.mainContainer = maincontainer
@@ -14,9 +15,8 @@ class Conflicts:
 
     def checkLatestRevision(self):
         payload = {'containerID': self.mainContainer.containerId}
-
         headers = {
-            'Authorization': 'Bearer ' + authtoken
+            'Authorization': 'Bearer ' + sagaguimodel.authtoken
         }
 
         response = requests.get(BASE + 'CONTAINERS/newestrevnum', headers=headers, data=payload)

@@ -51,10 +51,7 @@ class SagaTreeDelegate(QStyledItemDelegate):
             outputspaths = {'hori': {}, 'vert': {}}
             selectedcontainerrownum =0
 
-
-
         currow = index.internalPointer().data(1)
-
 
         if index.column()==0:
             if selectedcontainerrownum==currow:
@@ -96,14 +93,15 @@ class SagaTreeDelegate(QStyledItemDelegate):
 
                     length = inputspaths['hori'][currow]['length']## misnomer? length here means fraction of gap from left
                     direc = inputspaths['hori'][currow]['direc']
+                    hexcolor = inputspaths['hori'][currow]['hexcolor']
                     width = option.rect.bottomRight().x() -option.rect.topLeft().x()
                     startpoint = QPointF(option.rect.topLeft().x() + width*length,option.rect.center().y())
                     cellrightmid = QPointF(option.rect.bottomRight().x(), option.rect.center().y())
-                    painter.setPen(QPen(QBrush(Qt.yellow), 1))
+                    painter.setPen(QPen(QBrush(QColor(hexcolor)), 1))
                     painter.drawLine(QLineF(startpoint, cellrightmid))
                     xlocpct = (1-length)/2 + length
                     arrowcoord = arrowpolygon(option.rect, xlocpct, direc)
-                    painter.setBrush(QBrush(Qt.yellow))
+                    painter.setBrush(QBrush(QColor(hexcolor)))
                     painter.drawPolygon(arrowcoord)
                 # print('kryd', inputspaths.keys())
 
@@ -111,6 +109,7 @@ class SagaTreeDelegate(QStyledItemDelegate):
                     for i, xloc in enumerate(inputspaths['vert'][currow]['xlocs']): # could probanly use zip:
                         width = option.rect.bottomRight().x() - option.rect.topLeft().x()
                         length = inputspaths['vert'][currow]['length'][i]
+                        hexcolor = inputspaths['vert'][currow]['hexcolor'][i]
                         if length=='full':
                             celltop = QPointF(option.rect.topLeft().x() + width *xloc,option.rect.top())
                             cellbottom = QPointF(option.rect.topLeft().x() + width *xloc, option.rect.bottom())
@@ -120,7 +119,7 @@ class SagaTreeDelegate(QStyledItemDelegate):
                         elif length=='tophalf':
                             celltop = QPointF(option.rect.topLeft().x() + width *xloc,option.rect.top())
                             cellbottom = QPointF(option.rect.topLeft().x() + width *xloc, option.rect.center().y())
-                        painter.setPen(QPen(QBrush(Qt.yellow), 1))
+                        painter.setPen(QPen(QBrush(QColor(hexcolor)), 1))
                         painter.drawLine(QLineF(celltop, cellbottom))
             else:
                 painter.setPen(QPen(QBrush(Qt.gray), 1))
@@ -132,20 +131,22 @@ class SagaTreeDelegate(QStyledItemDelegate):
 
                     length = outputspaths['hori'][currow]['length']  ## misnomer? length here means fraction of gap from left
                     direc = outputspaths['hori'][currow]['direc']
+                    hexcolor = outputspaths['hori'][currow]['hexcolor']
                     width = option.rect.bottomRight().x() - option.rect.topLeft().x()
                     startpoint = QPointF(option.rect.topLeft().x(), option.rect.center().y())
                     cellrightmid = QPointF(option.rect.topLeft().x() +  width*length, option.rect.center().y())
-                    painter.setPen(QPen(QBrush(Qt.cyan), 1))
+                    painter.setPen(QPen(QBrush(QColor(hexcolor)), 1))
                     painter.drawLine(QLineF(startpoint, cellrightmid))
                     xlocpct= length/2
                     arrowcoord = arrowpolygon(option.rect, xlocpct, direc)
-                    painter.setBrush(QBrush(Qt.cyan))
+                    painter.setBrush(QBrush(QColor(hexcolor)))
                     painter.drawPolygon(arrowcoord)
 
                 if currow in outputspaths['vert'].keys():
                     for i, xloc in enumerate(outputspaths['vert'][currow]['xlocs']): # could probanly use zip:
                         width = option.rect.bottomRight().x() - option.rect.topLeft().x()
                         length = outputspaths['vert'][currow]['length'][i]
+                        hexcolor = outputspaths['vert'][currow]['hexcolor'][i]
                         if length=='full':
                             celltop = QPointF(option.rect.topLeft().x() + width *xloc,option.rect.top())
                             cellbottom = QPointF(option.rect.topLeft().x() + width *xloc, option.rect.bottom())
@@ -155,7 +156,7 @@ class SagaTreeDelegate(QStyledItemDelegate):
                         elif length=='tophalf':
                             celltop = QPointF(option.rect.topLeft().x() + width *xloc,option.rect.top())
                             cellbottom = QPointF(option.rect.topLeft().x() + width *xloc, option.rect.center().y())
-                        painter.setPen(QPen(QBrush(Qt.cyan), 1))
+                        painter.setPen(QPen(QBrush(QColor(hexcolor)), 1))
                         painter.drawLine(QLineF(celltop, cellbottom))
             else:
                 painter.setPen(QPen(QBrush(Qt.gray), 1))

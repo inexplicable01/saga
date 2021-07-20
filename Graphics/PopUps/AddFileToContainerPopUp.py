@@ -29,14 +29,15 @@ class AddFileToContainerPopUp(QDialog):
         if maincontainer.containerId in containerinfodict: del containerinfodict[maincontainer.containerId]### self container should not show up in input.
 
         self.filetyperadiogroup = QButtonGroup(self)
-        self.filetyperadiogroup.addButton(self.inputradiobttn)
-        self.inputradiobttn.setText(typeInput)
-        self.inputradiobttn.setChecked(True)
+        # self.filetyperadiogroup.addButton(self.inputradiobttn)
+        # self.inputradiobttn.setText(typeInput)
+        # self.inputradiobttn.setChecked(True)
         self.filetyperadiogroup.addButton(self.workingradiobttn)
-        self.workingradiobttn.setText(typeRequired)
+        # self.workingradiobttn.setText(typeRequired)
         self.filetyperadiogroup.addButton(self.outputradiobttn)
-        self.outputradiobttn.setText(typeOutput)
+        # self.outputradiobttn.setText(typeOutput)
         self.filetyperadiogroup.buttonToggled.connect(self.typechanged)
+        # self.tabs.currentChanged.connect(self.onChange)  # changed!
 
         self.containerlisttable.setModel(ContainerListModel(containerinfodict))
         self.containerlisttable.clicked.connect(self.showContainerFromList)
@@ -51,29 +52,36 @@ class AddFileToContainerPopUp(QDialog):
         self.openDirButton.clicked.connect(self.openDirectory)
         self.containerworkdir=containerworkdir
 
+        # self.tabWidget.currentChanged.connect(self.ontabchanged)
+
         self.fileheader = None
         self.curContainer = None
         self.descriptionEdit.setText('Description for how this file behaves for the larger project')
         self.navtotab()
 
+    # def ontabchanged(self, tabindex):
+
     def typechanged(self, clickedbutton):
         # print(button.text())
-        self.filetype= clickedbutton.text()
+        if 'Output' in clickedbutton.text():
+            self.filetype= typeOutput
+        elif 'Working' in clickedbutton.text():
+            self.filetype=typeRequired
         self.navtotab()
 
     def navtotab(self):
         if self.filetype==typeInput:
             self.tabWidget.setCurrentIndex(0)
-            if self.curContainer:
+            if self.curContainer and self.fileheader:
                 self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(True)
             else:
                 self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(False)
         if self.filetype in [typeRequired,typeOutput]:
             self.tabWidget.setCurrentIndex(1)
-            self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(False)
-
-
-        # print(button.group().tuple_pair)
+            if os.path.exists(self.filePathEdit.text()):
+                self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(True)
+            else:
+                self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(False)
 
     def FileViewItemRectFeedback(self, filetype, view, fileheader, curContainer:Container):
         self.fileheader = fileheader
@@ -113,7 +121,7 @@ class AddFileToContainerPopUp(QDialog):
 
             if normpath(self.containerworkdir)==normpath(path):#root folder
                 self.filePathEdit.setText(join(self.containerworkdir, file_name))
-                # self.ctnrootpath='.'
+                self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(True)
             elif normpath(self.containerworkdir) in normpath(path):# Subfolder
                 print('sub Folder')
                 self.filePathEdit.setText(join(normpath(path), file_name))
@@ -122,6 +130,7 @@ class AddFileToContainerPopUp(QDialog):
                 for folder in remainingpath.split(os.path.sep):
                     if len(folder)>0 and not folder=='.' and not folder=='..':
                         self.ctnrootpathlist.append(folder)
+                self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(True)
             else:
                 choice = QMessageBox.question(self, 'File not in Container',
                                                     "Copy file into Container folder?",
@@ -132,18 +141,34 @@ class AddFileToContainerPopUp(QDialog):
                     lastedited = os.path.getmtime(join(path,file_name))
                     os.utime(newfilepath, (lastedited, lastedited))
                     self.filePathEdit.setText(join(self.containerworkdir,file_name))
+                    self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(True)
+
                 # self.ctnrootpath = '.'
 
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:
-            if self.filetype == typeRequired or self.filetype == typeOutput:
-                containerfileinfo = {'containerid': 'here', 'type':self.filetype}
-                return {'fileheader': self.fileObjHeaderEdit.text(), 'FilePath':self.filePathEdit.text(),
-                        'containerfileinfo': containerfileinfo, 'description':self.descriptionEdit.text(),
-                        'ctnrootpathlist':self.ctnrootpathlist, 'filetype': self.filetype}
-            else:
-                return {'fileheader': self.fileheader, 'filetype': self.filetype,
-                        'containerfileinfo': {'containerid': self.curContainer.containerId, 'type':self.filetype},
-                        'UpstreamContainer': self.curContainer, 'description':self.descriptionEdit.text()}
+            if self.filetype == typeRequired:
+                return {'fileheader': self.fileObjHeaderEdit.text(),
+                        'filetype': self.filetype,
+                        'FilePath': self.filePathEdit.text(),
+                        'containerfileinfo': {'Container': 'here', 'type': self.filetype},
+                        'description': self.descriptionEdit.text(),
+                        'ctnrootpathlist': self.ctnrootpathlist,
+                        }
+            elif self.filetype == typeOutput:
+                return {'fileheader': self.fileObjHeaderEdit.text(),
+                        'filetype': self.filetype,
+                        'FilePath':self.filePathEdit.text(),
+                        'containerfileinfo': {'Container': [], 'type':self.filetype},
+                        'description':self.descriptionEdit.text(),
+                        'ctnrootpathlist':self.ctnrootpathlist,
+                        }
+            elif self.filetype == typeInput:
+                return {'fileheader': self.fileheader,
+                        'filetype': self.filetype,
+                        'containerfileinfo': {'Container': self.curContainer.containerId, 'type':self.filetype},
+                        'UpstreamContainer': self.curContainer,
+                        'ctnrootpathlist': self.ctnrootpathlist,
+                        'description':self.descriptionEdit.text()}
         else:
             return None

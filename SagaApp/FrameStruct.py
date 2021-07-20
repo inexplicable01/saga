@@ -7,13 +7,8 @@ from SagaApp.FileObjects import FileTrack
 from SagaApp.Connection import FileConnection, ConnectionTypes
 import time
 import json
-from PyQt5.QtWidgets import *
-# from PyQt5 import uic
-from PyQt5.QtGui import QGuiApplication
-from PyQt5.QtCore import *
-import requests
-from Graphics.Dialogs import downloadProgressBar
-from SagaApp.SagaUtil import getFramePathbyRevnum,ensureFolderExist, makefilehidden
+
+from SagaApp.SagaUtil import getFramePathbyRevnum,ensureFolderExist, makefilehidden,unhidefile
 # from Config import typeInput,typeOutput,typeRequired, sagaGuiDir
 from Config import BASE,NEWFILEADDED, CHANGEDMD5,DATECHANGED , CHANGEREMOVED, CONTAINERFN, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
 
@@ -176,7 +171,7 @@ class Frame:
         reffiletrack = refframe.filestrack[fileheader]
         ## File Management
         os.rename(os.path.join(self.containerworkingfolder,filetrack.file_name), os.path.join(self.containerworkingfolder,alterinputfileinfo['nfilename']))
-        self.getfile(reffiletrack, self.containerworkingfolder)
+        self.downloadfile(reffiletrack, self.containerworkingfolder)
         ## Update FileTrack
         self.filestrack[alterinputfileinfo['nfileheader']]=FileTrack(
             FileHeader=alterinputfileinfo['nfileheader'],
@@ -186,28 +181,6 @@ class Frame:
             persist= alterinputfileinfo['persist'],
         )
         # print('lots of work to be done.')
-
-    def downloadfullframefiles(self):
-        for fileheader, filetrack in self.filestrack.items():
-            # print(filetrack.file_name,self.containerworkingfolder)
-            self.getfile(filetrack, self.containerworkingfolder)
-
-    def getfile(self, filetrack: FileTrack, filepath):
-        response = requests.get(BASE + 'FILES',
-                                data={'md5': filetrack.md5, 'file_name': filetrack.file_name})
-        # Loops through the filestrack in curframe and request files listed in the frame
-        fn = os.path.join(filepath, filetrack.ctnrootpath, filetrack.file_name)
-        if not filetrack.ctnrootpath == '.':
-            ensureFolderExist(fn)
-        if response.headers['status']=='Success':
-            open(fn, 'wb').write(response.content)
-        else:
-            open(fn,'w').write('Terrible quick bug fix')
-            # There should be a like a nuclear warning here is this imples something went wrong with the server and the frame bookkeeping system
-            # This might be okay meanwhile as this is okay to break during dev but not during production.
-            print('could not find file ' + filetrack.md5 + ' on server')
-        os.utime(fn, (filetrack.lastEdited, filetrack.lastEdited))
-
 
 
     def addFileTotrack(self, fileheader,filefullpath, fileType,ctnrootpathlist):
@@ -275,22 +248,18 @@ class Frame:
 
     def writeoutFrameYaml(self, fn=None):
         if fn:
-            with open(os.path.join(self.containerworkingfolder,'Main',fn), 'w') as outyaml:
-                yaml.dump(self.dictify(), outyaml)
-            makefilehidden(os.path.join(self.containerworkingfolder, fn))
+            fullfilepath = os.path.join(self.containerworkingfolder,'Main',fn)
         else:
-            with open(os.path.join(self.containerworkingfolder,'Main',self.workingyamlfn), 'w') as outyaml:
-                yaml.dump(self.dictify(), outyaml)
-            makefilehidden(os.path.join(self.containerworkingfolder,'Main',self.workingyamlfn))
+            fullfilepath = os.path.join(self.containerworkingfolder,'Main',self.workingyamlfn)
+        unhidefile(fullfilepath)
+        with open(fullfilepath, 'w') as outyaml:
+            yaml.dump(self.dictify(), outyaml)
+        makefilehidden(fullfilepath)
+
 
     def __repr__(self):
         return json.dumps(self.dictify())
 
-    def revertTo(self, reverttorev):
-        framefn = os.path.join(self.containerworkingfolder, 'Main', reverttorev+'.yaml')
-        revertframe = Frame.loadRefFramefromYaml(refframefullpath=framefn, containerworkingfolder = self.containerworkingfolder)
-        for fileheader, filetrack in revertframe.filestrack.items():
-            revertframe.getfile(filetrack, self.containerworkingfolder)
 
     def compareToRefFrame(self, refframefullpath, filestomonitor, changes):
         alterfiletracks=[]
@@ -331,24 +300,4 @@ class Frame:
             changes[removedheaders] = {'reason': [CHANGEREMOVED]}
         return changes, alterfiletracks
 
-    def downloadInputFile(self, fileheader, workingdir):
-        response = requests.get(BASE + 'FILES',
-                                data={'md5': self.filestrack[fileheader].md5,
-                                      'file_name': self.filestrack[fileheader].file_name})
-        # Loops through the filestrack in curframe and request files listed in the frame
-        fn = os.path.join(workingdir,self.filestrack[fileheader].ctnrootpath, response.headers['file_name'])
-        self.progress = downloadProgressBar(response.headers['file_name'])
-        dataDownloaded = 0
-        self.progress.updateProgress(dataDownloaded)
-        with open(fn, 'wb') as f:
-            for data in response.iter_content(1024):
-                dataDownloaded += len(data)
-                f.write(data)
-                percentDone = 100 * dataDownloaded/len(response.content)
-                self.progress.updateProgress(percentDone)
-                QGuiApplication.processEvents()
 
-
-        # saves the content into file.
-        os.utime(fn, (self.filestrack[fileheader].lastEdited, self.filestrack[fileheader].lastEdited))
-        return fn,self.filestrack[fileheader]

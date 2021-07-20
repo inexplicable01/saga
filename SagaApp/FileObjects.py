@@ -44,13 +44,7 @@ class FileTrack:
                 else:
                     dictout[key] = None
             elif key=='ctnrootpath':
-                ctnrootpathlist=[]
-                if value=='.':
-                    dictout['ctnrootpathlist'] = []
-                else:
-                    for folder in value.split(os.path.sep):
-                        ctnrootpathlist.append(folder)
-                    dictout['ctnrootpathlist'] = ctnrootpathlist
+                dictout['ctnrootpathlist'] = self.rootpathlist()
             else:
                 dictout[key] = value
         return dictout
@@ -74,3 +68,12 @@ class FileTrack:
             str += 'commitUTCdatetime:   ' + datetime.fromtimestamp(self.commitUTCdatetime).isoformat()+ '\n'
         str += 'connection:     ' + self.connection.__repr__() + '\n'
         return str
+
+    def rootpathlist(self):
+        ctnrootpathlist = []
+        if self.ctnrootpath == '.':
+            return []
+        else:
+            for folder in self.ctnrootpath.split(os.path.sep):
+                ctnrootpathlist.append(folder)
+            return ctnrootpathlist

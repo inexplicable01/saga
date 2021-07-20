@@ -1,11 +1,11 @@
 from PyQt5.QtWidgets import *
-from PyQt5 import uic
+
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import time
 import os
 import glob
-from Config import *
+from Config import FILEADDED,NEWREVISION, colorscheme, FILEDELETED
 
 headers = ['File Name', 'Overwrite?', 'Download Copy?']
 headersadded = ['File Name', 'Download?', 'Do Not Download?']
@@ -95,7 +95,7 @@ class AddedListModel(QAbstractTableModel):
         sortdict={}
         self.headers = headersadded
         for fileheader in self.changes:
-            if fileadded in self.changes[fileheader]['reason']:
+            if FILEADDED in self.changes[fileheader]['reason']:
                 self.conflictdata.append(fileheader)
                 self.conflictfilenames.append(self.newframe.filestrack[fileheader].file_name)
 
@@ -166,7 +166,7 @@ class DeletedListModel(QAbstractTableModel):
         sortdict={}
         self.headers = headers
         for fileheader in self.changes:
-            if filedeleted in self.changes[fileheader]['reason']:
+            if FILEDELETED in self.changes[fileheader]['reason']:
                 self.conflictdata.append(fileheader)
                 self.conflictfilenames.append(self.newframe.filestrack[fileheader].file_name)
 
