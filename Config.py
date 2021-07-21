@@ -119,7 +119,7 @@ privatepackagecustomer = {'first_name':'Good',
                    'email':'customer@gmail.com',
                     'password':'passwordCust',
 }
-testerlogin=waichak
+testerlogin=privatepackagechris
 
 # Read a input file
 # sourcefolder = os.getcwd()

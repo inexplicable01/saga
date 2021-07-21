@@ -3,7 +3,7 @@ import warnings
 
 from os.path import join
 from SagaApp.SagaUtil import makefilehidden, ensureFolderExist, unhidefile
-from Config import BASE, mapdetailstxt, CONTAINERFN
+from Config import BASE, mapdetailstxt, CONTAINERFN, typeInput,typeOutput,typeRequired,NEWCONTAINERFN,NEWREVISION,FILEADDED, FILEDELETED,UPDATEDUPSTREAM
 import yaml
 import json
 import requests
@@ -12,6 +12,7 @@ from SagaApp.FrameStruct import Frame
 from SagaApp.FileObjects import FileTrack
 from Graphics.Dialogs import downloadProgressBar
 from PyQt5.QtGui import QGuiApplication
+import re
 
 
 class SagaGuiModel():
@@ -25,6 +26,7 @@ class SagaGuiModel():
         self.versionnumber = versionnumber
         self.guiworkingdir = os.getcwd()
         self.containernetworkkeys=[]
+        self.changes = {}
 
         guidirs= [ 'SagaGuiData','ContainerMapWorkDir']
         if not os.path.exists(self.desktopdir):
@@ -200,6 +202,150 @@ class SagaGuiModel():
             open(join(containerworkingfolder, branch, rev), 'wb').write(revyaml.content)
             makefilehidden(join(containerworkingfolder,branch, rev))
 
+    def checkUpstream(self, mainContainer):
+        upstreamupdated = False
+        workingFrame = mainContainer.workingFrame
+        refFrame = Frame.loadRefFramefromYaml(mainContainer.refframefullpath,
+                                              mainContainer.workingFrame.containerworkingfolder)
+        for fileheader in mainContainer.filestomonitor().keys():
+            if workingFrame.filestrack[fileheader].connection.connectionType.name == typeInput:
+                if workingFrame.filestrack[
+                    fileheader].connection.refContainerId is not workingFrame.parentcontainerid:
+                    # Check to see if input file is internal to container, not referencing other containers
+                    containerID = workingFrame.filestrack[fileheader].connection.refContainerId
+
+                    # this is super slow and inefficient.
+                    inputContainerPath = os.path.join(self.desktopdir, 'ContainerMapWorkDir')
+                    inputContainerPathID = os.path.join(self.desktopdir, 'ContainerMapWorkDir', containerID)
+                    dlcontainyaml = Container.downloadContainerInfo(inputContainerPath, self.authtoken,
+                                                                    BASE,
+                                                                    containerID)
+                    dlcontainer = Container.LoadContainerFromYaml(containerfnfullpath=dlcontainyaml)
+                    dlcontainer.downloadbranch('Main', BASE, self.authtoken, inputContainerPathID)
+                    framePath = os.path.join(inputContainerPathID, 'Main',
+                                             'Rev' + str(dlcontainer.revnum) + '.yaml')
+                    inputFrame = Frame.loadRefFramefromYaml(framePath, dlcontainer.containerworkingfolder)
+                    # ##Above Chuck of Code should be done in one line or two
+                    # dlcontainer.workingFrame
+
+                    # Is it necessary that we get the existing file's md5.   Why does checking upstream require knowledge the change in the current md5?
+                    # This should really have two parts, one is to simply compare the last commit Rev of Downstream container to the last committed Rev of the Upstream container.
+                    # if ref frame is upstreammd5  its fine, if workingframe is upstreammd5 its fine.
+                    # if upstream md5 not equal to
+                    # def revNumber(fn):
+                    #     m = re.search('Rev(\d+).yaml', fn)
+                    #     try:
+                    #         return int(m.group(1))
+                    #     except:
+                    #         return 1
+                    md5notsameasupstream = inputFrame.filestrack[fileheader].md5 not in [ refFrame.filestrack[fileheader].md5,workingFrame.filestrack[fileheader].md5]
+                    # refnum = revNumber(refFrame.filestrack[fileheader].connection.Rev)
+                    # upstreamrevnumberlarger = revNumber(inputFrame.FrameName)>refnum
+                    if md5notsameasupstream:
+                        if fileheader in self.changes.keys():
+                            self.changes[fileheader] = {
+                                'reason': [UPDATEDUPSTREAM] + self.changes[fileheader]['reason'],
+                                'revision': inputFrame.FrameName,
+                                'md5': inputFrame.filestrack[fileheader].md5,
+                                'inputframe': inputFrame,
+                                'fromcontainer':dlcontainer}
+                        else:
+                            self.changes[fileheader] = {'reason': [UPDATEDUPSTREAM],
+                                                        'revision': inputFrame.FrameName,
+                                                        'md5': inputFrame.filestrack[fileheader].md5,
+                                                        'inputframe': inputFrame,
+                                                        'fromcontainer':dlcontainer}
+                        upstreamupdated=True
+        return  upstreamupdated
+
+    def getStatus(self, mainContainer:Container):
+        allowcommit = False
+        needtorefresh = False
+        self.changes={}
+        ###################ORDER IS IMPORTANT HERE..I think####
+        self.changes, self.alterfiletracks = mainContainer.compareToRefFrame(self.changes)
+        upstreamupdated = sagaguimodel.checkUpstream(mainContainer)
+        statustext, notlatestrev = self.checkLatestRevision(mainContainer)
+        changeisrelevant = self.checkChangeIsRelevant(mainContainer)
+        containerchanged = self.checkContainerChanged(mainContainer)
+        isnewcontainer = mainContainer.yamlfn == NEWCONTAINERFN
+        if changeisrelevant or containerchanged:
+            allowcommit=True  ## could be one line but I think this is easier to read
+
+        if upstreamupdated or notlatestrev:
+            needtorefresh=True ## could be one line but I think this is easier to read
+        chgstr = ''
+        for fileheader, change in self.changes.items():
+            chgstr = chgstr + fileheader + '\t' + ', '.join(change['reason']) + '\n'
+
+        return statustext,isnewcontainer, allowcommit, needtorefresh , chgstr, self.changes
+
+    def isNewContainer(self,maincontainer:Container):
+        return maincontainer.yamlfn == NEWCONTAINERFN
+
+    def checkContainerChanged(self, maincontainer:Container):
+        refContainer = Container.LoadContainerFromYaml(maincontainer.yamlpath())
+        identical, diff = Container.compare(refContainer, maincontainer)
+        containerchanged = not identical ## just for readablity
+        return containerchanged
+
+    def checkChangeIsRelevant(self,maincontainer:Container):
+        changeisrelevant=False
+        for fileheader, changedetails in self.changes.items():
+            if fileheader in maincontainer.filestomonitor().keys():
+                # only set allowCommit to true if the changes involve what is in the Container's need to monitor
+                changeisrelevant = True
+        return changeisrelevant
+
+    def checkLatestRevision(self, mainContainer:Container):
+        ## This is the only place that knows of a later revision.
+        notlatestrev = False
+        payload = {'containerID': mainContainer.containerId}
+
+        headers = {
+            'Authorization': 'Bearer ' + self.authtoken
+        }
+
+        response = requests.get(BASE + 'CONTAINERS/newestrevnum', headers=headers, data=payload)
+        resp = json.loads(response.content)
+        self.newestframe = Frame.LoadFrameFromDict(resp['framedict'])
+        self.newestrevnum = resp['newestrevnum']
+        self.newestFiles = {}
+        if mainContainer.revnum < self.newestrevnum:
+            notlatestrev = True
+            # self.refreshContainerBttn.setEnabled(True)
+            if mainContainer.workingFrame.refreshedcheck:
+                statustext='Newer Revision Exists!' + ' Current Rev: ' + mainContainer.workingFrame.refreshrevnum\
+                           + ', Latest Rev: ' + str(self.newestrevnum)
+            else:
+                statustext = 'Newer Revision Exists!' + ' Current Rev: ' + str(mainContainer.revnum)\
+                             + ', Latest Rev: ' + str(self.newestrevnum)
+            # if the newest rev num is different from local rev num:
+            # loop through filesttrack of both newest frame, check if file exists in current frame and compare MD5s,
+            # if exists, add update message to changes, if notadd new file message
+            refframe = mainContainer.getRefFrame()
+            for fileheader in self.newestframe.filestrack.keys():
+                if fileheader in refframe.filestrack.keys():
+                    if self.newestframe.filestrack[fileheader].md5 != refframe.filestrack[fileheader].md5:
+                        if fileheader in self.changes.keys():
+                            self.changes[fileheader]['reason'].append(NEWREVISION)
+                        else:
+                            self.changes[fileheader] = {'reason': [NEWREVISION]}
+                        # if 'File updated....' is within changes reason dictionary, display delta in GUI
+                else:
+                    self.changes[fileheader] = {'reason': [FILEADDED]}
+
+            # Loop through working frame to check if any files have been deleted in new revision
+            for fileheader in refframe.filestrack.keys():
+                if fileheader not in self.newestframe.filestrack.keys():
+                    if fileheader in self.changes.keys():
+                        self.changes[fileheader]['reason'].append(FILEDELETED)
+                    else:
+                        self.changes[fileheader] = {'reason': [FILEDELETED]}
+        else:
+            statustext='This is the latest revision'
+        return statustext, notlatestrev
+
     def latestRevFor(self,maincontainer:Container,fileheader):
         if fileheader not in maincontainer.FileHeaders.keys():
             return fileheader + " not in Container " + maincontainer.containerName
@@ -211,7 +357,8 @@ class SagaGuiModel():
             framefullpathyaml = join(maincontainer.containerworkingfolder, 'Main','Rev'+str(lastsamerevnum) +'.yaml')
             if not os.path.exists(framefullpathyaml):
                 warnings.warn('this Should never happen')
-                self.downloadbranch(maincontainer.containerworkingfolder, maincontainer)
+                raise('Model is looking for a Rev that is not in local folder')
+            #     self.downloadbranch(maincontainer.containerworkingfolder, maincontainer)
             pastframe = Frame.LoadFrameFromYaml(framefullpathyaml, maincontainer.containerworkingfolder)
             if fileheader in pastframe.filestrack.keys():
                 if curmd5 != pastframe.filestrack[fileheader].md5:
@@ -221,5 +368,15 @@ class SagaGuiModel():
             else:
                 return 'Rev'+str(lastsamerevnum+1), pastframe.commitMessage
         return 'Rev0', 'work in progress'
+
+    # def addressAlteredInput(self):
+    #     for alterfiletrack in self.alterfiletracks:
+    #         dialogWindow = alteredinputFileDialog(alterfiletrack)
+    #         alterinputfileinfo = dialogWindow.getInputs()
+    #         if alterinputfileinfo:
+    #             self.mainContainer.workingFrame.dealwithalteredInput(alterinputfileinfo,
+    #                                                                  self.mainContainer.refframefullpath)
+    #     self.readcontainer(os.path.join(self.mainContainer.containerworkingfolder, TEMPCONTAINERFN))
+    #     self.checkdelta()
 
 sagaguimodel = SagaGuiModel.loadModelFromConfig()

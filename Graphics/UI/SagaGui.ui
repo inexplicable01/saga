@@ -282,7 +282,7 @@ QMenu {
                  </widget>
                 </item>
                 <item>
-                 <widget class="QTextEdit" name="commitmsgEdit_2">
+                 <widget class="QTextEdit" name="newcontaineredit">
                   <property name="maximumSize">
                    <size>
                     <width>431</width>
@@ -540,7 +540,7 @@ QMenu {
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="refreshContainerBttn">
+               <widget class="QPushButton" name="refreshcontainerbttn">
                 <property name="text">
                  <string>Refresh Container</string>
                 </property>
@@ -640,7 +640,7 @@ QMenu {
      <x>0</x>
      <y>0</y>
      <width>1228</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="font">

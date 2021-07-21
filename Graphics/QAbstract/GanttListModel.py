@@ -159,7 +159,7 @@ class GanttListModel(QAbstractTableModel):
                 'md5' : md5,
                 'toinput':pair['toinput']
             }
-            print(pair)
+            # print(pair)
         self.weeksdictlist = list(self.weeksdict)
         self.transferpair = transferpair
 
@@ -301,7 +301,7 @@ class GanttListDelegate(QStyledItemDelegate):
                     c = index.model().weeksdictlist.index(toinput['weekstr'])
                     r = index.model().containerheaders.index(toinput['containerid'])
 
-                    print(c,r)
+                    # print(c,r)
 
             # if cellinfo['outchanged']:
             #     drawchangedsymbol(painter,option,cellinfo)

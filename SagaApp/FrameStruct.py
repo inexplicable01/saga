@@ -10,7 +10,7 @@ import json
 
 from SagaApp.SagaUtil import getFramePathbyRevnum,ensureFolderExist, makefilehidden,unhidefile
 # from Config import typeInput,typeOutput,typeRequired, sagaGuiDir
-from Config import BASE,NEWFILEADDED, CHANGEDMD5,DATECHANGED , CHANGEREMOVED, CONTAINERFN, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
+from Config import  CONTAINERFN, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
 
 blankFrame = {'parentcontainerid':"",'FrameName': NEWFRAMEFN, 'FrameInstanceId': "",'commitMessage': "",'inlinks': "",'outlinks': "",'AttachedFiles': "", 'commitUTCdatetime': "",'filestrack': ""}
 import shutil
@@ -261,43 +261,6 @@ class Frame:
         return json.dumps(self.dictify())
 
 
-    def compareToRefFrame(self, refframefullpath, filestomonitor, changes):
-        alterfiletracks=[]
-        if NEWFRAMEFN == os.path.basename(refframefullpath):
-            return {'NewContainer':{'reason': 'NewContainer'}},[]  ### this might not be final as alternating input files can bring in new difficulties
-        refframe = Frame.loadRefFramefromYaml(refframefullpath,self.containerworkingfolder)
-        refframefileheaders = list(refframe.filestrack.keys())
-        for fileheader in filestomonitor.keys():
-            if fileheader not in refframe.filestrack.keys() and fileheader not in self.filestrack.keys():
-                # check if fileheader is in neither refframe or current frame,
-                raise('somehow Container needs to track ' + fileheader + 'but its not in ref frame or current frame')
 
-            if fileheader not in refframe.filestrack.keys() and fileheader in self.filestrack.keys():
-                # check if fileheader is in the refframe, If not in frame, that means user just added a new fileheader
-                changes[fileheader]= {'reason': [NEWFILEADDED]}
-                continue
-            refframefileheaders.remove(fileheader)
-            filename = os.path.join(self.containerworkingfolder, self.filestrack[fileheader].ctnrootpath, self.filestrack[fileheader].file_name)
-            fileb = open(filename, 'rb')
-            self.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
-            # calculate md5 of file, if md5 has changed, update md5
-
-            if refframe.filestrack[fileheader].md5 != self.filestrack[fileheader].md5:
-                self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
-                changes[fileheader] = {'reason': [CHANGEDMD5]}
-                if self.filestrack[fileheader].connection.connectionType==ConnectionTypes.Input:
-                    alterfiletracks.append(self.filestrack[fileheader])
-                # if file has been updated, update last edited
-                self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
-                continue
-            elif self.filestrack[fileheader].lastEdited != refframe.filestrack[fileheader].lastEdited:
-                changes[fileheader] = {'reason': [DATECHANGED]}
-                self.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
-                print('Date changed without Md5 changing')
-                continue
-
-        for removedheaders in refframefileheaders:
-            changes[removedheaders] = {'reason': [CHANGEREMOVED]}
-        return changes, alterfiletracks
 
 
