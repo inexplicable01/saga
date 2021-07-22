@@ -194,7 +194,7 @@ class SagaGuiModel():
     def downloadbranch(self,containerworkingfolder = None, cont:Container = None, branch='Main'):
         if cont==None:
             cont = self.maincontainer
-            containerworkingfolder=self.maincontainer
+            containerworkingfolder=self.maincontainer.containerworkingfolder
         payload = {'containerID': cont.containerId,
                    'branch': branch}
         headers = {
