@@ -320,6 +320,7 @@ class MainContainerTab():
             self.framelabel.setText(sagaguimodel.maincontainer.workingFrame.FrameName)
             self.checkdelta()
             self.histModel = HistoryListModel(sagaguimodel.maincontainer.commithistory())
+            self.commitmsgEdit.setText('')
             self.commithisttable.setModel(self.histModel)
 
     def reset(self):

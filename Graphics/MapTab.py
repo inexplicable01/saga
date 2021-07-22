@@ -60,6 +60,8 @@ def makeganttchartlegend(view):
     outputtext.setPos(QPointF(w/4,hinternvals*2))
     scene.addItem(outputtext)
 
+    view.setBackgroundBrush(QBrush(Qt.gray, Qt.SolidPattern));
+
     #     w = option.rect.width()
     #     h = option.rect.height()
     #     ## how many symbols

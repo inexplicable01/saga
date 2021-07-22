@@ -17,7 +17,7 @@ from Graphics.PopUps.signinDialog import SigninDialog
 from Graphics.PopUps.permissionsDialog import permissionsDialog
 from Graphics.PopUps.newuser import newUserDialog
 from Graphics.PopUps.switchsection import switchSectionDialog
-
+from Graphics.GuiUtil import setStyle
 # from SagaApp.SagaUtil import getContainerInfo
 
 from SagaGuiModel import sagaguimodel
@@ -101,27 +101,7 @@ class UI(QMainWindow):
         self.checkUserStatus()
         self.startingcheck = False
 
-        txt = os.path.join(sagaguimodel.sourcecodedir,'Graphics','StyleSheet', 'tab.stylesheet')
-        with open (txt, 'r') as txth:
-            self.maintabwidget.setStyleSheet(txth.read())
-        self.maintabwidget.setCursor(QCursor(Qt.ArrowCursor))
-        with open(txt, 'r') as txth:
-            self.container_subtab.setStyleSheet(txth.read())
-        self.maintabwidget.setCursor(QCursor(Qt.ArrowCursor))
-        with open(txt, 'r') as txth:
-            self.networktabwidget.setStyleSheet(txth.read())
-        self.maintabwidget.setCursor(QCursor(Qt.ArrowCursor))
-
-        txt = os.path.join(sagaguimodel.sourcecodedir,'Graphics','StyleSheet', 'table.stylesheet')
-        with open (txt, 'r') as txth:
-            self.containerfiletable.setStyleSheet(txth.read())
-        with open(txt, 'r') as txth:
-            self.gantttable.setStyleSheet(txth.read())
-        with open(txt, 'r') as txth:
-            self.commithisttable.setStyleSheet(txth.read())
-        with open(txt, 'r') as txth:
-            self.containerlisttable.setStyleSheet(txth.read())
-
+        setStyle(self, sagaguimodel.sourcecodedir)
 
         if debugmode:
             payload = {'email': testerlogin['email'],
