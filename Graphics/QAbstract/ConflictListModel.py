@@ -241,8 +241,9 @@ class UpstreamListModel(QAbstractTableModel):
         self.conflictdata = []
         self.headers = ['File Name','Upstream Container + Rev','Upstream Commit Message', 'Commit Time', 'ReplaceInput']
         for fileheader in self.changes:
-            self.conflictdata.append(fileheader)
+
             if UPDATEDUPSTREAM in self.changes[fileheader]['reason']:
+                self.conflictdata.append(fileheader)
                 self.upstreamfileupdate.append({'frame':changes[fileheader]['inputframe'],
                                                 'fileheader':fileheader,
                                                 'fromcontainer':changes[fileheader]['fromcontainer']
