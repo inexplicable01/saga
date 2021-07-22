@@ -1,7 +1,6 @@
-QTableView {
+QGraphicsView {
     background-color: grey;
     border-radius: 4px;
-
 }
 
 QHeaderView::section {
@@ -16,8 +15,4 @@ QHeaderView::section {
 QHeaderView::section:checked
 {
     background-color: white;
-}
-
-QGraphicsView{
-    background-color: gray;
 }

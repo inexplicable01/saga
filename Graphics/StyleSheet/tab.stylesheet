@@ -55,3 +55,33 @@ QTabBar::tab:last:selected {
 QTabBar::tab:only-one {
     margin: 0; /* if there is only one tab, we don't want overlapping margins */
 }
+
+QPushButton::disabled {
+    background-color: #C2C7CB;
+}
+
+QPushButton::enabled {
+    background-color: black;
+}
+
+QLineEdit::disabled {
+    background-color: #C2C7CB;
+}
+
+QLineEdit::enabled {
+    background-color: grey;
+}
+
+QTextEdit::disabled {
+    background-color: gray;
+    color:black;
+}
+
+QTextEdit::enabled {
+    background-color: white;
+    color:black;
+}
+
+QTextBrowser::enabled {
+    background-color: gray;
+}

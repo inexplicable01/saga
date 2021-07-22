@@ -48,3 +48,36 @@ class RotatedHeaderView(QHeaderView):
         size = super(RotatedHeaderView, self).sectionSizeFromContents(logicalIndex)
         size.transpose()
         return size
+import os
+def setStyle(mainguihandle, sourcecodedir):
+    txt = os.path.join(sourcecodedir, 'Graphics', 'StyleSheet', 'tab.stylesheet')
+    with open(txt, 'r') as txth:
+        tabstylesheet = txth.read()
+    mainguihandle.maintabwidget.setStyleSheet(tabstylesheet)
+    mainguihandle.maintabwidget.setCursor(QCursor(Qt.ArrowCursor))
+    mainguihandle.container_subtab.setStyleSheet(tabstylesheet)
+    # mainguihandle.container_subtab.setCursor(QCursor(Qt.ArrowCursor))
+    mainguihandle.networktabwidget.setStyleSheet(tabstylesheet)
+    mainguihandle.container_subtab.setStyleSheet(tabstylesheet)
+    mainguihandle.Map.setStyleSheet(tabstylesheet)
+    mainguihandle.ContainerTab.setStyleSheet(tabstylesheet)
+
+    # mainguihandle.container_subtab.setCursor(QCursor(Qt.ArrowCursor))
+
+    txt = os.path.join(sourcecodedir, 'Graphics', 'StyleSheet', 'table.stylesheet')
+    with open(txt, 'r') as txth:
+        tablestylesheet = txth.read()
+    mainguihandle.containerfiletable.setStyleSheet(tablestylesheet)
+    mainguihandle.gantttable.setStyleSheet(tablestylesheet)
+    mainguihandle.commithisttable.setStyleSheet(tablestylesheet)
+    mainguihandle.containerlisttable.setStyleSheet(tablestylesheet)
+
+    txt = os.path.join(sourcecodedir, 'Graphics', 'StyleSheet', 'view.stylesheet')
+    with open(txt, 'r') as txth:
+        viewstylesheet = txth.read()
+    mainguihandle.containerMapView.setStyleSheet(viewstylesheet)
+
+    txt = os.path.join(sourcecodedir, 'Graphics', 'StyleSheet', 'view.stylesheet')
+    with open(txt, 'r') as txth:
+        viewstylesheet = txth.read()
+    mainguihandle.containerMapView.setStyleSheet(viewstylesheet)

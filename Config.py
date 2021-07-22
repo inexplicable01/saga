@@ -29,7 +29,7 @@ FILEDELETED = 'File deleted in newer Revision'
 FILEADDED = 'New File committed in newer Revision'
 CHANGEREASONORDER=[CHANGEDMD5, NEWFILEADDED, NEWREVISION, UPDATEDUPSTREAM,DATECHANGED,FILEADDED , FILEDELETED]
 
-colorscheme = {typeInput: QColor('#f5d838'), typeOutput: QColor('#0350ae'), typeRequired:QColor(Qt.darkMagenta) , DATECHANGED: Qt.cyan,
+colorscheme = {typeInput: QColor('#c2a609'), typeOutput: QColor('#0350ae'), typeRequired:QColor(Qt.darkMagenta) , DATECHANGED: Qt.cyan,
                 CHANGEDMD5: Qt.red, UPDATEDUPSTREAM: Qt.magenta, NEWFILEADDED: Qt.black, CHANGEREMOVED: Qt.darkCyan,
                NEWREVISION: QColor(255, 165, 0), FILEDELETED: Qt.black,
                FILEADDED: Qt.black,
