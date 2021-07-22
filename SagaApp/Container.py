@@ -12,7 +12,8 @@ import requests
 import json
 import warnings
 import re
-from Config import BASE,typeInput,typeOutput,typeRequired,  TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN,CONTAINERFN
+from Config import BASE,NEWFILEADDED, CHANGEDMD5,DATECHANGED , CHANGEREMOVED,\
+    typeInput,typeOutput,typeRequired,  TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN,CONTAINERFN
 # from hackpatch import workingdir
 from SagaApp.SagaUtil import getFramePathbyRevnum,makefilehidden, unhidefile
 from datetime import datetime
@@ -101,6 +102,49 @@ class Container:
             container.save()
         return container
 
+    def compareToRefFrame(self, changes):
+        alterfiletracks=[]
+        wf = self.workingFrame
+        if NEWFRAMEFN == os.path.basename(self.refframefullpath):
+            return {'NewContainer':{'reason': 'NewContainer'}},[]  ### this might not be final as alternating input files can bring in new difficulties
+        refframe = Frame.loadRefFramefromYaml(self.refframefullpath,self.containerworkingfolder)
+        refframefileheaders = list(refframe.filestrack.keys())
+        for fileheader in self.FileHeaders.keys():
+            if fileheader not in refframe.filestrack.keys() and fileheader not in wf.filestrack.keys():
+                # check if fileheader is in neither refframe or current frame,
+                raise('somehow Container needs to track ' + fileheader + 'but its not in ref frame or current frame')
+
+            if fileheader not in refframe.filestrack.keys() and fileheader in wf.filestrack.keys():
+                # check if fileheader is in the refframe, If not in frame, that means user just added a new fileheader
+                changes[fileheader]= {'reason': [NEWFILEADDED]}
+                continue
+            refframefileheaders.remove(fileheader)
+            filename = os.path.join(self.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath, wf.filestrack[fileheader].file_name)
+            fileb = open(filename, 'rb')
+            wf.filestrack[fileheader].md5 = hashlib.md5(fileb.read()).hexdigest()
+            # calculate md5 of file, if md5 has changed, update md5
+
+            if refframe.filestrack[fileheader].md5 != wf.filestrack[fileheader].md5:
+                wf.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
+                changes[fileheader] = {'reason': [CHANGEDMD5]}
+                if wf.filestrack[fileheader].connection.connectionType==typeInput:
+                    alterfiletracks.append(wf.filestrack[fileheader])
+                # if file has been updated, update last edited
+                wf.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
+                continue
+            elif wf.filestrack[fileheader].lastEdited != refframe.filestrack[fileheader].lastEdited:
+                changes[fileheader] = {'reason': [DATECHANGED]}
+                wf.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
+                print('Date changed without Md5 changing')
+                continue
+
+        for removedheaders in refframefileheaders:
+            changes[removedheaders] = {'reason': [CHANGEREMOVED]}
+        return changes, alterfiletracks
+
+
+
+
     def getRefFrame(self):
         frameRef= Frame.loadRefFramefromYaml(self.refframefullpath, self.containerworkingfolder)
         return frameRef
@@ -117,13 +161,7 @@ class Container:
                 # only commit new input files if input files were downloaded
                 # Dealing with input updates is gonna require a lot of thought.
                 inputsupdated = True
-                # if not frameRef.filestrack[fileheader].connection.Rev == filetrack.connection.Rev:
-                #     inputsupdated = True
-                # else:
-                #     continue
 
-                # if self.updatedInputs == False:
-                #     continue
             filepath = join(self.containerworkingfolder,filetrack.ctnrootpath, filetrack.file_name)
             # Should file be committed?
             commit_file, md5 = self.CheckCommit(filetrack, filepath, frameRef)

@@ -94,43 +94,87 @@ class removeFileDialog(QDialog):
             return None
 
 class refreshContainerPopUp(QDialog):
-    def __init__(self, changes, conflictmodel = None, addedmodel = None, deletedmodel = None):
+    def __init__(self, changes, conflictmodel, addedmodel, deletedmodel, upstreamlistmodel):
+        super().__init__()
+        uic.loadUi("Graphics/UI/ConflictPopUp.ui", self)
         self.changes = changes
         self.conflictmodel = conflictmodel
         self.addedmodel = addedmodel
         self.deletedmodel = deletedmodel
-        super().__init__()
-        uic.loadUi("Graphics/UI/ConflictPopUp.ui", self)
+        self.upstreamlistmodel = upstreamlistmodel
+        self.conflictsummary={}
+        for fileheader in changes.keys():
+            self.conflictsummary[fileheader] = None
+
         self.conflictView.setModel(self.conflictmodel)
+        self.conflictView.resizeRowsToContents();
+        self.conflictView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.conflictView.clicked.connect(self.checkifallchecked)
         self.addedView.setModel(self.addedmodel)
+        self.addedView.resizeRowsToContents();
+        self.addedView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.addedView.clicked.connect(self.checkifallchecked)
         self.deletedView.setModel(self.deletedmodel)
+        self.deletedView.resizeRowsToContents();
+        self.deletedView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.deletedView.clicked.connect(self.checkifallchecked)
+        self.upstreamtable.setModel(self.upstreamlistmodel)
+        self.upstreamtable.resizeRowsToContents();
+        self.upstreamtable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.upstreamtable.clicked.connect(self.checkifallchecked)
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        self.filelist={}
+        fileheaders = self.addedmodel.conflictdata+self.conflictmodel.conflictdata+\
+                  self.deletedmodel.conflictdata+  self.upstreamlistmodel.conflictdata
+        for fileheader in fileheaders:
+            self.filelist[fileheader] = None
+
+    def checkifallchecked(self, index):
+        listofmodels = [self.conflictmodel, self.addedmodel, self.deletedmodel, self.upstreamlistmodel]
+        c = index.column()
+        r = index.row()
+        model = index.model()
+        fileheader = model.conflictdata[r]
+        # print(index.model().headers[c])
+        # print(index.model().conflictdata[r])
+        for checkboxcol in model.checkcolumns:
+            if c ==checkboxcol:
+                continue
+            checkboxindex = model.index(r, checkboxcol)
+            model.setData(checkboxindex, False, Qt.CheckStateRole)
+        model.layoutChanged.emit()
+        if c in model.checkcolumns:
+            if model.checkState(QPersistentModelIndex(index)):
+                self.filelist[fileheader] = model.headers[index.column()]
+            else:
+                self.filelist[fileheader] = None
+
+        allboxeschecked = True
+
+        for selection in self.filelist.values():
+            if selection is None:
+                allboxeschecked = False
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(allboxeschecked)
+
 
     def selectFiles(self):
         if self.exec_() == QDialog.Accepted:
-            self.fileList = {}
-            for fileheader in self.changes.keys():
-                for index in self.conflictmodel.checks:
-                    # how to get the row of the index from self.model.checks
-                    if self.conflictmodel.conflictdata[index.row()] == fileheader:
-                        if index.column() == 1:
-                            self.fileList[fileheader] = 'Overwrite'
-                        elif index.column() == 2:
-                            self.fileList[fileheader] = 'Download Copy'
-                for index in self.addedmodel.checks:
-                    # how to get the row of the index from self.model.checks
-                    if self.addedmodel.conflictdata[index.row()] == fileheader:
-                        if index.column() == 1:
-                            self.fileList[fileheader] = 'Download'
-                        elif index.column() == 2:
-                            self.fileList[fileheader] = 'Do not download'
-                for index in self.deletedmodel.checks:
-                    # how to get the row of the index from self.model.checks
-                    if self.deletedmodel.conflictdata[index.row()] == fileheader:
-                        if index.column() == 1:
-                            self.fileList[fileheader] = 'Delete'
-                        elif index.column() == 2:
-                            self.fileList[fileheader] = 'Do not delete'
-            return self.fileList
+            # self.fileList = {}
+            # for fileheader in self.changes.keys():
+            # listofmodels = [self.conflictmodel, self.addedmodel, self.deletedmodel, self.upstreamlistmodel]
+            # # listofoption1str = ['Overwrite','Download', 'Delete']
+            # # listofoption2str =['Download Copy', 'Do not download', 'Do not delete']
+            # # col1 = [1,1,1]
+            # # col2 = [2,2,2]
+            #
+            # for listi, model in enumerate(listofmodels):
+            #     for index in model.checks:
+            #         # how to get the row of the index from self.model.checks
+            #         fileheader = model.conflictdata[index.row()]
+            #         # if self.conflictmodel.conflictdata[index.row()] == fileheader:
+            #         self.fileList[fileheader] = model.headers[index.column()]
+
+            return self.filelist
         else:
             return None
 

@@ -159,7 +159,7 @@ class GanttListModel(QAbstractTableModel):
                 'md5' : md5,
                 'toinput':pair['toinput']
             }
-            print(pair)
+            # print(pair)
         self.weeksdictlist = list(self.weeksdict)
         self.transferpair = transferpair
 
@@ -247,7 +247,7 @@ class GanttListDelegate(QStyledItemDelegate):
             symbolrect = QRectF(QPointF(symmidpoint+ QPointF(-w*0.08,-h*0.2)),
                                 QPointF(symmidpoint+ QPointF(w*0.08,h*0.2)))
 
-            painter.setBrush(QBrush(Qt.darkRed))
+            painter.setBrush(QBrush(colorscheme[typeOutput]))
             painter.drawRect(symbolrect)
             painter.setPen(QPen(QBrush(Qt.black), 2))
             painter.drawText(symbolrect, Qt.AlignCenter, str(cellinfo['outputchanged']))
@@ -260,7 +260,7 @@ class GanttListDelegate(QStyledItemDelegate):
             symbolrect = QRectF(QPointF(symmidpoint + QPointF(-w * 0.08, -h * .2)),
                                 QPointF(symmidpoint + QPointF(w * 0.08, h * 0.2)))
 
-            painter.setBrush(QBrush(Qt.darkCyan))
+            painter.setBrush(QBrush(colorscheme[typeInput]))
             painter.drawRect(symbolrect)
             painter.setPen(QPen(QBrush(Qt.black), 2))
             painter.drawText(symbolrect, Qt.AlignCenter, str(cellinfo['inputchanged']))
@@ -272,7 +272,7 @@ class GanttListDelegate(QStyledItemDelegate):
             ## how many symbols
             symmidpoint = option.rect.topLeft() + QPointF(w *2/ 4, h / 2)
             painter.setPen(QPen(QBrush(Qt.transparent), 2))
-            painter.setBrush(QBrush(Qt.yellow))
+            painter.setBrush(QBrush(colorscheme[typeRequired]))
             painter.drawEllipse(symmidpoint, w*0.4,h*0.4)
             painter.setPen(QPen(QBrush(Qt.black), 2))
             painter.drawText(option.rect, Qt.AlignCenter, str(len(cellinfo['frames'])))
@@ -301,7 +301,7 @@ class GanttListDelegate(QStyledItemDelegate):
                     c = index.model().weeksdictlist.index(toinput['weekstr'])
                     r = index.model().containerheaders.index(toinput['containerid'])
 
-                    print(c,r)
+                    # print(c,r)
 
             # if cellinfo['outchanged']:
             #     drawchangedsymbol(painter,option,cellinfo)

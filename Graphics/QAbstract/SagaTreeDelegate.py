@@ -63,7 +63,7 @@ class SagaTreeDelegate(QStyledItemDelegate):
             elif currow in inputspaths['hori'].keys():
                 if inputspaths['hori'][currow]['linetype']=='file':
                     painter.setPen(QPen(QBrush(Qt.white), 1))
-                    painter.setBrush(QBrush(Qt.yellow))
+                    painter.setBrush(QBrush(colorscheme[typeInput]))
                     painter.drawRect(option.rect)
                     painter.setPen(QPen(QBrush(Qt.black), 4))
                     painter.drawText(option.rect, Qt.AlignLeft, index.internalPointer().data(0))
@@ -73,7 +73,7 @@ class SagaTreeDelegate(QStyledItemDelegate):
             elif currow in outputspaths['hori'].keys():
                 if outputspaths['hori'][currow]['linetype'] == 'file':
                     painter.setPen(QPen(QBrush(Qt.white), 1))
-                    painter.setBrush(QBrush(Qt.cyan))
+                    painter.setBrush(QBrush(colorscheme[typeOutput]))
                     painter.drawRect(option.rect)
                     painter.setPen(QPen(QBrush(Qt.black), 4))
                     painter.drawText(option.rect, Qt.AlignLeft, index.internalPointer().data(0))

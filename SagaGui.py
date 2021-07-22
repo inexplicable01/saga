@@ -136,7 +136,7 @@ class UI(QMainWindow):
             # self.mainguihandle.checkUserStatus()
             if signinresp['status'] == 'success':
                 self.refresh()
-            containerexample = 'C:/Users/waich/LocalGitProjects/testcontainers_saga/AdminPlanningBackUp/'+TEMPCONTAINERFN
+            containerexample = 'C:/Users/waich/LocalGitProjects/testcontainers_saga/PartDesign/'+TEMPCONTAINERFN
             self.maincontainertab.readcontainer(containerexample)
         self.show()
 

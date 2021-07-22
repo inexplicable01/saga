@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1228</width>
+    <width>1174</width>
     <height>826</height>
    </rect>
   </property>
@@ -223,11 +223,18 @@ QMenu {
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="commitmsglbl">
-                <property name="text">
-                 <string>TextLabel</string>
-                </property>
-               </widget>
+               <layout class="QHBoxLayout" name="horizontalLayout" stretch="7,3">
+                <item>
+                 <widget class="QLabel" name="commitmsglbl">
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGraphicsView" name="ganttlegendview"/>
+                </item>
+               </layout>
               </item>
              </layout>
             </widget>
@@ -282,7 +289,7 @@ QMenu {
                  </widget>
                 </item>
                 <item>
-                 <widget class="QTextEdit" name="commitmsgEdit_2">
+                 <widget class="QTextEdit" name="newcontaineredit">
                   <property name="maximumSize">
                    <size>
                     <width>431</width>
@@ -540,7 +547,7 @@ QMenu {
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="refreshContainerBttn">
+               <widget class="QPushButton" name="refreshcontainerbttn">
                 <property name="text">
                  <string>Refresh Container</string>
                 </property>
@@ -639,8 +646,8 @@ QMenu {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1228</width>
-     <height>26</height>
+     <width>1174</width>
+     <height>21</height>
     </rect>
    </property>
    <property name="font">

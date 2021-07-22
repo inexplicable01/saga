@@ -2,7 +2,8 @@ from Graphics.ContainerMap import ContainerMap
 from Graphics.DetailedMap import DetailedMap
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-from Config import BASE,  CONTAINERFN
+from PyQt5.QtGui import *
+from Config import BASE,  CONTAINERFN, colorscheme, typeRequired,typeInput,typeOutput
 from Graphics.GuiUtil import RotatedHeaderView
 import shutil
 
@@ -16,6 +17,83 @@ from Graphics.QAbstract.GanttListModel import GanttListModel, GanttListDelegate
     # GanttListDelegate
 from SagaApp.Container import Container
 from SagaGuiModel import sagaguimodel
+
+def makeganttchartlegend(view):
+    scene = QGraphicsScene()
+    view.setScene(scene)
+    # print(view.size())
+
+    print(view.rect())
+    rect = view.rect()
+    w = rect.width()*1.2
+    # w = option.rect.width()
+    h = rect.height()*1.2
+
+    hinternvals= h/4
+
+    e = QGraphicsEllipseItem(0.0, 0.0, w/4, hinternvals*0.9)
+    e.setBrush(QBrush(colorscheme[typeRequired], style = Qt.SolidPattern))
+    scene.addItem(e)
+    centertext = QGraphicsTextItem('No. of Commits')
+    centertext.setPos(QPointF(w/4,0))
+
+    scene.addItem(centertext)
+    ## how many symbols
+
+    topleft = QPointF(0,hinternvals)
+    symbolrect = QRectF(QPointF(topleft),
+                        QPointF(topleft+ QPointF(hinternvals * 0.9, hinternvals * 0.9)))
+    r1 = QGraphicsRectItem(symbolrect)
+    r1.setBrush(QBrush(colorscheme[typeOutput]))
+    scene.addItem(r1)
+    inputtext = QGraphicsTextItem('No. of Output Updates')
+    inputtext.setPos(QPointF(w/4,hinternvals))
+    scene.addItem(inputtext)
+
+    topleft = QPointF(0,hinternvals*2)
+    symbolrect = QRectF(QPointF(topleft),
+                        QPointF(topleft+ QPointF(hinternvals * 0.9, hinternvals * 0.9)))
+    r2 = QGraphicsRectItem(symbolrect)
+    r2.setBrush(QBrush(colorscheme[typeInput]))
+    scene.addItem(r2)
+    outputtext = QGraphicsTextItem('No. of Input Updates')
+    outputtext.setPos(QPointF(w/4,hinternvals*2))
+    scene.addItem(outputtext)
+
+    #     w = option.rect.width()
+    #     h = option.rect.height()
+    #     ## how many symbols
+    #
+    #
+    #
+    #     painter.setPen(QPen(QBrush(Qt.black), 2))
+    #     painter.drawText(symbolrect, Qt.AlignCenter, str(cellinfo['outputchanged']))
+    # painter.setPen(QPen(QBrush(Qt.transparent), 2))
+    # painter.setBrush(QBrush(Qt.yellow))
+    # painter.drawEllipse(symmidpoint, w * 0.4, h * 0.4)
+    # painter.setPen(QPen(QBrush(Qt.black), 2))
+    # painter.drawText(option.rect, Qt.AlignCenter, str(len(cellinfo['frames'])))
+
+    # def drawoutputchangedsymbol(painter, option, cellinfo):
+
+    #
+    # def drawinputchangedsymbol(painter, option, cellinfo):
+    #     w = option.rect.width()
+    #     h = option.rect.height()
+    #     ## how many symbols
+    #     symmidpoint = option.rect.topLeft() + QPointF(w * 1 / 4, h / 2)
+    #     symbolrect = QRectF(QPointF(symmidpoint + QPointF(-w * 0.08, -h * .2)),
+    #                         QPointF(symmidpoint + QPointF(w * 0.08, h * 0.2)))
+    #
+    #     painter.setBrush(QBrush(colorscheme[typeOutput]))
+    #     painter.drawRect(symbolrect)
+    #     painter.setPen(QPen(QBrush(Qt.black), 2))
+    #     painter.drawText(symbolrect, Qt.AlignCenter, str(cellinfo['inputchanged']))
+    #     # painter.drawRect(QRectF(midpoint, option.rect.topRight()))
+    #
+    # if len(cellinfo['frames']) > 0:
+
+
 
 class MapTab():
     def __init__(self, mainguihandle):
@@ -32,6 +110,10 @@ class MapTab():
         self.sagatreeview=mainguihandle.sagatreeview
         self.gantttable = mainguihandle.gantttable
         self.commitmsglbl = mainguihandle.commitmsglbl
+        self.ganttlegendview = mainguihandle.ganttlegendview
+
+        makeganttchartlegend(self.ganttlegendview)
+        self.ganttlegendview
 
 
         # self.ganttChartBttn = mainguihandle.ganttChartBttn
@@ -56,6 +138,7 @@ class MapTab():
         self.gantttable.clicked.connect(self.updateCommitMessages)
         self.gantttable.setHorizontalHeader(RotatedHeaderView(self.gantttable))
         self.gantttable.setItemDelegate(GanttListDelegate())
+
 
 
 
