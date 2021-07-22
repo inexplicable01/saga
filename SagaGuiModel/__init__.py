@@ -192,14 +192,14 @@ class SagaGuiModel():
         return fn#,self.filestrack[fileheader]
 
     def downloadbranch(self,containerworkingfolder = None, cont:Container = None, branch='Main'):
+        if cont==None:
+            cont = self.maincontainer
+            containerworkingfolder=self.maincontainer.containerworkingfolder
         payload = {'containerID': cont.containerId,
                    'branch': branch}
         headers = {
             'Authorization': 'Bearer ' + self.authtoken
         }
-        if cont==None:
-            cont = self.maincontainer
-            containerworkingfolder=self.maincontainer
         if not os.path.exists(join(containerworkingfolder,branch)):
             os.mkdir(join(containerworkingfolder,branch))
         makefilehidden(join(containerworkingfolder,branch))
