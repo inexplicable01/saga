@@ -12,6 +12,15 @@ from SagaApp.FrameStruct import Frame
 from SagaApp.FileObjects import FileTrack
 from Graphics.Dialogs import downloadProgressBar
 from PyQt5.QtGui import QGuiApplication
+from Graphics.QAbstract.HistoryListModel import HistoryListModel
+
+from Graphics.QAbstract.ContainerFileModel import ContainerFileModel, ContainerFileDelegate
+from Graphics.QAbstract.historycelldelegate import HistoryCellDelegate
+
+# from Graphics.Dialogs import alteredinputFileDialog
+# from Graphics.ContainerPlot import ContainerPlot
+
+from Graphics.QAbstract.ConflictListModel import ConflictListModel, AddedListModel, DeletedListModel, UpstreamListModel
 import re
 
 
@@ -27,6 +36,7 @@ class SagaGuiModel():
         self.guiworkingdir = os.getcwd()
         self.containernetworkkeys=[]
         self.changes = {}
+        self.maincontainer = None
 
         guidirs= [ 'SagaGuiData','ContainerMapWorkDir']
         if not os.path.exists(self.desktopdir):
@@ -181,12 +191,15 @@ class SagaGuiModel():
         os.utime(fn, (filetrack.lastEdited, filetrack.lastEdited))
         return fn#,self.filestrack[fileheader]
 
-    def downloadbranch(self,containerworkingfolder, cont:Container, branch='Main'):
+    def downloadbranch(self,containerworkingfolder = None, cont:Container = None, branch='Main'):
         payload = {'containerID': cont.containerId,
                    'branch': branch}
         headers = {
             'Authorization': 'Bearer ' + self.authtoken
         }
+        if cont==None:
+            cont = self.maincontainer
+            containerworkingfolder=self.maincontainer
         if not os.path.exists(join(containerworkingfolder,branch)):
             os.mkdir(join(containerworkingfolder,branch))
         makefilehidden(join(containerworkingfolder,branch))
@@ -201,6 +214,46 @@ class SagaGuiModel():
                 unhidefile(join(containerworkingfolder, branch, rev))
             open(join(containerworkingfolder, branch, rev), 'wb').write(revyaml.content)
             makefilehidden(join(containerworkingfolder,branch, rev))
+
+    def shouldModelSwitch(self,containerpath):
+
+        loadingcontainer = Container.LoadContainerFromYaml(containerpath, revnum=None)
+        payload = {'containerid': loadingcontainer.containerId}
+        headers = {'Authorization': 'Bearer ' + self.authtoken}
+        permissionsresponse = requests.get(BASE + 'USER/checkcontainerpermissions', headers=headers, data=payload)
+        print(permissionsresponse.headers['message'])
+        # permissionsresponsecontent = json.loads(permissionsresponse.content)
+        permissionsresponsecontent = json.loads(permissionsresponse.content)
+        goswitch = permissionsresponsecontent['goswitch']
+        newsectionid=permissionsresponsecontent['sectionid']
+        message =permissionsresponse.headers['message']
+        return goswitch, newsectionid, message
+
+    def sectionSwitch(self, newsectionid):
+
+        ### To Jimmy ####  Below code is copy and based from the Graphics/Popups/switchsection.py
+        ### This is another example of where seperating view and model can clean up code.
+        # switchsection.py SHOULD be a view, the view should be be calling a
+        # method called switchusersection that resides in a model
+        # All the py in pop up guis are technically views and there should be another place for model.
+        ## I'm not sure what the Model organization should actually look like yet.  It might reside in SagaApp folder
+        payload = {'newsectionid': newsectionid}
+        headers = {'Authorization': 'Bearer ' + sagaguimodel.authtoken}
+        switchresponse = requests.post(BASE + 'USER/switchusersection', headers=headers, data=payload)
+        resp = json.loads(switchresponse.content)
+        report = resp['report']
+        status = report['status']
+        return status
+
+
+    def loadContainer(self, containerpath):
+
+        self.maincontainer = Container.LoadContainerFromYaml(containerpath, revnum=None)
+        self.histModel = HistoryListModel(self.maincontainer .commithistory())
+        self.histModel.individualfilehistory(self.maincontainer.commithistorybyfile())
+
+        self.containerfilemodel = ContainerFileModel(self.maincontainer, self)
+        return self.maincontainer, self.histModel, self.containerfilemodel
 
     def checkUpstream(self, mainContainer):
         upstreamupdated = False
@@ -258,17 +311,18 @@ class SagaGuiModel():
                         upstreamupdated=True
         return  upstreamupdated
 
-    def getStatus(self, mainContainer:Container):
+    def getStatus(self):
+        maincontainer = self.maincontainer
         allowcommit = False
         needtorefresh = False
         self.changes={}
         ###################ORDER IS IMPORTANT HERE..I think####
-        self.changes, self.alterfiletracks = mainContainer.compareToRefFrame(self.changes)
-        upstreamupdated = sagaguimodel.checkUpstream(mainContainer)
-        statustext, notlatestrev = self.checkLatestRevision(mainContainer)
-        changeisrelevant = self.checkChangeIsRelevant(mainContainer)
-        containerchanged = self.checkContainerChanged(mainContainer)
-        isnewcontainer = mainContainer.yamlfn == NEWCONTAINERFN
+        self.changes, self.alterfiletracks = maincontainer.compareToRefFrame(self.changes)
+        upstreamupdated = sagaguimodel.checkUpstream(maincontainer)
+        statustext, notlatestrev = self.checkLatestRevision(maincontainer)
+        changeisrelevant = self.checkChangeIsRelevant(maincontainer)
+        containerchanged = self.checkContainerChanged(maincontainer)
+        isnewcontainer = maincontainer.yamlfn == NEWCONTAINERFN
         if changeisrelevant or containerchanged:
             allowcommit=True  ## could be one line but I think this is easier to read
 
@@ -280,8 +334,8 @@ class SagaGuiModel():
 
         return statustext,isnewcontainer, allowcommit, needtorefresh , chgstr, self.changes
 
-    def isNewContainer(self,maincontainer:Container):
-        return maincontainer.yamlfn == NEWCONTAINERFN
+    def isNewContainer(self):
+        return self.maincontainer.yamlfn == NEWCONTAINERFN
 
     def checkContainerChanged(self, maincontainer:Container):
         refContainer = Container.LoadContainerFromYaml(maincontainer.yamlpath())

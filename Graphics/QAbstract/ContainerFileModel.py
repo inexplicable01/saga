@@ -6,18 +6,18 @@ from Config import CHANGEREASONORDER,sagaworkingfiles,typeRequired, typeInput, t
 from datetime import datetime
 import os
 from SagaApp.FileObjects import FileTrack
-from SagaGuiModel import sagaguimodel
+
 
 STATUSCOLUMNHEADER='Status'
 
 class ContainerFileModel(QAbstractTableModel):
-    def __init__(self, maincontainer:Container):
+    def __init__(self, maincontainer:Container, sagaguimodel):
 
         super(ContainerFileModel, self).__init__()
 
         self.headers = ['FileHeader', 'Role', 'Status','FileName','From', 'To', 'Last Edited', 'Rev Committed', 'Commit Message']
         self.maincontainer = maincontainer
-
+        self.sagaguimodel = sagaguimodel
         self.gathermodeldatafromContainer()
 
     def gathermodeldatafromContainer(self):
@@ -26,7 +26,7 @@ class ContainerFileModel(QAbstractTableModel):
         for fileheader, fileinfo in self.maincontainer.FileHeaders.items():
             wf = self.maincontainer.workingFrame
             # lastcommit, commitmessage = maincontainer.latestRevFor(fileheader)
-            lastcommit, commitmessage = sagaguimodel.latestRevFor(self.maincontainer,fileheader)
+            lastcommit, commitmessage = self.sagaguimodel.latestRevFor(self.maincontainer,fileheader)
             filedict = {'fileheader': fileheader,
                 'fileinfo': fileinfo,
                 'change': None,
