@@ -57,7 +57,7 @@ class GanttListModel(QAbstractTableModel):
             # contyaml = os.path.join(desktopdir, 'ContainerMapWorkDir', containerid, 'containerstate.yaml')
             # curcont = Container.LoadContainerFromYaml(contyaml)
             # print(containerid)
-            yamllist = glob.glob(os.path.join(desktopdir, 'ContainerMapWorkDir', containerid, 'Main', '*.yaml'))
+            yamllist = glob.glob(os.path.join(desktopdir, 'ContainerMapWorkDir', containerid, 'Main', 'Rev*.yaml'))
             containerframes[containerid]={}
             for yamlfn in yamllist:
                 pastframe = Frame.LoadFrameFromYaml(yamlfn,os.path.join(desktopdir, 'ContainerMapWorkDir', containerid))

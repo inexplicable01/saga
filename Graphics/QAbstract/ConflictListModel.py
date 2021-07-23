@@ -7,7 +7,7 @@ import os
 import glob
 from datetime import datetime
 from SagaApp.FrameStruct import Frame
-from Config import FILEADDED,NEWREVISION, colorscheme, FILEDELETED, UPDATEDUPSTREAM
+from Config import SERVERFILEADDED,SERVERNEWREVISION, colorscheme, SERVERFILEDELETED, UPDATEDUPSTREAM
 
 headers = ['File Name', 'Overwrite', 'Download Copy']
 headersadded = ['File Name', 'Download', 'Do Not Download?']
@@ -26,7 +26,7 @@ class ConflictListModel(QAbstractTableModel):
         sortdict={}
         self.headers = headers
         for fileheader in self.changes:
-            if NEWREVISION in self.changes[fileheader]['reason']:
+            if SERVERNEWREVISION in self.changes[fileheader]['reason']:
                 self.conflictdata.append(fileheader)
                 self.conflictfilenames.append(self.newframe.filestrack[fileheader].file_name)
 
@@ -99,7 +99,7 @@ class AddedListModel(QAbstractTableModel):
         sortdict={}
         self.headers = headersadded
         for fileheader in self.changes:
-            if FILEADDED in self.changes[fileheader]['reason']:
+            if SERVERFILEADDED in self.changes[fileheader]['reason']:
                 self.conflictdata.append(fileheader)
                 self.conflictfilenames.append(self.newframe.filestrack[fileheader].file_name)
 
@@ -172,7 +172,7 @@ class DeletedListModel(QAbstractTableModel):
         sortdict={}
         self.headers = headersdeleted
         for fileheader in self.changes:
-            if FILEDELETED in self.changes[fileheader]['reason']:
+            if SERVERFILEDELETED in self.changes[fileheader]['reason']:
                 self.conflictdata.append(fileheader)
                 self.conflictfilenames.append(self.workingframe.filestrack[fileheader].file_name)
 

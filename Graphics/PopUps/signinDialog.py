@@ -21,9 +21,10 @@ def random_char(y):
     return ''.join(random.choice(string.ascii_letters) for x in range(y))
 
 class SigninDialog(QDialog):
-    def __init__(self, mainguihandle, parent=None):
+    def __init__(self, mainguihandle, sagaguimodel,parent=None):
         super().__init__(parent)
         self.mainguihandle=mainguihandle
+        self.sagaguimodel = sagaguimodel
         self.setWindowTitle('File Information')
         self.setMinimumSize(600,300)
         # self.username = QLineEdit(self)
@@ -83,16 +84,11 @@ class SigninDialog(QDialog):
 
     def signin(self):
         # print(self.email.text())
-        payload = {'email': self.email.text(),
-                   'password': self.password.text()}
-        response = requests.post(BASE + 'auth/login',
-            data=payload,
-        )
-        signinresp = response.json()
-        print('usertoken[status] ' + signinresp['status'] )
-        with open('token.txt', 'w') as tokenfile:
-            json.dump(signinresp, tokenfile)
+        signinstatus = sagaguimodel.sagaapicall.signInCall(self.email.text(), self.password.text(), sagaguimodel.tokenfile)
+
         # self.mainguihandle.checkUserStatus()
-        if signinresp['status']=='success':
+        if signinstatus['status']=='success':
             self.signedin = True
             self.accept()
+        else:
+            print('ATTENTION: View code to deal with sign in failure')

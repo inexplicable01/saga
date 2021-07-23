@@ -15,16 +15,16 @@ import sys
 import requests
 import json
 from Config import BASE
-# from SagaApp.SagaUtil import getContainerInfo
+
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
 from SagaGuiModel import sagaguimodel
 
 class AddFileToContainerPopUp(QDialog):
-    def __init__(self, mainguihandle, containerworkdir,maincontainer:Container,filetype=typeInput):
+    def __init__(self, containerworkdir,containerinfodict,maincontainer:Container,filetype=typeInput):
         super().__init__()
         uic.loadUi("Graphics/UI/AddFileToContainer.ui", self)
         # self.containerpathlbl.setText(path)
-        containerinfodict = sagaguimodel.getContainerInfo()
+        containerinfodict = sagaguimodel.sagaapicall.getContainerInfoDict()
 
         if maincontainer.containerId in containerinfodict: del containerinfodict[maincontainer.containerId]### self container should not show up in input.
 
@@ -107,7 +107,7 @@ class AddFileToContainerPopUp(QDialog):
             self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         else:
             refpath = os.path.join(sagaguimodel.desktopdir,'ContainerMapWorkDir')
-            Container.downloadContainerInfo(refpath,sagaguimodel.authtoken, BASE, containerId)
+            sagaguimodel.downloadContainerState(refpath,sagaguimodel.authtoken, BASE, containerId)
             self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         # self.tester.setText(self.selectedContainer.containerName)
         self.refContainerPlot.setContainer(self.selectedContainer)

@@ -185,7 +185,7 @@ class MapTab():
             self.containermap.editcontainerConnections()
             self.containermap.plot()
             self.detailedmap.passobj(self.containermap)
-            self.gantttable.setModel(GanttListModel(sagaguimodel.containernetworkkeys, sagaguimodel.desktopdir))
+            self.gantttable.setModel(GanttListModel(containerinfodict.keys(), sagaguimodel.desktopdir))
 
 
     def generateSagaTree(self, containerinfodict):
@@ -227,24 +227,24 @@ class MapTab():
 
 
     def downloadcontainer(self):
-        openDirectoryDialog =  QFileDialog().getExistingDirectory(self.mainguihandle, 'Select Folder Space to Place ' + self.dlcontainerid
+        newcontparentdirpath =  QFileDialog().getExistingDirectory(self.mainguihandle, 'Select Folder Space to Place ' + self.dlcontainerid
                                                                   + ' container folder.')
-        if openDirectoryDialog:
-            contdir = os.path.join(openDirectoryDialog, self.dlcontainerid)
+        if newcontparentdirpath:
+            contdir = os.path.join(newcontparentdirpath, self.dlcontainerid)
             if not os.path.exists(contdir):
                 os.mkdir(contdir)
             else:
                 print('Container exists already...removing')
                 # shutil.rmtree(contdir)
-            dlcontainyaml = Container.downloadContainerInfo(openDirectoryDialog, sagaguimodel.authtoken, BASE, self.dlcontainerid)
+            dlcontainyaml = sagaguimodel.downloadContainerState(newcontparentdirpath,  self.dlcontainerid)
             dlcontainer = Container.LoadContainerFromYaml(containerfnfullpath=dlcontainyaml)
             dlcontainer.downloadbranch('Main', BASE, sagaguimodel.authtoken,contdir)
             sagaguimodel.downloadfullframefiles(dlcontainer)
             self.mainguihandle.maincontainertab.readcontainer(dlcontainyaml)
             self.mainguihandle.maintabwidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
-            # # print(os.path.join(openDirectoryDialog, self.dlcontainer))
-            # if openDirectoryDialog:
-            #     print(os.path.split(openDirectoryDialog[0]))
+            # # print(os.path.join(newcontparentdirpath, self.dlcontainer))
+            # if newcontparentdirpath:
+            #     print(os.path.split(newcontparentdirpath[0]))
 
 
 

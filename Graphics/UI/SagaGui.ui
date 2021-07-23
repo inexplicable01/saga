@@ -276,7 +276,7 @@ QMenu {
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="8,1">
                 <item>
-                 <widget class="QLabel" name="label_11">
+                 <widget class="QLabel" name="containerdescriplbl">
                   <property name="maximumSize">
                    <size>
                     <width>431</width>
@@ -400,7 +400,7 @@ QMenu {
              <bool>true</bool>
             </property>
             <property name="currentIndex">
-             <number>0</number>
+             <number>2</number>
             </property>
             <widget class="QWidget" name="filesdetailtab">
              <attribute name="title">
@@ -481,7 +481,7 @@ QMenu {
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
-              <widget class="QLabel" name="label_4">
+              <widget class="QLabel" name="commitmsgboxlbl">
                <property name="maximumSize">
                 <size>
                  <width>431</width>

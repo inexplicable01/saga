@@ -2,7 +2,7 @@
 # from PyQt5.QtGui import QGuiApplication
 # import requests
 # import os
-# from Config import BASE, FILEDELETED, NEWREVISION, FILEADDED
+# from Config import BASE, SERVERFILEDELETED, SERVERNEWREVISION, SERVERFILEADDED
 # from SagaApp.FrameStruct import Frame
 # import json
 # from SagaGuiModel import sagaguimodel
@@ -42,9 +42,9 @@
 #                     if fileheader in self.mainContainer.workingFrame.filestrack.keys():
 #                         if self.newestframe.filestrack[fileheader].md5 != self.mainContainer.workingFrame.filestrack[fileheader].md5:
 #                             if fileheader in self.changes.keys():
-#                                 self.changes[fileheader]['reason'].append(NEWREVISION)
+#                                 self.changes[fileheader]['reason'].append(SERVERNEWREVISION)
 #                             else:
-#                                 self.changes[fileheader] = {'reason': [NEWREVISION]}
+#                                 self.changes[fileheader] = {'reason': [SERVERNEWREVISION]}
 #                             #if 'File updated....' is within changes reason dictionary, display delta in GUI
 #                     else:
 #                         self.changes[fileheader] = {'reason': 'New File committed in newer Revision'}
@@ -53,9 +53,9 @@
 #                 for fileheader in self.mainContainer.workingFrame.filestrack.keys():
 #                     if fileheader not in self.newestframe.filestrack.keys():
 #                         if fileheader in self.changes.keys():
-#                             self.changes[fileheader]['reason'].append(FILEDELETED)
+#                             self.changes[fileheader]['reason'].append(SERVERFILEDELETED)
 #                         else:
-#                             self.changes[fileheader] = {'reason': [FILEDELETED]}
+#                             self.changes[fileheader] = {'reason': [SERVERFILEDELETED]}
 #
 #     def downloadchanges(self, fileheader, filestodownload):
 #         wf = self.mainContainer.workingFrame

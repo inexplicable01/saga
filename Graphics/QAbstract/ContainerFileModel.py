@@ -6,6 +6,9 @@ from Config import CHANGEREASONORDER,sagaworkingfiles,typeRequired, typeInput, t
 from datetime import datetime
 import os
 from SagaApp.FileObjects import FileTrack
+from os.path import join
+import warnings
+from SagaApp.FrameStruct import Frame
 
 
 STATUSCOLUMNHEADER='Status'
@@ -20,13 +23,36 @@ class ContainerFileModel(QAbstractTableModel):
         self.sagaguimodel = sagaguimodel
         self.gathermodeldatafromContainer()
 
+    def latestRevFor(self,maincontainer:Container,fileheader):
+        if fileheader not in maincontainer.FileHeaders.keys():
+            return fileheader + " not in Container " + maincontainer.containerName
+        curmd5 = maincontainer.workingFrame.filestrack[fileheader].md5
+        # print(self.revnum, self.workingFrame.FrameName)
+        lastsamerevnum=maincontainer.revnum
+        while lastsamerevnum>1:
+            lastsamerevnum-=1
+            framefullpathyaml = join(maincontainer.containerworkingfolder, 'Main','Rev'+str(lastsamerevnum) +'.yaml')
+            if not os.path.exists(framefullpathyaml):
+                warnings.warn('this Should never happen')
+                raise('Model is looking for a Rev that is not in local folder')
+            #     self.downloadbranch(maincontainer.containerworkingfolder, maincontainer)
+            pastframe = Frame.LoadFrameFromYaml(framefullpathyaml, maincontainer.containerworkingfolder)
+            if fileheader in pastframe.filestrack.keys():
+                if curmd5 != pastframe.filestrack[fileheader].md5:
+                    return 'Rev'+str(lastsamerevnum+1), pastframe.commitMessage
+                if lastsamerevnum == 1:
+                    return 'Rev' + str(lastsamerevnum), pastframe.commitMessage
+            else:
+                return 'Rev'+str(lastsamerevnum+1), pastframe.commitMessage
+        return 'Rev0', 'work in progress'
+
     def gathermodeldatafromContainer(self):
         filedir = os.listdir(self.maincontainer.containerworkingfolder)
         containerfiledict={typeInput:[],typeRequired:[], typeOutput:[]}
         for fileheader, fileinfo in self.maincontainer.FileHeaders.items():
             wf = self.maincontainer.workingFrame
             # lastcommit, commitmessage = maincontainer.latestRevFor(fileheader)
-            lastcommit, commitmessage = self.sagaguimodel.latestRevFor(self.maincontainer,fileheader)
+            lastcommit, commitmessage = self.latestRevFor(self.maincontainer,fileheader)
             filedict = {'fileheader': fileheader,
                 'fileinfo': fileinfo,
                 'change': None,
@@ -103,6 +129,12 @@ class ContainerFileModel(QAbstractTableModel):
 
     def update(self):
         self.gathermodeldatafromContainer()
+        for i,rowdict in enumerate(self.containerfiles):
+            if rowdict['fileheader'] in self.sagaguimodel.changes.keys():
+                rowdict['change']  = self.sagaguimodel.changes[rowdict['fileheader']]
+                # self.containerfiles[i]['change'] = changes[rowdict['fileheader']]
+            else:
+                rowdict['change'] = None
         self.dataChanged
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
@@ -112,16 +144,6 @@ class ContainerFileModel(QAbstractTableModel):
         # if orientation == Qt.Vertical and role == Qt.DisplayRole:
         #     return 'Row {}'.format(section + 1)
         # return super().headerData(section, orientation, role)
-
-    def updateFromChanges(self, changes):
-        for i,rowdict in enumerate(self.containerfiles):
-            if rowdict['fileheader'] in changes.keys():
-                rowdict['change']  = changes[rowdict['fileheader']]
-                # self.containerfiles[i]['change'] = changes[rowdict['fileheader']]
-            else:
-                rowdict['change'] = None
-        self.dataChanged
-
 
     def rowCount(self, index):
         # The length of the outer list.

@@ -81,3 +81,13 @@ def setStyle(mainguihandle, sourcecodedir):
     with open(txt, 'r') as txth:
         viewstylesheet = txth.read()
     mainguihandle.containerMapView.setStyleSheet(viewstylesheet)
+
+
+def setstyleoflabel(color, label):
+    alpha = 140
+    values = "{r}, {g}, {b}, {a}".format(r=color.red(),
+                                         g=color.green(),
+                                         b=color.blue(),
+                                         a=alpha
+                                         )
+    label.setStyleSheet("QLabel { background-color: rgba(" + values + "); }")

@@ -19,25 +19,34 @@ mapdetailstxt='mapdetails.txt'
 
 ServerOrFront = 'FrontEnd'
 
-NEWFILEADDED = 'New File Header Added'
-CHANGEDMD5 = 'MD5 Changed'
-DATECHANGED = 'Date Changed'
-CHANGEREMOVED = 'File Header Removed'
-UPDATEDUPSTREAM = 'MD5 Updated Upstream'
-NEWREVISION = 'File updated in newer Revision'
-FILEDELETED = 'File deleted in newer Revision'
-FILEADDED = 'New File committed in newer Revision'
-CHANGEREASONORDER=[CHANGEDMD5, NEWFILEADDED, NEWREVISION, UPDATEDUPSTREAM,DATECHANGED,FILEADDED , FILEDELETED]
 
-colorscheme = {typeInput: QColor('#c2a609'), typeOutput: QColor('#0350ae'), typeRequired:QColor(Qt.darkMagenta) , DATECHANGED: Qt.cyan,
-                CHANGEDMD5: Qt.red, UPDATEDUPSTREAM: Qt.magenta, NEWFILEADDED: Qt.black, CHANGEREMOVED: Qt.darkCyan,
-               NEWREVISION: QColor(255, 165, 0), FILEDELETED: Qt.black,
-               FILEADDED: Qt.black,
-               typeUnversioned:QColor(Qt.gray)}
+MD5CHANGED = 'MD5 Changed'
+DATECHANGED = 'Date Changed'
+LOCALFILEHEADERADDED = 'New File Header Added'
+LOCALFILEHEADERREMOVED = 'File Header Removed'
+UPDATEDUPSTREAM = 'MD5 Updated Upstream'
+SERVERNEWREVISION = 'File updated in newer Revision'
+SERVERFILEDELETED = 'File deleted in newer Revision'
+SERVERFILEADDED = 'New File committed in newer Revision'
+CHANGEREASONORDER=[MD5CHANGED, LOCALFILEHEADERADDED, SERVERNEWREVISION, UPDATEDUPSTREAM,DATECHANGED,SERVERFILEADDED , SERVERFILEDELETED]
+
+colorscheme = {typeInput: QColor('#c2a609'),
+               typeOutput: QColor('#0350ae'),
+               typeRequired:QColor(Qt.darkMagenta) ,
+                typeUnversioned:QColor(Qt.gray),
+               DATECHANGED: Qt.cyan,
+               MD5CHANGED: Qt.red,
+               UPDATEDUPSTREAM: Qt.magenta,
+               LOCALFILEHEADERADDED: Qt.yellow,
+               LOCALFILEHEADERREMOVED: Qt.darkCyan,
+               SERVERNEWREVISION: QColor(255, 165, 0),
+               SERVERFILEDELETED: Qt.black,
+               SERVERFILEADDED: Qt.white,
+               }
 
 JUSTCREATED="JUSTCREATED"
 UNCHANGED="UNCHANGED"
-MD5CHANGED="MD5CHANGED"
+
 
 mechuser1login = {'first_name':'Bob',
                    'last_name':'Smith',
@@ -121,8 +130,6 @@ privatepackagecustomer = {'first_name':'Good',
 }
 testerlogin=privatepackagechris
 
-# Read a input file
-# sourcefolder = os.getcwd()
 
 TEMPCONTAINERFN='temp_containerstate.yaml'
 TEMPFRAMEFN='temp_frame.yaml'

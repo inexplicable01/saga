@@ -92,12 +92,12 @@ class Frame:
         return cframe
 
     @classmethod
-    def InitiateFrame(cls, parentcontainerid, parentcontainername, localdir):
+    def InitiateFrame(cls, parentcontainerid, parentcontainername, containerworkingfolder):
         newframe = cls(filestracklist=[],
                        FrameName='Rev0',
                        parentcontainerid=parentcontainerid,
                        parentcontainername=parentcontainername,
-                       containerworkingfolder=localdir,
+                       containerworkingfolder=containerworkingfolder,
                        workingyamlfn=NEWFRAMEFN)
         newframe.writeoutFrameYaml()
         return newframe

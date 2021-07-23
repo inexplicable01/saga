@@ -12,7 +12,8 @@ import requests
 import json
 import warnings
 import re
-from Config import BASE,NEWFILEADDED, CHANGEDMD5,DATECHANGED , CHANGEREMOVED,\
+import uuid
+from Config import BASE,LOCALFILEHEADERADDED, MD5CHANGED,DATECHANGED , LOCALFILEHEADERREMOVED,\
     typeInput,typeOutput,typeRequired,  TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN,CONTAINERFN
 # from hackpatch import workingdir
 from SagaApp.SagaUtil import getFramePathbyRevnum,makefilehidden, unhidefile
@@ -51,7 +52,7 @@ class Container:
     def InitiateContainer(cls, directory,containerName = ''):
         newcontainer = cls(containerworkingfolder=directory,
                            containerName=containerName,
-                           containerId="",
+                           containerId=uuid.uuid4().__str__(),
                            FileHeaders={},
                            allowedUser=[],
                            readingUsers=[],
@@ -59,7 +60,36 @@ class Container:
                            refframefullpath=NEWFRAMEFN,
                            workingFrame = Frame.InitiateFrame(parentcontainerid=containerName,parentcontainername=containerName, localdir=directory),
                            yamlfn = NEWCONTAINERFN)
+        newcontainer.save()
         return newcontainer
+
+    ##This is problematic as this only works for Client side.    working folder is meant for client side only and can only serve as confusion for the server side
+    ## How to make sure Container class can be identical on client side and server side.
+    ## Need to think of a way to further remove seperation of concern.
+    ## Loading containers on Client side is fundamentally different than loading them on the server side.
+    @classmethod
+    def LoadContainerFromDict(cls, containerdict,containerworkingfolder, containeryamlfn, currentbranch='Main',revnum=0,
+                              environ='FrontEnd', sectionid='', ):
+        FileHeaders = containerdict['FileHeaders']
+        refframefullpath, revnum = getFramePathbyRevnum(os.path.join(containerworkingfolder, currentbranch), revnum)
+        try:
+            workingFrame = Frame.loadFramefromYaml(refframefullpath,containerworkingfolder)
+        except Exception as e:
+            workingFrame = Frame.InitiateFrame(parentcontainerid=containerdict['containerId'],
+                                               parentcontainername=containerdict['containerName'],
+                                               containerworkingfolder= containerworkingfolder)
+        container = cls(containerworkingfolder=containerworkingfolder,
+                           containerName=containerdict['containerName'],
+                            yamlfn=containeryamlfn,
+                            readingUsers=containerdict['allowedUser'],## ATTENTION, need to create different levels of permissions user
+                           containerId=containerdict['containerId'],
+                           FileHeaders=FileHeaders,
+                           allowedUser=containerdict['allowedUser'],
+                           currentbranch=currentbranch, revnum=revnum,
+                           refframefullpath=refframefullpath, workingFrame=workingFrame)
+        return container
+
+
 
     @classmethod
     def LoadContainerFromYaml(cls, containerfnfullpath, currentbranch='Main',revnum=None, fullload=True):
@@ -69,7 +99,8 @@ class Container:
             with open(containerfnfullpath, 'r') as file:
                 containeryaml = yaml.load(file, Loader=yaml.FullLoader)
         except BaseException as e:
-            raise ('Need to right function to replace this.')
+            warnings.warn('Container Load Fail.' +containerfnfullpath + ' seems to be corrupted')
+            return None
 
         FileHeaders={}
         for fileheader, fileinfo in containeryaml['FileHeaders'].items():
@@ -116,7 +147,7 @@ class Container:
 
             if fileheader not in refframe.filestrack.keys() and fileheader in wf.filestrack.keys():
                 # check if fileheader is in the refframe, If not in frame, that means user just added a new fileheader
-                changes[fileheader]= {'reason': [NEWFILEADDED]}
+                changes[fileheader]= {'reason': [LOCALFILEHEADERADDED]}
                 continue
             refframefileheaders.remove(fileheader)
             filename = os.path.join(self.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath, wf.filestrack[fileheader].file_name)
@@ -126,7 +157,7 @@ class Container:
 
             if refframe.filestrack[fileheader].md5 != wf.filestrack[fileheader].md5:
                 wf.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
-                changes[fileheader] = {'reason': [CHANGEDMD5]}
+                changes[fileheader] = {'reason': [MD5CHANGED]}
                 if wf.filestrack[fileheader].connection.connectionType==typeInput:
                     alterfiletracks.append(wf.filestrack[fileheader])
                 # if file has been updated, update last edited
@@ -139,7 +170,7 @@ class Container:
                 continue
 
         for removedheaders in refframefileheaders:
-            changes[removedheaders] = {'reason': [CHANGEREMOVED]}
+            changes[removedheaders] = {'reason': [LOCALFILEHEADERREMOVED]}
         return changes, alterfiletracks
 
 
@@ -149,8 +180,9 @@ class Container:
         frameRef= Frame.loadRefFramefromYaml(self.refframefullpath, self.containerworkingfolder)
         return frameRef
 
-    def commit(self, commitmsg, authtoken, BASE):
-        frameRef = Frame.loadRefFramefromYaml(self.refframefullpath, self.containerworkingfolder)
+    def prepareCommitCall(self):
+         # = Frame.loadRefFramefromYaml(self.refframefullpath, self.containerworkingfolder)
+        frameRef=self.getRefFrame()
 
         filesToUpload = {}
         updateinfo = {}
@@ -158,10 +190,10 @@ class Container:
             if fileheader not in self.FileHeaders.keys():
                 continue
             if self.FileHeaders[fileheader]['type']== typeInput:
-                # only commit new input files if input files were downloaded
+                # the input updates are handles through the frame, no need to recommit it.  Or that the input update commit is handled in the framejson upload
+                # the real trick is how to deal with altered inputs.
                 # Dealing with input updates is gonna require a lot of thought.
                 inputsupdated = True
-
             filepath = join(self.containerworkingfolder,filetrack.ctnrootpath, filetrack.file_name)
             # Should file be committed?
             commit_file, md5 = self.CheckCommit(filetrack, filepath, frameRef)
@@ -172,9 +204,6 @@ class Container:
                 # new file needs to be committed as the new local file is not the same as previous md5
                 filesToUpload[fileheader] = open(filepath,'rb')
                 updateinfo[fileheader] = {
-
-                    # 'file_id': filetrack.file_id,
-
                     'file_name': filetrack.file_name,
                     'lastEdited': filetrack.lastEdited,
                     'md5': filetrack.md5,
@@ -185,49 +214,27 @@ class Container:
         containerdictjson = self.__repr__()
         framedictjson = self.workingFrame.__repr__()
 
+        return containerdictjson,framedictjson, updateinfojson, filesToUpload
 
-        response = requests.post(BASE + 'SAGAOP/commit',
-                                 headers={"Authorization": 'Bearer ' + authtoken},
-                                 data={'containerID': self.containerId,
-                                       'containerdictjson': containerdictjson,
-                                       'framedictjson': framedictjson,
-                                       'branch': self.currentbranch,
-                                       'updateinfo': updateinfojson,
-                                       'commitmsg':commitmsg},  files=filesToUpload)
+    def setContainerForNewframe(self,yamlframefn,yamlframefnfullpath):
+        self.workingFrame = Frame.loadRefFramefromYaml(yamlframefnfullpath, self.containerworkingfolder)
+        self.refframefullpath = yamlframefnfullpath
+        self.save(fn=CONTAINERFN)
+        self.save(fn=TEMPCONTAINERFN)
+        # self.workingFrame.writeoutFrameYaml()
+        self.workingFrame.writeoutFrameYaml(fn=TEMPFRAMEFN)
+        m = re.search('Rev(\d+).yaml', yamlframefn)
+        if m:
+            self.revnum = int(m.group(1))
 
-        if 'commitsuccess' in response.headers.keys():
-            # Updating new frame information
-            yamlframefn = response.headers['file_name']
-            yamlframefnfullpath = join(self.containerworkingfolder, self.currentbranch, yamlframefn)
-            open(yamlframefnfullpath, 'wb').write(response.content)
-            makefilehidden(yamlframefn)
-            self.workingFrame = Frame.loadRefFramefromYaml(yamlframefnfullpath, self.containerworkingfolder)
-            self.refframefullpath = yamlframefnfullpath
-            self.save(fn=CONTAINERFN)
-            self.save(fn=TEMPCONTAINERFN)
-            # self.workingFrame.writeoutFrameYaml()
-            self.workingFrame.writeoutFrameYaml(fn=TEMPFRAMEFN)
-            m = re.search('Rev(\d+).yaml', yamlframefn)
-            if m:
-                self.revnum = int(m.group(1))
-            return response.headers['commitsuccess']
-        else:
-            print('Commit Fail')
-            resp = json.loads(response.content)
-            print(resp)
-            return self.workingFrame, False
+    def prepareNewCommitCall(self, commitmessage):
 
-    def CommitNewContainer(self, containerName,commitmessage,authtoken,BASE):
-        self.containerName = containerName
-        self.containerId = containerName
-
-        # self.tempFrame.description = self.descriptionText.toPlainText()
         self.workingFrame.commitMessage = commitmessage
         self.workingFrame.FrameName= 'Rev1'
 
         commitContainer = self.dictify()
         commitFrame = self.workingFrame.dictify()
-        url = BASE + 'SAGAOP/newContainer'
+
         payload = {'containerdictjson': json.dumps(commitContainer), 'framedictjson': json.dumps(commitFrame)}
 
         filesToUpload={}
@@ -237,72 +244,49 @@ class Container:
                 filesToUpload[fileheader] = open(filepath, 'rb')
                 fileb = open(filepath, 'rb')
                 filetrack.md5 = hashlib.md5(fileb.read()).hexdigest()
-        headers = {  'Authorization': 'Bearer ' + authtoken}
-        response = requests.request("POST", url, headers=headers, data=payload, files=filesToUpload)
-        if 'Container Made' == response.headers['response']:
-            resp = response.json()
-            returncontdict = resp['containerdictjson']
-            returnframedict = resp['framedictjson']
-            self.allowedUser= returncontdict['allowedUser']
-            self.workingFrame = Frame.LoadFrameFromDict(returnframedict,self.containerworkingfolder)
-            ### Maybe put a compare function here to compare the workingFrame before the commit and the Frame that was sent back.
-            ## they should be identical.
-            self.workingFrame.writeoutFrameYaml(fn=TEMPFRAMEFN)# writes out TEMPFRAME
-            self.workingFrame.writeoutFrameYaml(returnframedict['FrameName'] + '.yaml')# writes out REVX.yaml
-            self.save(fn=CONTAINERFN)
-            self.yamlfn = TEMPCONTAINERFN
-            self.save()
+        return  payload, filesToUpload
 
-            try:
-                os.remove(self.containerworkingfolder, NEWCONTAINERFN)
-                os.remove(self.containerworkingfolder, 'Main',NEWFRAMEFN)
-            except:
-                print('Can''t remove pre First Commit files.')
-            return True
-        else:
-            self.workingFrame.FrameName = 'Rev0'
-            return False
 
-    @classmethod
-    def downloadContainerInfo(cls, refpath, authtoken, BASE, containerId):
-        headers = {'Authorization': 'Bearer ' + authtoken  }
-        response = requests.get(BASE + 'CONTAINERS/containerID', headers=headers, data={'containerID': containerId})
-        # response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
-        # requests is a python object/class, that sends a http request
-        # This returns a container Yaml File
-        if not os.path.exists(refpath):
-            os.mkdir(refpath)
-        if not os.path.exists(join(refpath, containerId)):
-            os.mkdir(join(refpath, containerId))
-        if os.path.exists(join(refpath, containerId, 'containerstate.yaml')):
-            unhidefile(join(refpath, containerId, 'containerstate.yaml'))
-        open(join(refpath, containerId, 'containerstate.yaml'), 'wb').write(response.content)
-        makefilehidden(join(refpath, containerId, 'containerstate.yaml'))
-        cls.downloadFrame(refpath, authtoken,containerId,BASE)
-        return join(refpath, containerId, 'containerstate.yaml')
+    # @classmethod
+    # def downloadContainerInfo(cls, refpath, authtoken, BASE, containerId):
+    #     headers = {'Authorization': 'Bearer ' + authtoken  }
+    #     response = requests.get(BASE + 'CONTAINERS/containerID', headers=headers, data={'containerID': containerId})
+    #     # response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
+    #     # requests is a python object/class, that sends a http request
+    #     # This returns a container Yaml File
+    #     if not os.path.exists(refpath):
+    #         os.mkdir(refpath)
+    #     if not os.path.exists(join(refpath, containerId)):
+    #         os.mkdir(join(refpath, containerId))
+    #     if os.path.exists(join(refpath, containerId, 'containerstate.yaml')):
+    #         unhidefile(join(refpath, containerId, 'containerstate.yaml'))
+    #     open(join(refpath, containerId, 'containerstate.yaml'), 'wb').write(response.content)
+    #     makefilehidden(join(refpath, containerId, 'containerstate.yaml'))
+    #     cls.downloadFrame(refpath, authtoken,containerId,BASE)
+    #     return join(refpath, containerId, 'containerstate.yaml')
 
-    @classmethod
-    def downloadFrame(cls,refpath,authtoken, containerId, BASE, branch='Main'):
-        payload = {'containerID': containerId,
-                   'branch': branch}
-        headers = {
-            'Authorization': 'Bearer ' + authtoken
-        }
-        response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
-        # print(response.headers)
-        # print(response.content)
-        # request to FRAMES to get the latest frame from the branch as specified in currentbranch
-        branch = 'Main'
-        # response also returned the name of the branch
-        if not os.path.exists(join(refpath, containerId, branch)):
-            os.mkdir(join(refpath, containerId,branch))
-
-        frameyamlDL = join(refpath,containerId, branch, response.headers['file_name'])
-        if os.path.exists(frameyamlDL):
-            unhidefile(frameyamlDL)
-        open(frameyamlDL, 'wb').write(response.content)
-        makefilehidden(join(refpath, containerId, branch))
-        return frameyamlDL
+    # @classmethod
+    # def downloadFrame(cls,refpath,authtoken, containerId, BASE, branch='Main'):
+    #     payload = {'containerID': containerId,
+    #                'branch': branch}
+    #     headers = {
+    #         'Authorization': 'Bearer ' + authtoken
+    #     }
+    #     response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
+    #     # print(response.headers)
+    #     # print(response.content)
+    #     # request to FRAMES to get the latest frame from the branch as specified in currentbranch
+    #     branch = 'Main'
+    #     # response also returned the name of the branch
+    #     if not os.path.exists(join(refpath, containerId, branch)):
+    #         os.mkdir(join(refpath, containerId,branch))
+    #
+    #     frameyamlDL = join(refpath,containerId, branch, response.headers['file_name'])
+    #     if os.path.exists(frameyamlDL):
+    #         unhidefile(frameyamlDL)
+    #     open(frameyamlDL, 'wb').write(response.content)
+    #     makefilehidden(join(refpath, containerId, branch))
+    #     return frameyamlDL
 
 
 
