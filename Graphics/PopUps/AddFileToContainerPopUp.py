@@ -41,11 +41,13 @@ class AddFileToContainerPopUp(QDialog):
 
         self.containerlisttable.setModel(ContainerListModel(containerinfodict))
         self.containerlisttable.clicked.connect(self.showContainerFromList)
+        # self.containerlisttable.header().setSectionResizeMode(QHeaderView.Stretch)
 
         self.refContainerPlot = ContainerPlot(self, self.refContainerView)
         self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(False)
         self.buttonBox1.button(QDialogButtonBox.Cancel).clicked.connect(self.close)
         self.buttonBox1.button(QDialogButtonBox.Ok).clicked.connect(self.accept)
+        self.tabWidget.currentChanged.connect(self.ontabchanged)
 
         self.filetype = filetype
         self.ctnrootpathlist = []
@@ -57,9 +59,16 @@ class AddFileToContainerPopUp(QDialog):
         self.fileheader = None
         self.curContainer = None
         self.descriptionEdit.setText('Description for how this file behaves for the larger project')
-        self.navtotab()
+        self.okpermissions()
 
-    # def ontabchanged(self, tabindex):
+    def ontabchanged(self, tabindex):
+        if tabindex==0:
+            self.filetype = typeInput
+        else:
+            if self.filetyperadiogroup.checkedButton().text() in [typeRequired,typeOutput]:
+                self.filetype = self.filetyperadiogroup.checkedButton().text()
+            else:
+                self.filetype = None
 
     def typechanged(self, clickedbutton):
         # print(button.text())
@@ -67,30 +76,32 @@ class AddFileToContainerPopUp(QDialog):
             self.filetype= typeOutput
         elif 'Working' in clickedbutton.text():
             self.filetype=typeRequired
-        self.navtotab()
+        self.okpermissions()
 
-    def navtotab(self):
+    def okpermissions(self):
         if self.filetype==typeInput:
-            self.tabWidget.setCurrentIndex(0)
+            # self.tabWidget.setCurrentIndex(0)
             if self.curContainer and self.fileheader:
                 self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(True)
             else:
                 self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(False)
-        if self.filetype in [typeRequired,typeOutput]:
-            self.tabWidget.setCurrentIndex(1)
+        elif self.filetype in [typeRequired,typeOutput]:
+            # self.tabWidget.setCurrentIndex(1)
             if os.path.exists(self.filePathEdit.text()):
                 self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(True)
             else:
                 self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(False)
+        else:
+            self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(False)
 
     def FileViewItemRectFeedback(self, filetype, view, fileheader, curContainer:Container):
         self.fileheader = fileheader
-        self.filetype = filetype
+        # self.filetype = filetype
         self.curContainer = curContainer
         if filetype==typeOutput:
             self.fileheaderlbl.setText("FileHeader: " + fileheader)
             self.fromcontainerlbl.setText("From Container: " + curContainer.containerName)
-            self.revlbl.setText("Rev: " + curContainer.workingFrame.FrameName)
+            self.revlbl.setText("Rev: " + curContainer.getRefFrame().FrameName)
             self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(True)
         else:
             self.fileheaderlbl.setText("FileHeader: ")
@@ -101,8 +112,10 @@ class AddFileToContainerPopUp(QDialog):
     def showContainerFromList(self, containerListindex):
         rownumber = containerListindex.row()
         index = containerListindex.model().index(rownumber, 0)
-        containerId = containerListindex.model().data(index, 0)
-        containerName = containerListindex.model().data(index, 1)
+        # containerId = containerListindex.model().data(index, 0)
+        containerName = containerListindex.model().data(index, 0)
+        containerId=containerListindex.model().containernametoid[containerName]
+
         refcontainerpath = os.path.join(sagaguimodel.desktopdir, 'ContainerMapWorkDir', containerId , CONTAINERFN)
         if os.path.exists(refcontainerpath):
             self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
@@ -165,8 +178,8 @@ class AddFileToContainerPopUp(QDialog):
                         }
             elif self.filetype == typeInput:
                 return {'fileheader': self.fileheader,
-                        'filetype': self.filetype,
-                        'containerfileinfo': {'Container': self.curContainer.containerId, 'type':self.filetype},
+                        'filetype': typeInput,
+                        'containerfileinfo': {'Container': self.curContainer.containerId, 'type':typeInput},
                         'UpstreamContainer': self.curContainer,
                         'ctnrootpathlist': self.ctnrootpathlist,
                         'description':self.descriptionEdit.text()}

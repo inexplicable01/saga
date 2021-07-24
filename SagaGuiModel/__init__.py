@@ -90,18 +90,19 @@ class SagaGuiModel():
         if 'EMPTY' in self.containerinfodict.keys():
             return {}
         for containerID in self.containerinfodict.keys():
-            self.downloadContainer(join(self.desktopdir,'ContainerMapWorkDir'), containerID)
+            print(containerID, self.containerinfodict[containerID]['ContainerDescription'])
+            self.downloadContainer(join(self.desktopdir,'ContainerMapWorkDir',containerID), containerID)
         if not os.path.exists(join(self.desktopdir, 'SagaGuiData', self.userdata['current_sectionid'])):
             os.mkdir(join(self.desktopdir, 'SagaGuiData',self.userdata['current_sectionid']))
         return self.containerinfodict
 
-    def downloadfullframefiles(self, container:Container =None, framerev = 'latest'):
-        if container is None:
-            raise('Developers need to add a self.maincontainer for this model')
-        wf = container.workingFrame
-        for fileheader, filetrack in wf.filestrack.items():
-            # print(filetrack.file_name,self.containerworkingfolder)
-            self.downloadFile(filetrack, container.containerworkingfolder)
+    # def downloadfullframefiles(self, container:Container =None, framerev = 'latest'):
+    #     if container is None:
+    #         raise('Developers need to add a self.maincontainer for this model')
+    #     wf = container.workingFrame
+    #     for fileheader, filetrack in wf.filestrack.items():
+    #         # print(filetrack.file_name,self.containerworkingfolder)
+    #         self.downloadFile(filetrack, container.containerworkingfolder)
 
     def revertTo(self, reverttorev, fileheadertorevertto ):
         containerworkingfolder = self.maincontainer.containerworkingfolder
@@ -181,14 +182,13 @@ class SagaGuiModel():
         report, usersection = self.sagaapicall.sectionSwitchCall(newsectionid)
         return report , usersection
     def downloadFile(self, filetrack:FileTrack, containerworkingfolder, newfilename=None ):
-        fn=self.sagaapicall.downloadFile(filetrack, containerworkingfolder, newfilename )
+        fn=self.sagaapicall.downloadFileCall(filetrack, containerworkingfolder, newfilename )
         return fn
     def downloadContainer(self,containerworkingfolder,  dlcontainerid, use = 'NetworkContainer' ):
         containerworkingfolder, cont = self.sagaapicall.downloadContainerCall(containerworkingfolder,  dlcontainerid, use )
         if use=='WorkingContainer':
             for fileheader, filetrack in cont.workingFrame.filestrack.items():
                 self.downloadFile(filetrack, containerworkingfolder)
-
         return containerworkingfolder, cont
 
     def downloadbranch(self, branch='Main'):

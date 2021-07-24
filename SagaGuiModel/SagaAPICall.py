@@ -123,7 +123,7 @@ class SagaAPICall():
         makefilehidden(join(refpath, containerId, branch))
         return frameyamlDL
 
-    def downloadFile(self, filetrack:FileTrack, containerworkingfolder, newfilename=None ):
+    def downloadFileCall(self, filetrack:FileTrack, containerworkingfolder, newfilename=None ):
         response = requests.get(BASE + 'FILES',
                                 data={'md5': filetrack.md5,
                                       'file_name': filetrack.file_name})

@@ -115,7 +115,7 @@ class HistoryListModel(QAbstractTableModel):
             self.fileheaderlist = ['Null']
             self.revheaders = ['Null']
         else:
-            self.revheaders, self.containdata, self.fileheaderlist = self.sorthistory(self, historyinfodict)
+            self.revheaders, self.containdata, self.fileheaderlist = self.sorthistory( historyinfodict)
         self.dataChanged
 
 

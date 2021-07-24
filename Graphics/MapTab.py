@@ -115,6 +115,7 @@ class MapTab():
         self.ganttlegendview = mainguihandle.ganttlegendview
         self.networktabwidget =  mainguihandle.networktabwidget
         self.networktabwidget.setElideMode(Qt.ElideNone)
+        self.containerlisttable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         makeganttchartlegend(self.ganttlegendview)
 
@@ -187,7 +188,7 @@ class MapTab():
             self.containermap.editcontainerConnections()
             self.containermap.plot()
             self.detailedmap.passobj(self.containermap)
-            self.gantttable.setModel(GanttListModel(containerinfodict.keys(), sagaguimodel.desktopdir))
+            self.gantttable.setModel(GanttListModel(containerinfodict, sagaguimodel.desktopdir))
 
 
     def generateSagaTree(self, containerinfodict):

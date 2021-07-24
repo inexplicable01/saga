@@ -103,7 +103,7 @@ class Container:
 
 
     @classmethod
-    def LoadContainerFromYaml(cls, containerfnfullpath, currentbranch='Main',revnum=None, fullload=True, ismaincontainer=False):
+    def LoadContainerFromYaml(cls, containerfnfullpath, currentbranch='Main',revnum=None,  ismaincontainer=False):
         containerworkingfolder = os.path.dirname(containerfnfullpath)
         containeryamlfn = os.path.basename(containerfnfullpath)
         try:
@@ -121,10 +121,10 @@ class Container:
             FileHeaders[fileheader] = fileinfo
         if 'readingUsers' not in containeryaml.keys():
             containeryaml['readingUsers']=[]
-        if fullload:
+        if ismaincontainer:
             workingFrame = Frame.LoadCurrentFrame(containerworkingfolder=containerworkingfolder, containfn=containeryamlfn)
         else:
-            workingFrame=None
+            workingFrame = None
 
         if containeryamlfn==NEWCONTAINERFN:
             refframefullpath, revnum = join(containerworkingfolder,currentbranch, NEWFRAMEFN), 0
@@ -331,7 +331,7 @@ class Container:
     def commithistorybyfile(self):
         changesbyfile = {}
 
-        for fileheader in self.workingFrame.filestrack.keys():
+        for fileheader in self.getRefFrame().filestrack.keys():
             changesbyfile[fileheader] =[]
         containerframes={}
         # glob.glob() +'/'+ Rev + revnum + ".yaml"

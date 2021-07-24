@@ -182,20 +182,29 @@ class MainContainerTab():
         print('Check Done ' + datetime.now().isoformat())
 
     def commitmsgeditchange(self):
-        if len(self.commitmsgEdit.toPlainText()) <= 7:
-            self.commitBttn.setEnabled(False)
-            self.commitmsgboxlbl.setText('Commit Message : Needs to be longer than 7 characters')
-        else:
-            if sagaguimodel.isNewContainer():
-                if len(self.newcontaineredit.toPlainText()) <= 7:
-                    self.commitBttn.setEnabled(False)
-                    self.containerdescriplbl.setText('New Container Descrption Needs to be longer than  7 characters')
-                else:
-                    self.commitBttn.setEnabled(True)
-                    self.commitmsgboxlbl.setText('Commit Message :')
+        canpresscommit = False
+        if sagaguimodel.isNewContainer():
+            if len(self.commitmsgEdit.toPlainText()) >7 and len(self.newcontaineredit.toPlainText()) >7 :
+                canpresscommit = True
+            if len(self.commitmsgEdit.toPlainText()) <= 7:
+                commitmsgboxtext = 'Commit Message : Needs to be longer than 7 characters'
             else:
-                self.commitBttn.setEnabled(True)
-                self.commitmsgboxlbl.setText('Commit Message :')
+                commitmsgboxtext = 'Commit Message'
+            if len(self.newcontaineredit.toPlainText()) <= 7:
+                containerdescriptext = 'Container Description Message : Needs to be longer than 7 characters'
+            else:
+                containerdescriptext = 'Container Description'
+        else:
+            containerdescriptext = 'Container Description'
+            if len(self.commitmsgEdit.toPlainText()) > 7:
+                canpresscommit = True
+                commitmsgboxtext = 'Commit Message :'
+            else:
+                canpresscommit = False
+                commitmsgboxtext = 'Commit Message : Needs to be longer than 7 characters'
+        self.commitBttn.setEnabled(canpresscommit)
+        self.commitmsgboxlbl.setText(commitmsgboxtext)
+        self.containerdescriplbl.setText(containerdescriptext)
 
 
     def commit(self):

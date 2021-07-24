@@ -8,26 +8,30 @@ import math
 import os
 import glob
 from datetime import datetime
-from Config import typeOutput,typeRequired, typeInput, colorscheme
+from Config import typeOutput,typeRequired, typeInput, colorscheme, CONTAINERFN
 
 def weekstrfromtimestamp(commitUTCdatetime):
     weeksago = math.floor((datetime.utcnow().timestamp() - commitUTCdatetime) / (3600 * 24 * 7))
     return 'week -' + str(weeksago), weeksago
 
 class GanttListModel(QAbstractTableModel):
-    def __init__(self, containerids, desktopdir, weekstocheck = 20):
+    def __init__(self,containerinfodict , desktopdir, weekstocheck = 10):
         super(GanttListModel, self).__init__()
-
+        containerids = containerinfodict.keys()
         self.containerheaders = []
         self.historydict={}
         self.datecommits={}
 
         self.commitmessagedict={}
         self.weeksdict={}
-
+        self.containeridtoname={}
+        self.containernametoid = {}
 
         for containerid in containerids:
-            self.containerheaders.append(containerid)
+                # Container.LoadContainerFromYaml(os.path.join(desktopdir, 'ContainerMapWorkDir', containerid,CONTAINERFN))##ATTENTION
+            self.containerheaders.append(containerinfodict[containerid]['ContainerDescription'])
+            self.containeridtoname[containerid]=containerinfodict[containerid]['ContainerDescription']
+            self.containernametoid[containerinfodict[containerid]['ContainerDescription']] = containerid
 
         for i in range(-weekstocheck,1):
             initdict = {}
@@ -173,43 +177,45 @@ class GanttListModel(QAbstractTableModel):
 
     def data(self, index, role):
         # print(role)
-        if role == Qt.DisplayRole:
-            # See below for the nested-list data structure.
-            # .row() indexes into the outer list,
-            # .column() indexes into the sub-list
-            # self.weeksdict[weekstr][containerid]['cellinfo']
-            # {'cellinfo': {
-            #     'frames': [],
-            #     'status': [],
-            #     'cellsummary': None,
-            #     'outputchanged': False,
-            #     'inputchanged': False
-            # }}
+        if index.isValid():
             weekstr = self.weeksdictlist[index.column()]
-            containerid = self.containerheaders[index.row()]
+            containername= self.containerheaders[index.row()]
+            containerid = self.containernametoid[containername]
             cellinfo = self.weeksdict[weekstr][containerid]['cellinfo']
+            if role == Qt.DisplayRole:
+                # See below for the nested-list data structure.
+                # .row() indexes into the outer list,
+                # .column() indexes into the sub-list
+                # self.weeksdict[weekstr][containerid]['cellinfo']
+                # {'cellinfo': {
+                #     'frames': [],
+                #     'status': [],
+                #     'cellsummary': None,
+                #     'outputchanged': False,
+                #     'inputchanged': False
+                # }}
+                # weekstr = self.weeksdictlist[index.column()]
+                # containername= self.containerheaders[index.row()]
+                # containerid = self.containernametoid[containername]
+                # cellinfo = self.weeksdict[weekstr][containerid]['cellinfo']
 
-            if len(cellinfo['frames'])>0:
-                return len(cellinfo['frames'])
-            else:
-                return
-
-        if role == Qt.BackgroundColorRole:
-            weekstr = self.weeksdictlist[index.column()]
-            containerid = self.containerheaders[index.row()]
-            cellinfo = self.weeksdict[weekstr][containerid]['cellinfo']
-
-            if len(cellinfo['frames'])>0:
-                if cellinfo['outputchanged']:
-                    return QBrush(Qt.green)
+                if len(cellinfo['frames'])>0:
+                    return len(cellinfo['frames'])
                 else:
-                    return QBrush(Qt.blue)
-            else:
-                return
+                    return
 
-
-        if role == Qt.TextAlignmentRole:
-            return Qt.AlignCenter
+            if role == Qt.BackgroundColorRole:
+                if len(cellinfo['frames'])>0:
+                    if cellinfo['outputchanged']:
+                        return QBrush(Qt.green)
+                    else:
+                        return QBrush(Qt.blue)
+                else:
+                    return
+            if role == Qt.TextAlignmentRole:
+                return Qt.AlignCenter
+        else:
+            return
 
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
@@ -237,7 +243,8 @@ class GanttListDelegate(QStyledItemDelegate):
         super(GanttListDelegate, self).__init__()
     def paint(self,painter:QPainter, option, index:QModelIndex):
         weekstr = index.model().weeksdictlist[index.column()]
-        containerid = index.model().containerheaders[index.row()]
+        containername = index.model().containerheaders[index.row()]
+        containerid=index.model().containernametoid[containername]
         cellinfo = index.model().weeksdict[weekstr][containerid]['cellinfo']
         # {'cellinfo': {
         #     'frames': [],
