@@ -233,15 +233,17 @@ class MapTab():
             contdir = os.path.join(openDirectoryDialog, self.dlcontainerid)
             if not os.path.exists(contdir):
                 os.mkdir(contdir)
+                dlcontainyaml = Container.downloadContainerInfo(openDirectoryDialog, sagaguimodel.authtoken, BASE,
+                                                                self.dlcontainerid)
+                dlcontainer = Container.LoadContainerFromYaml(containerfnfullpath=dlcontainyaml)
+                dlcontainer.downloadbranch('Main', BASE, sagaguimodel.authtoken, contdir)
+                sagaguimodel.downloadfullframefiles(dlcontainer)
+                self.mainguihandle.maincontainertab.readcontainer(dlcontainyaml)
+                self.mainguihandle.maintabwidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
             else:
-                print('Container exists already...removing')
+                raise('Container exists already...removing')
                 # shutil.rmtree(contdir)
-            dlcontainyaml = Container.downloadContainerInfo(openDirectoryDialog, sagaguimodel.authtoken, BASE, self.dlcontainerid)
-            dlcontainer = Container.LoadContainerFromYaml(containerfnfullpath=dlcontainyaml)
-            dlcontainer.downloadbranch('Main', BASE, sagaguimodel.authtoken,contdir)
-            sagaguimodel.downloadfullframefiles(dlcontainer)
-            self.mainguihandle.maincontainertab.readcontainer(dlcontainyaml)
-            self.mainguihandle.maintabwidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
+
             # # print(os.path.join(openDirectoryDialog, self.dlcontainer))
             # if openDirectoryDialog:
             #     print(os.path.split(openDirectoryDialog[0]))
