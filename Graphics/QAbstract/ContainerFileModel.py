@@ -26,7 +26,7 @@ class ContainerFileModel(QAbstractTableModel):
 
     def latestRevFor(self,maincontainer:Container,fileheader):
         if fileheader not in maincontainer.getRefFrame().filestrack.keys():
-            return fileheader + " not in Container " + maincontainer.containerName
+            return 'Rev Next', 'Not Committed Yet'
         curmd5 = maincontainer.getRefFrame().filestrack[fileheader].md5
         # print(self.revnum, self.workingFrame.FrameName)
         lastsamerevnum = maincontainer.revnum

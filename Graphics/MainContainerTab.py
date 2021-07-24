@@ -334,7 +334,9 @@ class MainContainerTab():
                                              )
         fileinfo = addfilegui.getInputs()
         if fileinfo:
-            sagaguimodel.maincontainer.addFileObject(fileinfo=fileinfo)
+            downloadfile = sagaguimodel.maincontainer.addFileObject(fileinfo=fileinfo)
+            if downloadfile:
+                sagaguimodel.downloadFile(filetrack=downloadfile['filetrack'], containerworkingfolder=sagaguimodel.maincontainer.containerworkingfolder)
             sagaguimodel.getStatus()
             self.containerfiletable.model().update()
 

@@ -401,17 +401,20 @@ class Container:
         # fileheader, containerfileinfo, filepath, filetype: str, ctnrootpathlist, rev=None):
         filetype = fileinfo['filetype']
         fileheader = fileinfo['fileheader']
+        downloadfile = None
         if filetype ==typeInput:
             upstreamcontainer = fileinfo['UpstreamContainer']
-            fullpath  = upstreamcontainer.workingFrame.downloadInputFile(fileinfo['fileheader'],
-                                                                                   self.workingdir)
+            upstreamfiletrack = upstreamcontainer.getRefFrame().filestrack[fileheader]
+
+            # destintationfilepath  = join( self.containerworkingfolder, upstreamfiletrack.ctnrootpath, upstreamfiletrack.file_name)
             self.FileHeaders[fileheader] = fileinfo['containerfileinfo']
             self.workingFrame.addfromOutputtoInputFileTotrack(fileheader=fileheader,
-                                                              style=typeInput, fullpath=fullpath,
-                                                              reffiletrack=upstreamcontainer.workingFrame.filestrack[fileheader],
+                                                              style=typeInput,
+                                                              reffiletrack=upstreamfiletrack,
                                                               containerworkingfolder=self.containerworkingfolder,
-                                                              refContainerId=fileinfo['containerfileinfo']['containerid'],
+                                                              refContainerId=upstreamcontainer.containerId,
                                                               rev='Rev' + str(upstreamcontainer.revnum))
+            downloadfile = {'filetrack':self.workingFrame.filestrack[fileheader] }
         elif filetype == typeRequired:
             self.FileHeaders[fileheader] = fileinfo['containerfileinfo']
             self.workingFrame.addFileTotrack(fileheader, fileinfo['FilePath'],filetype,fileinfo['ctnrootpathlist'])
@@ -422,6 +425,7 @@ class Container:
             raise ('Doesnt recognize filetype.')
         self.workingFrame.writeoutFrameYaml()
         self.save()
+        return downloadfile
         # self.filestomonitor['fileheader'] =  typeInput
 
     def filestomonitor(self):

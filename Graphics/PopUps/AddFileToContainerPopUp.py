@@ -65,8 +65,11 @@ class AddFileToContainerPopUp(QDialog):
         if tabindex==0:
             self.filetype = typeInput
         else:
-            if self.filetyperadiogroup.checkedButton().text() in [typeRequired,typeOutput]:
-                self.filetype = self.filetyperadiogroup.checkedButton().text()
+            if self.filetyperadiogroup.checkedButton():
+                if self.filetyperadiogroup.checkedButton().text() in [typeRequired,typeOutput]:
+                    self.filetype = self.filetyperadiogroup.checkedButton().text()
+                else:
+                    self.filetype = None
             else:
                 self.filetype = None
 
