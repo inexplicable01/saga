@@ -67,7 +67,7 @@ class containerBox(QGraphicsRectItem):
         self.setPen(QPen(Qt.white))
         self.containertitle=container.containerId
         self.containerscene = containerscene
-        self.titletext = self.containerscene.addText(container.containerId)
+        self.titletext = self.containerscene.addText(container.containerName)
         self.titletext.setPos(QPointF(10,10))
         self.titletext.setFont(QFont("Times",16))
         self.titletext.setDefaultTextColor(Qt.white)
@@ -122,13 +122,13 @@ class ConnectionBox():
         self.containInBox = QGraphicsRectItem(containerBoxWidth*-1.0, 0,  containerBoxWidth,containerBoxHeight)
         self.containInBox.setPen(Qt.white)
         containerscene.addItem(self.containInBox)
-        containerintext = QGraphicsTextItem(containerIn.containerId, parent=self.containInBox)
+        containerintext = QGraphicsTextItem(containerIn.containerName, parent=self.containInBox)
         containerintext.setPos(self.containInBox.rect().topLeft())
         containerintext.setDefaultTextColor(Qt.white)
 
         self.containoutBox = QGraphicsRectItem(containerBoxWidth * gap, 0, containerBoxWidth, containerBoxHeight)
         containerscene.addItem(self.containoutBox)
-        containerouttext = QGraphicsTextItem(containerOut.containerId, parent=self.containoutBox)
+        containerouttext = QGraphicsTextItem(containerOut.containerName, parent=self.containoutBox)
         containerouttext.setPos(self.containoutBox.rect().topLeft())
         containerouttext.setDefaultTextColor(Qt.white)
 

@@ -56,16 +56,18 @@ class Container:
 
 
     @classmethod
-    def InitiateContainer(cls, directory,containerName = ''):
-        newcontainer = cls(containerworkingfolder=directory,
+    def InitiateContainer(cls, containerworkingfolder,containerName = '', currentbranch='Main'):
+        newcontainer = cls(containerworkingfolder=containerworkingfolder,
                            containerName=containerName,
                            containerid=uuid.uuid4().__str__(),
                            FileHeaders={},
                            allowedUser=[],
                            readingUsers=[],
-                           currentbranch="Main",revnum='0',
-                           refframefullpath=NEWFRAMEFN,
-                           workingFrame = Frame.InitiateFrame(parentcontainerid=containerName,parentcontainername=containerName, localdir=directory),
+                           currentbranch="Main",revnum=0,
+                           refframefullpath=join(containerworkingfolder,currentbranch, NEWFRAMEFN),
+                           workingFrame = Frame.InitiateFrame(parentcontainerid=containerName,
+                                                              parentcontainername=containerName,
+                                                              containerworkingfolder=containerworkingfolder),
                            yamlfn = NEWCONTAINERFN,
                            ismaincontainer= True
                            )
@@ -82,7 +84,7 @@ class Container:
         FileHeaders = containerdict['FileHeaders']
         refframefullpath, revnum = getFramePathbyRevnum(os.path.join(containerworkingfolder, currentbranch), revnum)
         try:
-            workingFrame = Frame.loadFramefromYaml(refframefullpath,containerworkingfolder)
+            workingFrame = Frame.LoadFrameFromYaml(refframefullpath,containerworkingfolder)
         except Exception as e:
             workingFrame = Frame.InitiateFrame(parentcontainerid=containerdict['containerId'],
                                                parentcontainername=containerdict['containerName'],
@@ -125,7 +127,7 @@ class Container:
             workingFrame=None
 
         if containeryamlfn==NEWCONTAINERFN:
-            refframefullpath, revnum = join(containerworkingfolder, NEWFRAMEFN), 0
+            refframefullpath, revnum = join(containerworkingfolder,currentbranch, NEWFRAMEFN), 0
         else:
             refframefullpath, revnum = getFramePathbyRevnum(join(containerworkingfolder, currentbranch), revnum)
 
@@ -226,13 +228,13 @@ class Container:
 
         return containerdictjson,framedictjson, updateinfojson, filesToUpload
 
-    def setContainerForNewframe(self,yamlframefn,yamlframefnfullpath):
+    def setContainerForNextframe(self,yamlframefnfullpath):
         self.workingFrame = Frame.loadRefFramefromYaml(yamlframefnfullpath, self.containerworkingfolder)
         self.refframefullpath = yamlframefnfullpath
-        self.save(fn=CONTAINERFN)
-        self.save(fn=TEMPCONTAINERFN)
+        self.save(fn=CONTAINERFN, commitprocess=True)
         # self.workingFrame.writeoutFrameYaml()
         self.workingFrame.writeoutFrameYaml(fn=TEMPFRAMEFN)
+        yamlframefn = os.path.basename(yamlframefnfullpath)
         m = re.search('Rev(\d+).yaml', yamlframefn)
         if m:
             self.revnum = int(m.group(1))
@@ -347,18 +349,24 @@ class Container:
 
         return changesbyfile
 
-    def save(self, fn = None):
+    def save(self,fn=None, commitprocess=False):
 #https://stackoverflow.com/questions/13215716/ioerror-errno-13-permission-denied-when-trying-to-open-hidden-file-in-w-mod
-        if fn is None:
+        if fn==None:
             fn = self.yamlfn
         else:
-            fn = TEMPCONTAINERFN
+            if commitprocess:
+                fn = CONTAINERFN
+                print('Only allow CONTAINERFN to be overwritten during commitprocess')
+            else:
+                fn = TEMPCONTAINERFN
         if os.path.exists(join(self.containerworkingfolder, fn)):
             unhidefile(join(self.containerworkingfolder, fn))
         outyaml = open(join(self.containerworkingfolder, fn), 'w')
         yaml.dump(self.dictify(), outyaml)
         outyaml.close()
         makefilehidden(join(self.containerworkingfolder, fn))
+        if commitprocess==True:
+            fn = TEMPCONTAINERFN  ## Set this back to temp after CONTAINFN has been written
         self.yamlfn=fn
 
     def setAllowedUser(self, allowedUserList):
@@ -386,7 +394,7 @@ class Container:
         else:
             print('Fileheader ' + fileheader + ' doesn''t exist in the frame.  The removal of Fileheader was not performed because its not in the container')
         self.workingFrame.writeoutFrameYaml()
-        self.save(fn=self.yamlfn)
+        self.save()
 
     # def addInputFileObject(self, fileheader,reffiletrack, fullpath,refContainerId,branch,rev):
     def addFileObject(self, fileinfo):
@@ -413,7 +421,7 @@ class Container:
         else:
             raise ('Doesnt recognize filetype.')
         self.workingFrame.writeoutFrameYaml()
-        self.save(fn=self.yamlfn)
+        self.save()
         # self.filestomonitor['fileheader'] =  typeInput
 
     def filestomonitor(self):
@@ -459,7 +467,7 @@ class Container:
         for user in userlist:
             if user not in self.allowedUser:
                 self.allowedUser.append(user)
-        self.save(fn=self.yamlfn)
+        self.save()
 
 
 

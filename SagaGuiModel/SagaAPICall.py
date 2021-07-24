@@ -77,15 +77,14 @@ class SagaAPICall():
         currentsection = resp['currentsection']
         return sectioninfo, currentsection
 
-    def downloadContainerCall(self, newcontparentdirpath, containerId, use):
+    def downloadContainerCall(self, containerworkingfolder, containerId, use):
         headers = {'Authorization': 'Bearer ' + self.authtoken}
         response = requests.get(BASE + 'CONTAINERS/containerID', headers=headers, data={'containerID': containerId})
-        ensureFolderExist(join(newcontparentdirpath, containerId, 'Main', 'Rev1.yaml'))## Hack 'File name is needed but not used.'
+        ensureFolderExist(join(containerworkingfolder, 'Main', 'Rev1.yaml'))## Hack 'File name is needed but not used.'
         dlcontent = json.loads(response.content.decode('utf-8'))
         requestfailed = False
         if requestfailed:
             return
-        containerworkingfolder = join(newcontparentdirpath, containerId)
         for yamlfn, framedict in dlcontent['fullframelist'].items():
             frame = Frame.LoadFrameFromDict(framedict, containerworkingfolder, yamlfn)
             frame.writeoutFrameYaml()
@@ -124,15 +123,16 @@ class SagaAPICall():
         makefilehidden(join(refpath, containerId, branch))
         return frameyamlDL
 
-    def downloadFile(self, filetrack:FileTrack, filepath, newfilename=None ):
+    def downloadFile(self, filetrack:FileTrack, containerworkingfolder, newfilename=None ):
         response = requests.get(BASE + 'FILES',
                                 data={'md5': filetrack.md5,
                                       'file_name': filetrack.file_name})
         # Loops through the filestrack in curframe and request files listed in the frame
+        # ATTENTION, MOST OF THE STUFF BELOW DOES NOT BELOW IN THIS CLASS
         if newfilename is None:
-            fn = os.path.join(filepath,filetrack.ctnrootpath, response.headers['file_name'])
+            fn = os.path.join(containerworkingfolder,filetrack.ctnrootpath, response.headers['file_name'])
         else:
-            fn = os.path.join(filepath, filetrack.ctnrootpath, newfilename)
+            fn = os.path.join(containerworkingfolder, filetrack.ctnrootpath, newfilename)
         if not filetrack.ctnrootpath == '.':
             ensureFolderExist(fn)
         if response.headers['status']=='Success':
@@ -210,20 +210,34 @@ class SagaAPICall():
         servermessage = response.headers['response']
         return returncontdict,returnframedict, servermessage
 
-    def sectionSwitch(self, newsectionid):
+    def sectionSwitchCall(self, newsectionid):
         payload = {'newsectionid': newsectionid}
         headers = {'Authorization': 'Bearer ' + self.authtoken}
         switchresponse = requests.post(BASE + 'USER/switchusersection', headers=headers, data=payload)
         resp = json.loads(switchresponse.content)
-        report = resp['report']
-        status = report['status']
-        return status
+        report = resp['report']##ATTENTION...Imean comone
+        usersection = resp['usersection']
+        return report, usersection
 
-    def shouldModelSwitch(self,containerpath):
+    def addUserToContainerCall(self,userdata,emailtoadd,current_sectionid,containerId):
 
-        loadingcontainer = Container.LoadContainerFromYaml(containerpath, revnum=None)
-        payload = {'containerid': loadingcontainer.containerId}
+        response = requests.post(BASE + 'PERMISSIONS/AddUserToContainer',
+                                 headers={"Authorization": 'Bearer ' + self.authtoken},
+                                 json={"email": userdata['email'],
+                                       "new_email": emailtoadd,
+                                       "sectionid": current_sectionid,
+                                       "containerId": containerId,
+                                       }
+                                 )
+        permissionsresponse = json.loads(response.content)
+        return permissionsresponse
+
+    def shouldModelSwitchCall(self,containerId):
+
+
+        payload = {'containerid': containerId}
         headers = {'Authorization': 'Bearer ' + self.authtoken}
+
         permissionsresponse = requests.get(BASE + 'USER/checkcontainerpermissions', headers=headers, data=payload)
         print(permissionsresponse.headers['message'])
         # permissionsresponsecontent = json.loads(permissionsresponse.content)

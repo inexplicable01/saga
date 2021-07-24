@@ -98,16 +98,17 @@ class AddFileToContainerPopUp(QDialog):
             self.revlbl.setText("Rev: ")
             self.buttonBox1.button(QDialogButtonBox.Ok).setEnabled(False)
 
-    def showContainerFromList(self, containerList):
-        rownumber = containerList.row()
-        index = containerList.model().index(rownumber, 0)
-        containerId = containerList.model().data(index, 0)
+    def showContainerFromList(self, containerListindex):
+        rownumber = containerListindex.row()
+        index = containerListindex.model().index(rownumber, 0)
+        containerId = containerListindex.model().data(index, 0)
+        containerName = containerListindex.model().data(index, 1)
         refcontainerpath = os.path.join(sagaguimodel.desktopdir, 'ContainerMapWorkDir', containerId , CONTAINERFN)
         if os.path.exists(refcontainerpath):
             self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         else:
-            refpath = os.path.join(sagaguimodel.desktopdir,'ContainerMapWorkDir')
-            containerworkingfolder, self.selectedContainer=sagaguimodel.downloadContainer(refpath, containerId)
+            containerworkingfolder = os.path.join(sagaguimodel.desktopdir,'ContainerMapWorkDir', containerId)
+            containerworkingfolder, self.selectedContainer=sagaguimodel.downloadContainer(containerworkingfolder, containerId)
         # self.tester.setText(self.selectedContainer.containerName)
         self.refContainerPlot.setContainer(self.selectedContainer)
         self.refContainerPlot.plot({})

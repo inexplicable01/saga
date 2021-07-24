@@ -140,7 +140,7 @@ class ContainerFileModel(QAbstractTableModel):
                 # self.containerfiles[i]['change'] = changes[rowdict['fileheader']]
             else:
                 rowdict['change'] = None
-        self.dataChanged
+        self.layoutChanged.emit()
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
@@ -161,6 +161,7 @@ class ContainerFileModel(QAbstractTableModel):
             return 0
         else:
             return len(self.headers)
+
 
 
 # def createBeginRect(painter, cellrect, qtbrushcolor, squaresidepx, pxlinewidth):

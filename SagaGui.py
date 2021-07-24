@@ -171,8 +171,8 @@ class UI(QMainWindow):
             self.maincontainertab.refreshedcheck = 0
 
     def containerPermission(self):
-        if self.maincontainertab.mainContainer:
-            permissiongui = permissionsDialog(self.maincontainertab.mainContainer, self)
+        if sagaguimodel.maincontainer:
+            permissiongui = permissionsDialog(sagaguimodel.maincontainer, self)
             permissiongui.exec_()
 
     def refresh(self):

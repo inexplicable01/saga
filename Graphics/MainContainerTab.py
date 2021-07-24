@@ -212,7 +212,7 @@ class MainContainerTab():
                     # self.newContainerStatus = False
                     containeryaml = os.path.join(sagaguimodel.maincontainer.containerworkingfolder, TEMPCONTAINERFN)
                     self.mainguihandle.maincontainertab.readcontainer(containeryaml)
-                    self.mainguihandle.tabWidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
+                    self.mainguihandle.maintabwidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
                     self.mainguihandle.refresh()
                     # self.mainguihandle.maptab.updateContainerMap()
                     self.newcontaineredit.setDisabled(True)
@@ -266,9 +266,9 @@ class MainContainerTab():
             msg.exec_()
 
         if goswitch:
-            switchstatus = sagaguimodel.sectionSwitch(newsectionid)
-            msg.setText(switchstatus)
-            if switchstatus== 'User Current Section successfully changed':
+            report, usersection = sagaguimodel.sectionSwitch(newsectionid)
+            msg.setText(report['status'])
+            if report['status']== 'User Current Section successfully changed to ' + usersection:
                 msg.setIcon(QMessageBox.Information)
                 self.mainguihandle.resetguionsectionswitch()
             else:
@@ -277,6 +277,7 @@ class MainContainerTab():
             msg.exec_()
 
         print('Loading ' + containerpath)
+        sagaguimodel.modelsreset()
         cont, histModel, containerfilemodel = sagaguimodel.loadContainer(containerpath)
 
         # [self.workingdir, file_name] = os.path.split(containerpath)  ## working dir should be app level
@@ -376,10 +377,12 @@ class MainContainerTab():
     def initiate(self, inputs):
         containerworkingfolder = inputs['dir']
         containername = inputs['containername']
-        containerfilemodel = sagaguimodel.initiateNewContainer(containerworkingfolder, containername)
+        containerfilemodel,histModel = sagaguimodel.initiateNewContainer(containerworkingfolder, containername)
         self.containerlabel.setText(containername)
         self.containerfiletable.setModel(containerfilemodel)
-        self.commithisttable.setModel(self.histModel)
+        self.containerfiletable.setItemDelegate(ContainerFileDelegate())
+        self.commithisttable.setModel(histModel)
+        self.commithisttable.setItemDelegate(HistoryCellDelegate())
         self.framelabel.setText('Revision 0 (New Container)')
         self.newcontaineredit.setEnabled(True)
         self.setTab(True)

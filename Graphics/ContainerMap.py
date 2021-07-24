@@ -175,6 +175,7 @@ class containerRect(QGraphicsRectItem):
         self.mainguihandle.dlContainerBttn.setEnabled(True)
         self.mainguihandle.dlContainerBttn.setText('Click to Download Container ' + self.container.containerName)
         self.mainguihandle.maptab.dlcontainerid = self.container.containerId
+        self.mainguihandle.maptab.dlcontainername = self.container.containerName
 
     def boundingRect(self):
         return self.rect()
@@ -237,8 +238,8 @@ class containerRect(QGraphicsRectItem):
         # self.text.setPos(self.QPos)
 
     def mouseReleaseEvent(self,event):
-        self.selecteddetail['selectedobjname']=self.container.containerName
-        self.detailedmap.selectedobj(self.container.containerName)
+        self.selecteddetail['selectedobjname']=self.container.containerId
+        self.detailedmap.selectedobj(self.container.containerId)
         for containerid, rectitem in self.activeContainersObj.items():
             if containerid==self.container.containerId:
                 continue

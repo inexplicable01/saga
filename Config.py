@@ -2,9 +2,9 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import QColor
 import os
 
-# BASE = "http://fatpanda1985.pythonanywhere.com/"
+BASE = "http://fatpanda1985.pythonanywhere.com/"
 # BASE = "http://10.0.0.227:9500/"
-BASE = "http://127.0.0.1:5000/"
+# BASE = "http://127.0.0.1:5000/"
 
 # comment
 typeInput='Input'
@@ -130,7 +130,7 @@ privatepackagecustomer = {'first_name':'Good',
                    'email':'customer@gmail.com',
                     'password':'passwordCust',
 }
-testerlogin=privatepackagechris
+testerlogin=waichak
 
 
 TEMPCONTAINERFN='temp_containerstate.yaml'

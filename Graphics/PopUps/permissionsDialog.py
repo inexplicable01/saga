@@ -60,20 +60,11 @@ class permissionsDialog(QDialog):
         self.exitbttn.clicked.connect(self.reject)
 
     def adduser(self):
-        response = requests.post(BASE + 'PERMISSIONS/AddUserToContainer',
-                                 headers={"Authorization": 'Bearer ' + sagaguimodel.authtoken},
-                                 json={"email": sagaguimodel.userdata['email'],
-                                       "new_email":self.emailedit.text(),
-                                        "sectionid":sagaguimodel.userdata['current_sectionid'],
-                                       "containerId": self.mainContainer.containerId,
-                                       }
-                                 )
-        permissionsresponse = json.loads(response.content)
+        permissionsresponse, allowedUsers  = sagaguimodel.addUserToContainer(self.emailedit.text())
         print(permissionsresponse['ServerMessage'])
         if permissionsresponse['result']:
-            self.mainContainer.setAllowedUser(permissionsresponse['allowedUser'])
             self.emailedit.setText('')
-            self.usermodel.listusers(self.mainContainer.allowedUser)
+            self.usermodel.listusers(allowedUsers)
             self.usermodel.layoutChanged.emit()
         else:
             self.errorlbl.setText(permissionsresponse['ServerMessage'])
