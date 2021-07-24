@@ -30,12 +30,12 @@ Rev = 'Rev'
 blankcontainer = {'containerName':"" ,'containerId':"",'FileHeaders': {} ,'allowedUser':[] }
 
 class Container:
-    def __init__(self, containerworkingfolder,containerName,containerId,
+    def __init__(self, containerworkingfolder,containerName,containerid,
                  FileHeaders,allowedUser,readingUsers,currentbranch,revnum,refframefullpath,
-                 workingFrame: Frame, yamlfn=TEMPCONTAINERFN):
+                 workingFrame: Frame, yamlfn=TEMPCONTAINERFN, ismaincontainer=False):
         self.containerworkingfolder = containerworkingfolder
         self.containerName = containerName
-        self.containerId = containerId
+        self.containerId = containerid
         self.FileHeaders = FileHeaders
         self.allowedUser = allowedUser
         self.readingUsers = readingUsers
@@ -45,21 +45,30 @@ class Container:
         self.workingFrame= workingFrame
         self.updatedInputs = False
         self.yamlfn = yamlfn
+        self.memoryframesdict={}
 
+        if ismaincontainer==True:
+            yamllist = glob.glob(os.path.join(containerworkingfolder, 'Main', 'Rev*.yaml'))
+            for yamlfn in yamllist:
+                revyaml = os.path.basename(yamlfn)
+                pastframe = Frame.LoadFrameFromYaml(yamlfn, containerworkingfolder)
+                self.memoryframesdict[revyaml] = pastframe
 
 
     @classmethod
     def InitiateContainer(cls, directory,containerName = ''):
         newcontainer = cls(containerworkingfolder=directory,
                            containerName=containerName,
-                           containerId=uuid.uuid4().__str__(),
+                           containerid=uuid.uuid4().__str__(),
                            FileHeaders={},
                            allowedUser=[],
                            readingUsers=[],
                            currentbranch="Main",revnum='0',
                            refframefullpath=NEWFRAMEFN,
                            workingFrame = Frame.InitiateFrame(parentcontainerid=containerName,parentcontainername=containerName, localdir=directory),
-                           yamlfn = NEWCONTAINERFN)
+                           yamlfn = NEWCONTAINERFN,
+                           ismaincontainer= True
+                           )
         newcontainer.save()
         return newcontainer
 
@@ -69,7 +78,7 @@ class Container:
     ## Loading containers on Client side is fundamentally different than loading them on the server side.
     @classmethod
     def LoadContainerFromDict(cls, containerdict,containerworkingfolder, containeryamlfn, currentbranch='Main',revnum=0,
-                              environ='FrontEnd', sectionid='', ):
+                              environ='FrontEnd', sectionid='',ismaincontainer= False ):
         FileHeaders = containerdict['FileHeaders']
         refframefullpath, revnum = getFramePathbyRevnum(os.path.join(containerworkingfolder, currentbranch), revnum)
         try:
@@ -82,17 +91,17 @@ class Container:
                            containerName=containerdict['containerName'],
                             yamlfn=containeryamlfn,
                             readingUsers=containerdict['allowedUser'],## ATTENTION, need to create different levels of permissions user
-                           containerId=containerdict['containerId'],
+                           containerid=containerdict['containerId'],
                            FileHeaders=FileHeaders,
                            allowedUser=containerdict['allowedUser'],
                            currentbranch=currentbranch, revnum=revnum,
-                           refframefullpath=refframefullpath, workingFrame=workingFrame)
+                           refframefullpath=refframefullpath, workingFrame=workingFrame, ismaincontainer=ismaincontainer)
         return container
 
 
 
     @classmethod
-    def LoadContainerFromYaml(cls, containerfnfullpath, currentbranch='Main',revnum=None, fullload=True):
+    def LoadContainerFromYaml(cls, containerfnfullpath, currentbranch='Main',revnum=None, fullload=True, ismaincontainer=False):
         containerworkingfolder = os.path.dirname(containerfnfullpath)
         containeryamlfn = os.path.basename(containerfnfullpath)
         try:
@@ -122,12 +131,13 @@ class Container:
 
         container = cls(containerworkingfolder=containerworkingfolder,
                            containerName=containeryaml['containerName'],
-                           containerId=containeryaml['containerId'],
+                           containerid=containeryaml['containerId'],
                            FileHeaders=FileHeaders,
                            allowedUser=containeryaml['allowedUser'],
                            readingUsers=containeryaml['readingUsers'],
                            currentbranch=currentbranch, revnum=revnum,
-                           refframefullpath=refframefullpath, workingFrame=workingFrame, yamlfn=containeryamlfn)
+                           refframefullpath=refframefullpath, workingFrame=workingFrame,
+                            yamlfn=containeryamlfn, ismaincontainer=ismaincontainer)
         if container.yamlfn == CONTAINERFN:
             container.yamlfn == TEMPFRAMEFN
             container.save()

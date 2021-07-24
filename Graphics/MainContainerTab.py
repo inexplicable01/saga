@@ -161,13 +161,14 @@ class MainContainerTab():
         # allowCommit, changes, fixInput , self.alterfiletracks= sagaguimodel.maincontainer.checkFrame(sagaguimodel.maincontainer.workingFrame)
         if sagaguimodel.maincontainer is None:
             return
-
+        print('before GetStatus' + datetime.now().isoformat())
         statustext, allowcommit, needtorefresh,  changes = sagaguimodel.getStatus()
+        print('aft GetStatus' + datetime.now().isoformat())
         self.containerstatuslabel.setText(statustext)
         self.commitBttn.setEnabled(allowcommit)
         self.commitmsgEdit.setDisabled(not allowcommit)
         self.newcontaineredit.setDisabled(not sagaguimodel.isNewContainer()) # if this is a new container, edit should be enabled.
-        self.containerfiletable.model().update()
+
         self.refreshcontainerbttn.setEnabled(needtorefresh)
         self.frametextBrowser.setText('')
         for fileheader, change in changes.items():
@@ -177,6 +178,7 @@ class MainContainerTab():
                 hexcolor = QColor(colorscheme[reason]).name()
                 text = text + '<span style = "color:' + hexcolor + '"> '+reason+'</span>, '
             self.frametextBrowser.append(text)
+        self.containerfiletable.model().update()
         print('Check Done ' + datetime.now().isoformat())
 
     def commitmsgeditchange(self):

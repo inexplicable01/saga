@@ -90,8 +90,7 @@ class SagaGuiModel():
         if 'EMPTY' in self.containerinfodict.keys():
             return []
         for containerID in self.containerinfodict.keys():
-            newcontparentdirpath = join(self.desktopdir,'ContainerMapWorkDir')
-            self.downloadContainer(newcontparentdirpath, containerID)
+            self.downloadContainer(join(self.desktopdir,'ContainerMapWorkDir'), containerID)
         if not os.path.exists(join(self.desktopdir, 'SagaGuiData', self.userdata['current_sectionid'])):
             os.mkdir(join(self.desktopdir, 'SagaGuiData',self.userdata['current_sectionid']))
         return self.containerinfodict
@@ -144,7 +143,7 @@ class SagaGuiModel():
 
     def loadContainer(self, containerpath):
 
-        self.maincontainer = Container.LoadContainerFromYaml(containerpath, revnum=None)
+        self.maincontainer = Container.LoadContainerFromYaml(containerpath, revnum=None, ismaincontainer=True)
         self.histModel = HistoryListModel(self.maincontainer .commithistory())
         self.histModel.individualfilehistory(self.maincontainer.commithistorybyfile())
 

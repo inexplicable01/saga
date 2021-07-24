@@ -32,15 +32,13 @@ class ContainerFileModel(QAbstractTableModel):
         lastsamerevnum = maincontainer.revnum
         while lastsamerevnum > 1:
             lastsamerevnum -= 1
-            framefullpathyaml = join(maincontainer.containerworkingfolder, 'Main',
-                                     'Rev' + str(lastsamerevnum) + '.yaml')
+            revyaml = 'Rev' + str(lastsamerevnum) + '.yaml'
 
-            if not os.path.exists(framefullpathyaml):
-                warnings.warn('Rev' + str(lastsamerevnum) + '.yaml  is missing')
-            try:
-                pastframe = Frame.loadRefFramefromYaml(framefullpathyaml, maincontainer.containerworkingfolder)
-            except:
-                warnings.warn('Rev' + str(lastsamerevnum) + '.yaml  did not load, could be corrupted')
+            if revyaml in maincontainer.memoryframesdict.keys():
+                pastframe = maincontainer.memoryframesdict[revyaml]
+            else:
+                warnings.warn('Rev' + str(lastsamerevnum) + '.yaml  cannot be found. Incomplete history')
+                continue
             if fileheader in pastframe.filestrack.keys():
                 if curmd5 != pastframe.filestrack[fileheader].md5:
                     return 'Rev' + str(lastsamerevnum + 1), pastframe.commitMessage

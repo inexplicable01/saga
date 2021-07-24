@@ -68,6 +68,15 @@ class SagaAPICall():
         return {'userstatusstatement': userstatusstatement,
                 'signinsuccess': signinsuccess} , userdata
 
+    def getListofSectionsforUser(self):
+        headers = {'Authorization': 'Bearer ' + self.authtoken}
+        response = requests.get(BASE + 'USER/getusersections', headers=headers)
+
+        resp = json.loads(response.content)
+        sectioninfo = resp['sectioninfo']
+        currentsection = resp['currentsection']
+        return sectioninfo, currentsection
+
     def downloadContainerCall(self, newcontparentdirpath, containerId, use):
         headers = {'Authorization': 'Bearer ' + self.authtoken}
         response = requests.get(BASE + 'CONTAINERS/containerID', headers=headers, data={'containerID': containerId})
@@ -145,6 +154,9 @@ class SagaAPICall():
         # saves the content into file.
         os.utime(fn, (filetrack.lastEdited, filetrack.lastEdited))
         return fn#,self.filestrack[fileheader]
+
+
+
 
     def downloadbranch(self,containerworkingfolder, cont:Container, branch='Main'):
 

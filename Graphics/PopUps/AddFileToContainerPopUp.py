@@ -107,8 +107,7 @@ class AddFileToContainerPopUp(QDialog):
             self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         else:
             refpath = os.path.join(sagaguimodel.desktopdir,'ContainerMapWorkDir')
-            sagaguimodel.downloadContainerState(refpath,sagaguimodel.authtoken, BASE, containerId)
-            self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
+            containerworkingfolder, self.selectedContainer=sagaguimodel.downloadContainer(refpath, containerId)
         # self.tester.setText(self.selectedContainer.containerName)
         self.refContainerPlot.setContainer(self.selectedContainer)
         self.refContainerPlot.plot({})
