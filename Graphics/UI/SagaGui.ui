@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1174</width>
+    <width>1024</width>
     <height>826</height>
    </rect>
   </property>
@@ -26,7 +26,7 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget
-{	background-color: #3d3d3d;
+{	background-color: black;
 	color: white;
 }</string>
   </property>
@@ -43,46 +43,9 @@
    <property name="styleSheet">
     <string notr="true">QMainWindow
 {
-	background-color: #3d3d3d
+	background-color: black
 
 }
-
-QMenuBar
-{
-	background-color: #3d3d3d;
-	font-size: 14px;
-
-}
-
-QMenuBar::item {
-    spacing: 3px;           
-    padding: 2px 10px;
-    background-color: #3d3d3d;
-    color: white;  
-    border-radius: 5px;
-}
-
-QMenuBar::item:disabled {
-	color:rgb(139, 139, 139)
-}
-
- QMenuBar::item:selected, QMenu::item:hover{
- background-color: #5c55e9;
- }
-
-QMenu {
-    background-color: #ABABAB; /* sets background of the menu */
-    border: 1px solid black;
-}
-
- QMenu::item{
- background-color:solid rgb(61, 61, 61);
- color: #ffffff;
- }
-
- QMenu::item:selected, QMenu::item:hover{
- background-color: #5c55e9;
- }
 
 
 
@@ -138,11 +101,11 @@ QMenu {
           <item>
            <widget class="QTabWidget" name="networktabwidget">
             <property name="currentIndex">
-             <number>2</number>
+             <number>1</number>
             </property>
             <widget class="QWidget" name="networkmaptab">
              <attribute name="title">
-              <string>Network Graph</string>
+              <string>Network</string>
              </attribute>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>
@@ -209,7 +172,7 @@ QMenu {
             </widget>
             <widget class="QWidget" name="networkganttcharttab">
              <attribute name="title">
-              <string>Network Gantt Chart</string>
+              <string>Gantt</string>
              </attribute>
              <layout class="QVBoxLayout" name="verticalLayout_5" stretch="10,0,4">
               <item>
@@ -276,7 +239,7 @@ QMenu {
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="8,1">
                 <item>
-                 <widget class="QLabel" name="label_11">
+                 <widget class="QLabel" name="containerdescriplbl">
                   <property name="maximumSize">
                    <size>
                     <width>431</width>
@@ -390,7 +353,7 @@ QMenu {
           <item>
            <widget class="QLabel" name="containerstatuslabel">
             <property name="text">
-             <string>TextLabel</string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -399,12 +362,18 @@ QMenu {
             <property name="enabled">
              <bool>true</bool>
             </property>
+            <property name="tabShape">
+             <enum>QTabWidget::Rounded</enum>
+            </property>
             <property name="currentIndex">
              <number>0</number>
             </property>
+            <property name="elideMode">
+             <enum>Qt::ElideMiddle</enum>
+            </property>
             <widget class="QWidget" name="filesdetailtab">
              <attribute name="title">
-              <string>File Details</string>
+              <string>Current</string>
              </attribute>
              <layout class="QVBoxLayout" name="verticalLayout_9" stretch="1">
               <item>
@@ -414,7 +383,7 @@ QMenu {
             </widget>
             <widget class="QWidget" name="commithistorytab">
              <attribute name="title">
-              <string>Commit History</string>
+              <string>History</string>
              </attribute>
              <layout class="QVBoxLayout" name="verticalLayout_10" stretch="0,10,1,0">
               <item>
@@ -481,7 +450,7 @@ QMenu {
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
-              <widget class="QLabel" name="label_4">
+              <widget class="QLabel" name="commitmsgboxlbl">
                <property name="maximumSize">
                 <size>
                  <width>431</width>
@@ -537,7 +506,7 @@ QMenu {
                <widget class="QPushButton" name="addtocontainerbttn">
                 <property name="maximumSize">
                  <size>
-                  <width>271</width>
+                  <width>300</width>
                   <height>16777215</height>
                  </size>
                 </property>
@@ -548,6 +517,12 @@ QMenu {
               </item>
               <item>
                <widget class="QPushButton" name="refreshcontainerbttn">
+                <property name="maximumSize">
+                 <size>
+                  <width>300</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
                 <property name="text">
                  <string>Refresh Container</string>
                 </property>
@@ -557,7 +532,7 @@ QMenu {
                <widget class="QPushButton" name="removefilebttn">
                 <property name="maximumSize">
                  <size>
-                  <width>271</width>
+                  <width>300</width>
                   <height>16777215</height>
                  </size>
                 </property>
@@ -646,12 +621,55 @@ QMenu {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1174</width>
-     <height>21</height>
+     <width>1024</width>
+     <height>24</height>
     </rect>
    </property>
    <property name="font">
-    <font/>
+    <font>
+     <pointsize>-1</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QMenuBar
+{
+	background-color: black;
+	font-size: 14px;
+
+}
+
+QMenuBar::item {
+    spacing: 3px;           
+    padding: 2px 10px;
+    background-color: black;
+    color: white;  
+    border-radius: 5px;
+}
+
+QMenuBar::item:disabled {
+	color:rgb(139, 139, 139)
+}
+
+ QMenuBar::item:selected, QMenu::item:hover{
+ background-color: qlineargradient(spread:repeat, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(254, 171, 66, 255),stop:1 rgba(255, 153, 0, 255));
+ }
+
+QMenu {
+    background-color: black; /* sets background of the menu */
+    border: 1px solid black;
+    color: white
+}
+
+ QMenu::item{
+ background-color:solid rgb(61, 61, 61);
+ color: #ffffff;
+ }
+
+ QMenu::item:selected, QMenu::item:hover{
+ background-color: qlineargradient(spread:repeat, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(254, 171, 66, 255),stop:1 rgba(255, 153, 0, 255));
+ }
+
+</string>
    </property>
    <widget class="QMenu" name="menuProfile">
     <property name="font">

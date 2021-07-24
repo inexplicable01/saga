@@ -18,7 +18,7 @@ from Graphics.PopUps.permissionsDialog import permissionsDialog
 from Graphics.PopUps.newuser import newUserDialog
 from Graphics.PopUps.switchsection import switchSectionDialog
 from Graphics.GuiUtil import setStyle
-# from SagaApp.SagaUtil import getContainerInfo
+
 
 from SagaGuiModel import sagaguimodel
 
@@ -98,23 +98,17 @@ class UI(QMainWindow):
         self.ContainerTab.installEventFilter(self)
         self.containerfiletable.installEventFilter(self)
         self.versionLabel.setText(str(sagaguimodel.versionnumber))
-        self.checkUserStatus()
+
         self.startingcheck = False
 
         setStyle(self, sagaguimodel.sourcecodedir)
 
         if debugmode:
-            payload = {'email': testerlogin['email'],
-                       'password': testerlogin['password']}
-            response = requests.post(BASE + 'auth/login',
-                                     data=payload,
-                                     )
-            signinresp = response.json()
-            print('usertoken[status] ' + signinresp['status'])
-            with open('token.txt', 'w') as tokenfile:
-                json.dump(signinresp, tokenfile)
+            signinstatus = sagaguimodel.sagaapicall.signInCall(testerlogin['email'],
+                                                               testerlogin['password'],
+                                                               sagaguimodel.tokenfile)
             # self.mainguihandle.checkUserStatus()
-            if signinresp['status'] == 'success':
+            if signinstatus['status'] == 'success':
                 self.refresh()
             containerexample = 'C:/Users/happy/Documents/Saga/PartDesign/'+TEMPCONTAINERFN
             self.maincontainertab.readcontainer(containerexample)
@@ -131,7 +125,7 @@ class UI(QMainWindow):
 
     def SignIn(self):
         # print(BASE)
-        inputwindow = SigninDialog(mainguihandle=self)
+        inputwindow = SigninDialog(mainguihandle=self, sagaguimodel=sagaguimodel)
         inputs = inputwindow.getInputs()
         if inputs['signinsuccess']:
             self.refresh()
@@ -140,7 +134,7 @@ class UI(QMainWindow):
     def SignOut(self):
         if os.path.exists("token.txt"):
             os.remove("token.txt")
-        self.checkUserStatus()
+        self.adjustGuiPerUserStatus()
         # print('sign out' + BASE)
 
     def SignUp(self):
@@ -154,7 +148,7 @@ class UI(QMainWindow):
             if 'status' in authtoken.keys() and authtoken['status'] == 'success':
                 with open('token.txt', 'w') as tokenfile:
                     json.dump(authtoken, tokenfile)
-                self.checkUserStatus()
+                self.adjustGuiPerUserStatus()
                 # sagaguimodel.getWorldContainers()
             else:
                 print('usertoken[status] ' + authtoken['status'])
@@ -182,7 +176,7 @@ class UI(QMainWindow):
             permissiongui.exec_()
 
     def refresh(self):
-        self.checkUserStatus()
+        self.adjustGuiPerUserStatus()
         containerinfodict = sagaguimodel.getWorldContainers()
         self.maptab.generateContainerMap(containerinfodict)
         self.maptab.generateSagaTree(containerinfodict)
@@ -191,7 +185,7 @@ class UI(QMainWindow):
     def resetguionsectionswitch(self):
         self.maincontainertab.reset()
         self.maptab.reset()
-        self.checkUserStatus()
+        self.adjustGuiPerUserStatus()
 
         ##Regenerate Container Ids of new section that got switched to.
         containerinfodict = sagaguimodel.getWorldContainers()
@@ -212,7 +206,7 @@ class UI(QMainWindow):
             with open('token.txt', 'w') as tokenfile:
                 json.dump(authtoken, tokenfile)
 
-            self.checkUserStatus()
+            self.adjustGuiPerUserStatus()
 
     def enterSection(self):
         # response = requests.get(BASE + 'user/getusersections', )
@@ -235,7 +229,7 @@ class UI(QMainWindow):
         font.setStrikeOut(False)
         self.actionContainer_Permission.setFont(font)
 
-    def checkUserStatus(self):
+    def adjustGuiPerUserStatus(self):
         status = sagaguimodel.checkUserStatus()
         self.userstatuslbl.setText(status['userstatusstatement'])
         self.menuContainer.setEnabled(status['signinsuccess'])
@@ -258,19 +252,19 @@ class UI(QMainWindow):
 
 
 
-# def excepthook(exc_type, exc_value, exc_tb):
-#     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
-#     print("error caught!:")
-#     print("error message:\n", tb)
-#     logging.error("Error:", exc_info=(exc_type, exc_value, exc_tb))
-#     errorDialog.showMessage("ERROR MESSAGE:" + tb)
-#     # QtWidgets.QApplication.quit()
-#     # or QtWidgets.QApplication.exit(0)
+def excepthook(exc_type, exc_value, exc_tb):
+    tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+    print("error caught!:")
+    print("error message:\n", tb)
+    logging.error("Error:", exc_info=(exc_type, exc_value, exc_tb))
+    errorDialog.showMessage("ERROR MESSAGE:" + tb)
+    # QtWidgets.QApplication.quit()
+    # or QtWidgets.QApplication.exit(0)
 
 
 # sys.excepthook = excepthook
 app = QApplication([])
 window = UI()
-# errorDialog = QtWidgets.QErrorMessage()
+errorDialog = QtWidgets.QErrorMessage()
 
 sys.exit(app.exec_())

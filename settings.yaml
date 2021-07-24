@@ -1,2 +1,4 @@
 sourcecodedir: 'C:\Users\happy\Documents\GitHub\saga'
 versionnumber: 0.1
+tokenlocation: appdata
+tokenfilename: token

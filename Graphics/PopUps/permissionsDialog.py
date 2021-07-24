@@ -96,7 +96,7 @@ class permissionsDialog(QDialog):
         #     self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         # else:
         #     refpath = os.path.join(sagaguimodel.desktopdir,'ContainerMapWorkDir')
-        #     Container.downloadContainerInfo(refpath,sagaguimodel.authtoken, BASE, containerId)
+        #     Container.sagaguimodel.downloadContainerState(refpath,sagaguimodel.authtoken, BASE, containerId)
         #     self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
         # # self.tester.setText(self.selectedContainer.containerName)
         # self.refContainerPlot.changeContainer(self.selectedContainer)

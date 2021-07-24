@@ -3,7 +3,7 @@ from Graphics.DetailedMap import DetailedMap
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from Config import BASE,  CONTAINERFN, colorscheme, typeRequired,typeInput,typeOutput
+from Config import BASE,  CONTAINERFN, colorscheme, typeRequired,typeInput,typeOutput, TEMPCONTAINERFN
 from Graphics.GuiUtil import RotatedHeaderView
 import shutil
 
@@ -113,9 +113,11 @@ class MapTab():
         self.gantttable = mainguihandle.gantttable
         self.commitmsglbl = mainguihandle.commitmsglbl
         self.ganttlegendview = mainguihandle.ganttlegendview
+        self.networktabwidget =  mainguihandle.networktabwidget
+        self.networktabwidget.setElideMode(Qt.ElideNone)
 
         makeganttchartlegend(self.ganttlegendview)
-        self.ganttlegendview
+
 
 
         # self.ganttChartBttn = mainguihandle.ganttChartBttn
@@ -123,7 +125,7 @@ class MapTab():
         # self.generateContainerBttn.clicked.connect(self.generateContainerMap)
         self.containerlisttable.clicked.connect(self.updatecontainertodl)
         self.dlContainerBttn.clicked.connect(self.downloadcontainer)
-        # self.ganttbttn.clicked.connect(self.showGanttChart)
+        # self.ganttbttn.clicked.connect(self.shoFwGanttChart)
         # self.sagatreemodel = SagaTreeModel()
         self.sagatreeviewcolumnmoved = False
 
@@ -185,7 +187,7 @@ class MapTab():
             self.containermap.editcontainerConnections()
             self.containermap.plot()
             self.detailedmap.passobj(self.containermap)
-            self.gantttable.setModel(GanttListModel(sagaguimodel.containernetworkkeys, sagaguimodel.desktopdir))
+            self.gantttable.setModel(GanttListModel(containerinfodict.keys(), sagaguimodel.desktopdir))
 
 
     def generateSagaTree(self, containerinfodict):
@@ -227,26 +229,20 @@ class MapTab():
 
 
     def downloadcontainer(self):
-        openDirectoryDialog =  QFileDialog().getExistingDirectory(self.mainguihandle, 'Select Folder Space to Place ' + self.dlcontainerid
+        newcontparentdirpath =  QFileDialog().getExistingDirectory(self.mainguihandle, 'Select Folder Space to Place ' + self.dlcontainerid
                                                                   + ' container folder.')
-        if openDirectoryDialog:
-            contdir = os.path.join(openDirectoryDialog, self.dlcontainerid)
+        if newcontparentdirpath:
+            contdir = os.path.join(newcontparentdirpath, self.dlcontainerid)
             if not os.path.exists(contdir):
                 os.mkdir(contdir)
-                dlcontainyaml = Container.downloadContainerInfo(openDirectoryDialog, sagaguimodel.authtoken, BASE,
-                                                                self.dlcontainerid)
-                dlcontainer = Container.LoadContainerFromYaml(containerfnfullpath=dlcontainyaml)
-                dlcontainer.downloadbranch('Main', BASE, sagaguimodel.authtoken, contdir)
-                sagaguimodel.downloadfullframefiles(dlcontainer)
-                self.mainguihandle.maincontainertab.readcontainer(dlcontainyaml)
+                containerworkingfolder, sagaguimodel.maincontainer = sagaguimodel.downloadContainer(newcontparentdirpath, self.dlcontainerid, 'WorkingContainer')
+                self.mainguihandle.maincontainertab.readcontainer(os.path.join(newcontparentdirpath, self.dlcontainerid,
+                                                                               TEMPCONTAINERFN))  ###ATTENTION Should be calling Model and Gui ReSet
                 self.mainguihandle.maintabwidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
             else:
-                raise('Container exists already...removing')
+                print('Container exists already...')
                 # shutil.rmtree(contdir)
 
-            # # print(os.path.join(openDirectoryDialog, self.dlcontainer))
-            # if openDirectoryDialog:
-            #     print(os.path.split(openDirectoryDialog[0]))
 
 
 

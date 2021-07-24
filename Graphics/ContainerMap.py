@@ -214,7 +214,7 @@ class containerRect(QGraphicsRectItem):
                 return text
 
         containerdisplayname= producedotdotdotstring(self.container.containerName, textRect.width(), "times", fontsize)
-        painter.setPen(QPen(QBrush(Qt.black), 1))
+        painter.setPen(QPen(QBrush(Qt.white), 1))
         painter.drawText(textRect, Qt.AlignCenter, containerdisplayname)
         painter.setBrush(QBrush(Qt.transparent))
         # painter.drawRect(textRect)
