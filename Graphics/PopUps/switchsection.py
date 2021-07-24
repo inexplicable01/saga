@@ -29,14 +29,11 @@ class switchSectionDialog(QDialog):
 
     def switchusersection(self):
         # print(self.comboboxid[self.existingsectionbox.currentIndex()])
-        payload = {'newsectionid': self.comboboxid[self.existingsectionbox.currentIndex()]}
-        headers = {'Authorization': 'Bearer ' + sagaguimodel.authtoken}
-        response = requests.post(BASE + 'USER/switchusersection', headers=headers, data=payload)
-        resp = json.loads(response.content)
-        report = resp['report']
-        if report['status']=='User Current Section successfully changed':
-            self.cursectionlbl.setText(resp['usersection'])
-            self.newsection = resp['usersection']
+        switchtosectionid = self.comboboxid[self.existingsectionbox.currentIndex()]
+        report, usersection = sagaguimodel.sectionSwitch(switchtosectionid)
+        if report['status'] =='User Current Section successfully changed':##ATTENTION...Imean comone
+            self.cursectionlbl.setText(usersection)
+            self.newsection = usersection
             self.mainguihandle.resetguionsectionswitch()
         else:
             self.cursectionlbl.setText('Error Occured.  Your current section has not change')

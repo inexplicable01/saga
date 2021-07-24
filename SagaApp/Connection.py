@@ -52,7 +52,10 @@ class FileConnection:
                 strref=strref + refid + ' '
             str += '\n\t\tFileConnection:  ' + strref +  '\n'
         else:
-            str +='\n\t\tFileConnection:  ' + self.refContainerId + '\n'
+            if self.refContainerId:
+                str +='\n\t\tFileConnection:  ' + self.refContainerId + '\n'
+            else:
+                str += '\n\t\tFileConnection:  \n'
         str += '\t\tconnectionType:   ' + self.connectionType.name + '\n'
         str += '\t\tbranch:   ' + self.branch + '\n'
         if self.Rev:

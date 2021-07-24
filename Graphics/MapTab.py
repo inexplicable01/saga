@@ -115,6 +115,7 @@ class MapTab():
         self.ganttlegendview = mainguihandle.ganttlegendview
         self.networktabwidget =  mainguihandle.networktabwidget
         self.networktabwidget.setElideMode(Qt.ElideNone)
+        self.containerlisttable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         makeganttchartlegend(self.ganttlegendview)
 
@@ -187,7 +188,7 @@ class MapTab():
             self.containermap.editcontainerConnections()
             self.containermap.plot()
             self.detailedmap.passobj(self.containermap)
-            self.gantttable.setModel(GanttListModel(containerinfodict.keys(), sagaguimodel.desktopdir))
+            self.gantttable.setModel(GanttListModel(containerinfodict, sagaguimodel.desktopdir))
 
 
     def generateSagaTree(self, containerinfodict):
@@ -226,18 +227,18 @@ class MapTab():
         self.dlContainerBttn.setText('Click to Download Container ' + containername)
         index = listtable.model().index(rownumber, 0)
         self.dlcontainerid = listtable.model().data(index, 0)
+        self.dlcontainername = containername
 
 
     def downloadcontainer(self):
-        newcontparentdirpath =  QFileDialog().getExistingDirectory(self.mainguihandle, 'Select Folder Space to Place ' + self.dlcontainerid
+        newcontparentdirpath =  QFileDialog().getExistingDirectory(self.mainguihandle, 'Select Folder Space to Place ' + self.dlcontainername
                                                                   + ' container folder.')
         if newcontparentdirpath:
-            contdir = os.path.join(newcontparentdirpath, self.dlcontainerid)
-            if not os.path.exists(contdir):
-                os.mkdir(contdir)
-                containerworkingfolder, sagaguimodel.maincontainer = sagaguimodel.downloadContainer(newcontparentdirpath, self.dlcontainerid, 'WorkingContainer')
-                self.mainguihandle.maincontainertab.readcontainer(os.path.join(newcontparentdirpath, self.dlcontainerid,
-                                                                               TEMPCONTAINERFN))  ###ATTENTION Should be calling Model and Gui ReSet
+            containerworkingdir = os.path.join(newcontparentdirpath, self.dlcontainername)
+            if not os.path.exists(containerworkingdir):
+                os.mkdir(containerworkingdir)###ATTENTION, Needs better error capture.
+                containerworkingfolder, sagaguimodel.maincontainer = sagaguimodel.downloadContainer(containerworkingdir, self.dlcontainerid, 'WorkingContainer')##ATTENTION
+                self.mainguihandle.maincontainertab.readcontainer(os.path.join(containerworkingdir,TEMPCONTAINERFN))  ###ATTENTION Should be calling Model and Gui ReSet
                 self.mainguihandle.maintabwidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
             else:
                 print('Container exists already...')

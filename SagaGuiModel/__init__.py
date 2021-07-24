@@ -88,21 +88,21 @@ class SagaGuiModel():
     def getWorldContainers(self):
         self.containerinfodict = self.sagaapicall.getContainerInfoDict()
         if 'EMPTY' in self.containerinfodict.keys():
-            return []
+            return {}
         for containerID in self.containerinfodict.keys():
-            newcontparentdirpath = join(self.desktopdir,'ContainerMapWorkDir')
-            self.downloadContainer(newcontparentdirpath, containerID)
+            print(containerID, self.containerinfodict[containerID]['ContainerDescription'])
+            self.downloadContainer(join(self.desktopdir,'ContainerMapWorkDir',containerID), containerID)
         if not os.path.exists(join(self.desktopdir, 'SagaGuiData', self.userdata['current_sectionid'])):
             os.mkdir(join(self.desktopdir, 'SagaGuiData',self.userdata['current_sectionid']))
         return self.containerinfodict
 
-    def downloadfullframefiles(self, container:Container =None, framerev = 'latest'):
-        if container is None:
-            raise('Developers need to add a self.maincontainer for this model')
-        wf = container.workingFrame
-        for fileheader, filetrack in wf.filestrack.items():
-            # print(filetrack.file_name,self.containerworkingfolder)
-            self.downloadFile(filetrack, container.containerworkingfolder)
+    # def downloadfullframefiles(self, container:Container =None, framerev = 'latest'):
+    #     if container is None:
+    #         raise('Developers need to add a self.maincontainer for this model')
+    #     wf = container.workingFrame
+    #     for fileheader, filetrack in wf.filestrack.items():
+    #         # print(filetrack.file_name,self.containerworkingfolder)
+    #         self.downloadFile(filetrack, container.containerworkingfolder)
 
     def revertTo(self, reverttorev, fileheadertorevertto ):
         containerworkingfolder = self.maincontainer.containerworkingfolder
@@ -144,7 +144,7 @@ class SagaGuiModel():
 
     def loadContainer(self, containerpath):
 
-        self.maincontainer = Container.LoadContainerFromYaml(containerpath, revnum=None)
+        self.maincontainer = Container.LoadContainerFromYaml(containerpath, revnum=None, ismaincontainer=True)
         self.histModel = HistoryListModel(self.maincontainer .commithistory())
         self.histModel.individualfilehistory(self.maincontainer.commithistorybyfile())
 
@@ -155,30 +155,61 @@ class SagaGuiModel():
         os.mkdir(containerworkingfolder)
         os.mkdir(os.path.join(containerworkingfolder, 'Main'))
         self.maincontainer = Container.InitiateContainer(containerworkingfolder, containername)
-        self.maincontainer.workingFrame = Frame.InitiateFrame(parentcontainerid=self.maincontainer.containerId,
-                                                              parentcontainername=containername,
-                                                              localdir=containerworkingfolder)
+        # self.maincontainer.workingFrame = Frame.InitiateFrame(parentcontainerid=self.maincontainer.containerId,
+        #                                                       parentcontainername=containername,
+        #                                                       containerworkingfolder=containerworkingfolder)
         self.containerfilemodel = ContainerFileModel(self.maincontainer, self.sagasync)
         self.histModel=HistoryListModel({})
-        return self.containerfilemodel
+        return self.containerfilemodel, self.histModel
+
+
+
+    def modelsreset(self):
+        try:
+             self.histModel.reset()#ATTENTION...just awful
+        except:
+            pass
 ###Calls
 
     def shouldModelSwitch(self,containerpath):
-        goswitch, newsectionid, message = self.sagaapicall.shouldModelSwitch(containerpath)
+        loadingcontainer = Container.LoadContainerFromYaml(containerpath, revnum=None)
+        if loadingcontainer.yamlfn == NEWCONTAINERFN:
+            return False, self.userdata['current_sectionid'],'This is a new container'
+        goswitch, newsectionid, message = self.sagaapicall.shouldModelSwitchCall(loadingcontainer.containerId)
         return goswitch, newsectionid, message
 
     def sectionSwitch(self, newsectionid):
-        status = self.sagaapicall.sectionSwitch(newsectionid)
-        return status
-    def downloadFile(self, filetrack:FileTrack, filepath, newfilename=None ):
-        fn=self.sagaapicall.downloadFile(filetrack, filepath, newfilename )
+        report, usersection = self.sagaapicall.sectionSwitchCall(newsectionid)
+        return report , usersection
+    def downloadFile(self, filetrack:FileTrack, containerworkingfolder, newfilename=None ):
+        fn=self.sagaapicall.downloadFileCall(filetrack, containerworkingfolder, newfilename )
         return fn
-    def downloadContainer(self,newcontparentdirpath,  dlcontainerid, use = 'NetworkContainer' ):
-        containerworkingfolder, cont = self.sagaapicall.downloadContainerCall(newcontparentdirpath,  dlcontainerid, use )
+    def downloadContainer(self,containerworkingfolder,  dlcontainerid, use = 'NetworkContainer' ):
+        containerworkingfolder, cont = self.sagaapicall.downloadContainerCall(containerworkingfolder,  dlcontainerid, use )
+        if use=='WorkingContainer':
+            for fileheader, filetrack in cont.workingFrame.filestrack.items():
+                self.downloadFile(filetrack, containerworkingfolder)
         return containerworkingfolder, cont
 
-    def downloadbranch(self,containerworkingfolder = None, cont:Container = None, branch='Main'):
+    def downloadbranch(self, branch='Main'):
         self.sagaapicall.downloadbranch(self.maincontainer.containerworkingfolder, self.maincontainer, branch )
+
+    def addUserToContainer(self,emailtoadd):
+        permissionsresponse = self.sagaapicall.addUserToContainerCall(self.userdata,emailtoadd,self.userdata['current_sectionid'],self.maincontainer.containerId)
+        print(permissionsresponse['ServerMessage'])
+        if permissionsresponse['result']:
+            self.maincontainer.setAllowedUser(permissionsresponse['allowedUser'])
+        return permissionsresponse, self.maincontainer.allowedUser
+
+        # response = requests.post(BASE + 'PERMISSIONS/AddUserToContainer',
+        #                          headers={"Authorization": 'Bearer ' + sagaguimodel.authtoken},
+        #                          json={"email": sagaguimodel.userdata['email'],
+        #                                "new_email":self.emailedit.text(),
+        #                                 "sectionid":sagaguimodel.userdata['current_sectionid'],
+        #                                "containerId": self.mainContainer.containerId,
+        #                                }
+        #                          )
+        # permissionsresponse = json.loads(response.content)
 
     def commitNewContainer(self, commitmessage):
         payload, filesToUpload = self.maincontainer.prepareNewCommitCall( commitmessage)
@@ -189,8 +220,8 @@ class SagaGuiModel():
             ### Maybe put a compare function here to compare the workingFrame before the commit and the Frame that was sent back.
             ## they should be identical.
             self.maincontainer.workingFrame.writeoutFrameYaml(fn=TEMPFRAMEFN)# writes out TEMPFRAME
-            self.maincontainer.workingFrame.writeoutFrameYaml(returnframedict['FrameName'] + '.yaml')# writes out REVX.yaml
-            self.maincontainer.save(fn=CONTAINERFN)
+            yamlframefnfullpath = self.maincontainer.workingFrame.writeoutFrameYaml(returnframedict['FrameName'] + '.yaml')# writes out REVX.yaml
+            self.maincontainer.setContainerForNextframe(yamlframefnfullpath)
             self.maincontainer.yamlfn = TEMPCONTAINERFN
             self.maincontainer.save()
             try:
@@ -216,8 +247,8 @@ class SagaGuiModel():
             yamlframefnfullpath = join(self.maincontainer.containerworkingfolder, 'Main', yamlframefn)
             open(yamlframefnfullpath, 'wb').write(response.content)
             makefilehidden(yamlframefn)
-            self.maincontainer.setContainerForNewframe(yamlframefn)
-            self.maincontainer.save()
+            self.maincontainer.setContainerForNextframe(yamlframefnfullpath)
+            # self.maincontainer.save(fn=CONTAINERFN, commitprocess=True)
             self.histModel.rePopulate(self.maincontainer.commithistory())
             return True, self.maincontainer.workingFrame.FrameName, 'Commit Success!'
         else:
@@ -245,7 +276,10 @@ class SagaGuiModel():
         needtorefresh = False
         if self.maincontainer is None:
             return '', False, False, {}
-
+        if self.isNewContainer():
+            if len(self.maincontainer.FileHeaders.keys())>0:
+                allowcommit = True
+            return 'New Container', allowcommit, False, {}
         self.newestframe, self.newestrevnum = self.sagaapicall.callLatestRevision(self.maincontainer)
         notlatestrev = False
         if self.maincontainer.revnum < self.newestrevnum:

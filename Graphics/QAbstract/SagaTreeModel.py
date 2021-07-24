@@ -74,11 +74,13 @@ class SagaTreeModel(QAbstractItemModel):
                 return 'tophalf' if fromcontainerbottom else 'bottomhalf'
             else:
                 return 'full'
-
+        containers={}
         fullexpandedrow = 0
         for containerid, value in containerinfodict.items():
             containyaml = os.path.join(self.desktopdir, 'ContainerMapWorkDir',containerid, CONTAINERFN)
+
             icontainer = Container.LoadContainerFromYaml(containyaml)
+            containers[containerid] = icontainer
             self.items.append(SagaTreeNode([icontainer.containerName, fullexpandedrow, icontainer.containerId]))
 
             self.rowmapper[containerid] = fullexpandedrow
@@ -95,8 +97,8 @@ class SagaTreeModel(QAbstractItemModel):
         self.inputconnections={}
         self.outputconnections = {}
         for containerid, value in containerinfodict.items():
-            containyaml = os.path.join(self.desktopdir, 'ContainerMapWorkDir', containerid, CONTAINERFN)
-            icontainer = Container.LoadContainerFromYaml(containyaml)
+            # containyaml = os.path.join(self.desktopdir, 'ContainerMapWorkDir', containerid, CONTAINERFN)
+            icontainer = containers[containerid]
 
             fileoutputs=[]
             containerinputids =[]

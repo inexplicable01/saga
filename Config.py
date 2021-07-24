@@ -130,7 +130,7 @@ privatepackagecustomer = {'first_name':'Good',
                    'email':'customer@gmail.com',
                     'password':'passwordCust',
 }
-testerlogin=privatepackagechris
+testerlogin=waichak
 
 
 TEMPCONTAINERFN='temp_containerstate.yaml'

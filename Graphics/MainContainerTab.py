@@ -161,13 +161,14 @@ class MainContainerTab():
         # allowCommit, changes, fixInput , self.alterfiletracks= sagaguimodel.maincontainer.checkFrame(sagaguimodel.maincontainer.workingFrame)
         if sagaguimodel.maincontainer is None:
             return
-
+        print('before GetStatus' + datetime.now().isoformat())
         statustext, allowcommit, needtorefresh,  changes = sagaguimodel.getStatus()
+        print('aft GetStatus' + datetime.now().isoformat())
         self.containerstatuslabel.setText(statustext)
         self.commitBttn.setEnabled(allowcommit)
         self.commitmsgEdit.setDisabled(not allowcommit)
         self.newcontaineredit.setDisabled(not sagaguimodel.isNewContainer()) # if this is a new container, edit should be enabled.
-        self.containerfiletable.model().update()
+
         self.refreshcontainerbttn.setEnabled(needtorefresh)
         self.frametextBrowser.setText('')
         for fileheader, change in changes.items():
@@ -177,23 +178,33 @@ class MainContainerTab():
                 hexcolor = QColor(colorscheme[reason]).name()
                 text = text + '<span style = "color:' + hexcolor + '"> '+reason+'</span>, '
             self.frametextBrowser.append(text)
+        self.containerfiletable.model().update()
         print('Check Done ' + datetime.now().isoformat())
 
     def commitmsgeditchange(self):
-        if len(self.commitmsgEdit.toPlainText()) <= 7:
-            self.commitBttn.setEnabled(False)
-            self.commitmsgboxlbl.setText('Commit Message : Needs to be longer than 7 characters')
-        else:
-            if sagaguimodel.isNewContainer():
-                if len(self.newcontaineredit.toPlainText()) <= 7:
-                    self.commitBttn.setEnabled(False)
-                    self.containerdescriplbl.setText('New Container Descrption Needs to be longer than  7 characters')
-                else:
-                    self.commitBttn.setEnabled(True)
-                    self.commitmsgboxlbl.setText('Commit Message :')
+        canpresscommit = False
+        if sagaguimodel.isNewContainer():
+            if len(self.commitmsgEdit.toPlainText()) >7 and len(self.newcontaineredit.toPlainText()) >7 :
+                canpresscommit = True
+            if len(self.commitmsgEdit.toPlainText()) <= 7:
+                commitmsgboxtext = 'Commit Message : Needs to be longer than 7 characters'
             else:
-                self.commitBttn.setEnabled(True)
-                self.commitmsgboxlbl.setText('Commit Message :')
+                commitmsgboxtext = 'Commit Message'
+            if len(self.newcontaineredit.toPlainText()) <= 7:
+                containerdescriptext = 'Container Description Message : Needs to be longer than 7 characters'
+            else:
+                containerdescriptext = 'Container Description'
+        else:
+            containerdescriptext = 'Container Description'
+            if len(self.commitmsgEdit.toPlainText()) > 7:
+                canpresscommit = True
+                commitmsgboxtext = 'Commit Message :'
+            else:
+                canpresscommit = False
+                commitmsgboxtext = 'Commit Message : Needs to be longer than 7 characters'
+        self.commitBttn.setEnabled(canpresscommit)
+        self.commitmsgboxlbl.setText(commitmsgboxtext)
+        self.containerdescriplbl.setText(containerdescriptext)
 
 
     def commit(self):
@@ -210,7 +221,7 @@ class MainContainerTab():
                     # self.newContainerStatus = False
                     containeryaml = os.path.join(sagaguimodel.maincontainer.containerworkingfolder, TEMPCONTAINERFN)
                     self.mainguihandle.maincontainertab.readcontainer(containeryaml)
-                    self.mainguihandle.tabWidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
+                    self.mainguihandle.maintabwidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
                     self.mainguihandle.refresh()
                     # self.mainguihandle.maptab.updateContainerMap()
                     self.newcontaineredit.setDisabled(True)
@@ -264,9 +275,9 @@ class MainContainerTab():
             msg.exec_()
 
         if goswitch:
-            switchstatus = sagaguimodel.sectionSwitch(newsectionid)
-            msg.setText(switchstatus)
-            if switchstatus== 'User Current Section successfully changed':
+            report, usersection = sagaguimodel.sectionSwitch(newsectionid)
+            msg.setText(report['status'])
+            if report['status']== 'User Current Section successfully changed to ' + usersection:
                 msg.setIcon(QMessageBox.Information)
                 self.mainguihandle.resetguionsectionswitch()
             else:
@@ -275,6 +286,7 @@ class MainContainerTab():
             msg.exec_()
 
         print('Loading ' + containerpath)
+        sagaguimodel.modelsreset()
         cont, histModel, containerfilemodel = sagaguimodel.loadContainer(containerpath)
 
         # [self.workingdir, file_name] = os.path.split(containerpath)  ## working dir should be app level
@@ -374,10 +386,12 @@ class MainContainerTab():
     def initiate(self, inputs):
         containerworkingfolder = inputs['dir']
         containername = inputs['containername']
-        containerfilemodel = sagaguimodel.initiateNewContainer(containerworkingfolder, containername)
+        containerfilemodel,histModel = sagaguimodel.initiateNewContainer(containerworkingfolder, containername)
         self.containerlabel.setText(containername)
         self.containerfiletable.setModel(containerfilemodel)
-        self.commithisttable.setModel(self.histModel)
+        self.containerfiletable.setItemDelegate(ContainerFileDelegate())
+        self.commithisttable.setModel(histModel)
+        self.commithisttable.setItemDelegate(HistoryCellDelegate())
         self.framelabel.setText('Revision 0 (New Container)')
         self.newcontaineredit.setEnabled(True)
         self.setTab(True)

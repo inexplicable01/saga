@@ -72,6 +72,7 @@ class Frame:
                      workingyamlfn=frameyaml)
         return cframe
 
+    ### Makes zero sense thare are two ways to load frames from yaml
     @classmethod
     def loadRefFramefromYaml(cls, refframefullpath,containerworkingfolder):
         path , workingyamlfn = os.path.split(refframefullpath)
@@ -159,27 +160,27 @@ class Frame:
                                                      ctnrootpathlist=ctnrootpathlist,
                                                      persist=True)
 
-    def dealwithalteredInput(self, alterinputfileinfo, refframefullpath):
-        # self.filestrack[]
-        # add new file track, determine whether its just this next rev or keep check in the future persist
-        # rename altered input file names
-        # re get the file from server
-        filetrack = alterinputfileinfo['alterfiletrack']
-        fileheader = filetrack.FileHeader
-
-        refframe = Frame.loadRefFramefromYaml(refframefullpath, self.containerworkingfolder )
-        reffiletrack = refframe.filestrack[fileheader]
-        ## File Management
-        os.rename(os.path.join(self.containerworkingfolder,filetrack.file_name), os.path.join(self.containerworkingfolder,alterinputfileinfo['nfilename']))
-        self.downloadfile(reffiletrack, self.containerworkingfolder)
-        ## Update FileTrack
-        self.filestrack[alterinputfileinfo['nfileheader']]=FileTrack(
-            FileHeader=alterinputfileinfo['nfileheader'],
-            containerworkingfolder=self.containerworkingfolder,
-            file_name=alterinputfileinfo['nfilename'],
-            style='ref',
-            persist= alterinputfileinfo['persist'],
-        )
+    # def dealwithalteredInput(self, alterinputfileinfo, refframefullpath):
+    #     # self.filestrack[]
+    #     # add new file track, determine whether its just this next rev or keep check in the future persist
+    #     # rename altered input file names
+    #     # re get the file from server
+    #     filetrack = alterinputfileinfo['alterfiletrack']
+    #     fileheader = filetrack.FileHeader
+    #
+    #     refframe = Frame.loadRefFramefromYaml(refframefullpath, self.containerworkingfolder )
+    #     reffiletrack = refframe.filestrack[fileheader]
+    #     ## File Management
+    #     os.rename(os.path.join(self.containerworkingfolder,filetrack.file_name), os.path.join(self.containerworkingfolder,alterinputfileinfo['nfilename']))
+    #     self.downloadfile(reffiletrack, self.containerworkingfolder)
+    #     ## Update FileTrack
+    #     self.filestrack[alterinputfileinfo['nfileheader']]=FileTrack(
+    #         FileHeader=alterinputfileinfo['nfileheader'],
+    #         containerworkingfolder=self.containerworkingfolder,
+    #         file_name=alterinputfileinfo['nfilename'],
+    #         style='ref',
+    #         persist= alterinputfileinfo['persist'],
+    #     )
         # print('lots of work to be done.')
 
 
@@ -189,7 +190,9 @@ class Frame:
         [path, file_name] = os.path.split(filefullpath)
         # FileHeader=fileinfo['fileheader']
         if fileType =='Required':
-            conn=None
+            conn=FileConnection([],
+                                  connectionType=ConnectionTypes.Required,
+                                  branch=branch)
         elif fileType=='Output':
             conn = FileConnection([],
                                   connectionType=ConnectionTypes.Output,
@@ -255,6 +258,7 @@ class Frame:
         with open(fullfilepath, 'w') as outyaml:
             yaml.dump(self.dictify(), outyaml)
         makefilehidden(fullfilepath)
+        return fullfilepath
 
 
     def __repr__(self):

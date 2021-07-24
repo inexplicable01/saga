@@ -115,7 +115,7 @@ class HistoryListModel(QAbstractTableModel):
             self.fileheaderlist = ['Null']
             self.revheaders = ['Null']
         else:
-            self.revheaders, self.containdata, self.fileheaderlist = self.sorthistory(self, historyinfodict)
+            self.revheaders, self.containdata, self.fileheaderlist = self.sorthistory( historyinfodict)
         self.dataChanged
 
 
@@ -169,3 +169,10 @@ class HistoryListModel(QAbstractTableModel):
             return len(self.containdata[0])
         else:
             return 0
+
+    def reset(self):
+        self.initiatilized=False
+        self.containdata = ['Container Not Yet Committed']
+        self.fileheaderlist = ['Null']
+        self.revheaders = ['Null']
+

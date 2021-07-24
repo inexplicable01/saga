@@ -19,7 +19,7 @@ class ContainerFileModel(QAbstractTableModel):
 
         super(ContainerFileModel, self).__init__()
 
-        self.headers = ['FileHeader', 'Role', 'Status','FileName','From', 'To', 'Last Edited', 'Rev Committed', 'Commit Message']
+        self.headers = ['FileHeader', 'Role', 'Status','FileName', 'Last Edited', 'Rev Committed', 'Commit Message']
         self.maincontainer = maincontainer
         self.sagasync = sagasync
         self.gathermodeldatafromContainer()
@@ -32,18 +32,16 @@ class ContainerFileModel(QAbstractTableModel):
         lastsamerevnum = maincontainer.revnum
         while lastsamerevnum > 1:
             lastsamerevnum -= 1
-            framefullpathyaml = join(maincontainer.containerworkingfolder, 'Main',
-                                     'Rev' + str(lastsamerevnum) + '.yaml')
+            revyaml = 'Rev' + str(lastsamerevnum) + '.yaml'
 
-            if not os.path.exists(framefullpathyaml):
-                warnings.warn('Rev' + str(lastsamerevnum) + '.yaml  is missing')
-            try:
-                pastframe = Frame.loadRefFramefromYaml(framefullpathyaml, maincontainer.containerworkingfolder)
-            except:
-                warnings.warn('Rev' + str(lastsamerevnum) + '.yaml  did not load, could be corrupted')
+            if revyaml in maincontainer.memoryframesdict.keys():
+                pastframe = maincontainer.memoryframesdict[revyaml]
+            else:
+                warnings.warn('Rev' + str(lastsamerevnum) + '.yaml  cannot be found. Incomplete history')
+                continue
             if fileheader in pastframe.filestrack.keys():
                 if curmd5 != pastframe.filestrack[fileheader].md5:
-                    return 'Rev' + str(lastsamerevnum + 1), pastframe.commitMessage
+                    return 'Rev' + str(lastsamerevnum + 1), maincontainer.memoryframesdict['Rev' + str(lastsamerevnum + 1)+ '.yaml'].commitMessage
                     # returns Rev where md5 was still the same which is one Rev(this+1)
                 if lastsamerevnum == 1:
                     return 'Rev' + str(lastsamerevnum), pastframe.commitMessage
@@ -100,7 +98,12 @@ class ContainerFileModel(QAbstractTableModel):
                 if self.headers[c]=='FileHeader':
                     return rowdict['fileheader']
                 elif self.headers[c]=='Role':
-                    return rowdict['fileinfo']['type']
+                    if rowdict['fileinfo']['type'] == typeInput:
+                        return typeInput + ' From ' + rowdict['fileinfo']['Container']
+                    elif rowdict['fileinfo']['type'] == typeOutput:
+                        return typeOutput + ' To ' +  ','.join(rowdict['fileinfo']['Container'])
+                    elif rowdict['fileinfo']['type'] == typeRequired:
+                        return typeRequired
                 elif self.headers[c]==STATUSCOLUMNHEADER:
                     if rowdict['fileinfo']['type'] in [typeOutput,typeInput,typeRequired]:
                         if rowdict['change']:
@@ -109,16 +112,16 @@ class ContainerFileModel(QAbstractTableModel):
                             return 'Up To Date'
                 elif self.headers[c]=='FileName':
                     pass
-                elif self.headers[c]=='From':
-                    if rowdict['fileinfo']['type']==typeInput:
-                        return rowdict['fileinfo']['Container']
-                    else:
-                        return None
-                elif self.headers[c]=='To':
-                    if rowdict['fileinfo']['type'] == typeOutput:
-                        return ', '.join(rowdict['fileinfo']['Container'])
-                    else:
-                        return None
+                # elif self.headers[c]=='From':
+                #     if rowdict['fileinfo']['type']==typeInput:
+                #         return rowdict['fileinfo']['Container']
+                #     else:
+                #         return None
+                # elif self.headers[c]=='To':
+                #     if rowdict['fileinfo']['type'] == typeOutput:
+                #         return ', '.join(rowdict['fileinfo']['Container'])
+                #     else:
+                #         return None
                 elif self.headers[c]=='Last Edited':
                     if rowdict['fileinfo']['type'] in [typeOutput,typeInput,typeRequired]:
                         return datetime.fromtimestamp(rowdict['filetrack'].lastEdited).strftime('%m/%d/%y  %H:%M')
@@ -142,7 +145,7 @@ class ContainerFileModel(QAbstractTableModel):
                 # self.containerfiles[i]['change'] = changes[rowdict['fileheader']]
             else:
                 rowdict['change'] = None
-        self.dataChanged
+        self.layoutChanged.emit()
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
@@ -163,6 +166,7 @@ class ContainerFileModel(QAbstractTableModel):
             return 0
         else:
             return len(self.headers)
+
 
 
 # def createBeginRect(painter, cellrect, qtbrushcolor, squaresidepx, pxlinewidth):
@@ -207,7 +211,7 @@ class ContainerFileDelegate(QStyledItemDelegate):
 
         if 'FileName'==header:
             painter.setPen(QPen(QBrush(Qt.black),1))
-            painter.setBrush(QBrush(colorscheme[filetrack.style]))
+            painter.setBrush(QBrush(colorscheme[filetrack.connection.connectionType.name]))
             painter.drawRect(option.rect)
 
             file_name, file_extension = os.path.splitext(filetrack.file_name)

@@ -171,8 +171,8 @@ class UI(QMainWindow):
             self.maincontainertab.refreshedcheck = 0
 
     def containerPermission(self):
-        if self.maincontainertab.mainContainer:
-            permissiongui = permissionsDialog(self.maincontainertab.mainContainer, self)
+        if sagaguimodel.maincontainer:
+            permissiongui = permissionsDialog(sagaguimodel.maincontainer, self)
             permissiongui.exec_()
 
     def refresh(self):
@@ -209,19 +209,12 @@ class UI(QMainWindow):
             self.adjustGuiPerUserStatus()
 
     def enterSection(self):
-        # response = requests.get(BASE + 'user/getusersections', )
-        headers = {'Authorization': 'Bearer ' + sagaguimodel.authtoken}
-        response = requests.get(BASE + 'USER/getusersections', headers=headers)
-
-        resp = json.loads(response.content)
-        sectioninfo = resp['sectioninfo']
-        currentsection = resp['currentsection']
-
+        sectioninfo, currentsection = sagaguimodel.sagaapicall.getListofSectionsforUser()
         switchsectiongui = switchSectionDialog(self, sectioninfo, currentsection)
         needtoupdateworldmap = switchsectiongui.waitfordone()
-        # if needtoupdateworldmap:
-        #     # print(inputs)
-        #     self.refresh()
+        if needtoupdateworldmap:
+            # print(inputs)
+            self.refresh()
 
     def setPermissionsEnable(self):
         self.actionContainer_Permission.setEnabled(True)

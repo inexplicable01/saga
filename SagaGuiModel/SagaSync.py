@@ -155,7 +155,7 @@ class SagaSync():
             wf.refreshedcheck = True
             for fileheader in filelist.keys():
                 if filelist[fileheader] == 'Overwrite':
-                    fn = self.sagaapicall.downloadFile(filetrack=nf.filestrack[fileheader],
+                    fn = self.sagaapicall.downloadFileCall(filetrack=nf.filestrack[fileheader],
                                                    filepath=container.containerworkingfolder)
                     wf.filestrack[fileheader].md5 = nf.filestrack[fileheader].md5
                     wf.filestrack[fileheader].lastEdited = nf.filestrack[fileheader].lastEdited
@@ -164,11 +164,11 @@ class SagaSync():
                     filename, ext = os.path.splitext(wf.filestrack[fileheader].file_name)
                     filecopy_name = filename + '_' + nf.FrameName + 'Copy' + \
                                     ext
-                    fn = self.sagaapicall.downloadFile(nf.filestrack[fileheader],
+                    fn = self.sagaapicall.downloadFileCall(nf.filestrack[fileheader],
                                                    wf.containerworkingfolder, filecopy_name)
                     print('No changes to Frame')
                 elif filelist[fileheader] == 'Download':
-                    fn = self.sagaapicall.downloadFile(nf.filestrack[fileheader],
+                    fn = self.sagaapicall.downloadFileCall(nf.filestrack[fileheader],
                                                    wf.containerworkingfolder)
                     ft = nf.filestrack[fileheader]
                     if ft.connection.connectionType.name in [typeRequired, typeOutput]:
@@ -187,7 +187,7 @@ class SagaSync():
                         print("The file does not exist")
                 elif filelist[fileheader] == 'ReplaceInput':
                     upstreamframe = self.changes[fileheader]['upstreamframe']
-                    fileEditPath = self.sagaapicall.downloadFile(upstreamframe.filestrack[fileheader],
+                    fileEditPath = self.sagaapicall.downloadFileCall(upstreamframe.filestrack[fileheader],
                                                              wf.containerworkingfolder)
                     fileb = open(fileEditPath, 'rb')
                     upstreammd5 = hashlib.md5(fileb.read()).hexdigest()  ## md5 shouldn't need to be reread

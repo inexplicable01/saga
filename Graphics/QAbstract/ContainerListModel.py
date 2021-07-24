@@ -2,19 +2,23 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+import lorem
 
-headers = ['ID', 'Description', 'Branch name', 'Rev Count']
+headers = [ 'ContainerName', 'Rev Count', 'Container Description']
 
 class ContainerListModel(QAbstractTableModel):
     def __init__(self, containerinfodict):
         super(ContainerListModel, self).__init__()
         containdata=[]
+        containernametoid={}
         for containerid, containvalue in containerinfodict.items():
+            containernametoid[containvalue['ContainerDescription']]=containerid
             for branch in containvalue['branches']:
-                row = [containerid, containvalue['ContainerDescription'] ,
-                       branch['name'],
-                       branch['revcount']]
+                row = [ containvalue['ContainerDescription'] ,
+                       branch['revcount'], lorem.sentence()]
                 containdata.append(row)
+        self.containernametoid=containernametoid
+        self.containerinfodict = containerinfodict
         self.containdata = containdata
 
     def data(self, index, role):

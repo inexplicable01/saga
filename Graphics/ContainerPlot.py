@@ -52,7 +52,7 @@ class ContainerPlot():
             self.RectBox[fileheader] = FileViewItemRect(150*typeindex[type] , 200 + 100*typecounter[type],  \
                                                        containerBoxWidth, containerBoxHeight,
                                                             type,self.curContainer , fileheader, self.guiHandle, self.view, change,\
-                                                       self.curContainer.workingFrame.filestrack[fileheader])
+                                                       self.curContainer.getRefFrame().filestrack[fileheader])
             # self.RectBox[fileheader].setPen(QPen(colorscheme[type]))
             # self.RectBox[fileheader].text = fileheader
             self.scene.addItem(self.RectBox[fileheader])
