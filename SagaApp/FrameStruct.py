@@ -211,28 +211,27 @@ class Frame:
             raise(filefullpath + ' does not exist')
 
 
-    def addfromOutputtoInputFileTotrack(self, fullpath, fileheader, reffiletrack:FileTrack,style,refContainerId,rev,containerworkingfolder,branch='Main'):
+    def addfromOutputtoInputFileTotrack(self, fileheader, reffiletrack:FileTrack,style,refContainerId,rev,containerworkingfolder,branch='Main'):
 
-        [path, file_name] = os.path.split(fullpath)
+        # [path, file_name] = os.path.split(fullpath)
         conn = FileConnection(refContainerId,
                               connectionType=ConnectionTypes.Input,
                               branch=branch,
-                              Rev=rev)
+                              Rev=rev)#######ATTENTION NEEDS UPDATING.  ITs Updating to latest REv, but not the earilest Rev that this was committed
 
-        if os.path.exists(fullpath):
-            newfiletrackobj = FileTrack(file_name=file_name,
-                                        FileHeader=fileheader,
-                                        style=style,
-                                        committedby=reffiletrack.committedby,
-                                        # file_id=reffiletrack.file_id,
-                                        commitUTCdatetime=reffiletrack.commitUTCdatetime,
-                                        connection=conn,
-                                        containerworkingfolder=containerworkingfolder,
-                                        lastEdited=os.path.getmtime(fullpath))
-            self.filestrack[fileheader] = newfiletrackobj
-            self.writeoutFrameYaml()
-        else:
-            raise(fullpath + ' does not exist')
+
+        newfiletrackobj = FileTrack(file_name=reffiletrack.file_name,
+                                    FileHeader=fileheader,
+                                    style=style,
+                                    committedby=reffiletrack.committedby,
+                                    md5 = reffiletrack.md5,
+                                    commitUTCdatetime=reffiletrack.commitUTCdatetime,
+                                    connection=conn,
+                                    containerworkingfolder=containerworkingfolder,
+                                    lastEdited=reffiletrack.lastEdited)
+        self.filestrack[fileheader] = newfiletrackobj
+        self.writeoutFrameYaml()
+
 
     def dictify(self):
         dictout = {}
