@@ -29,6 +29,8 @@ SERVERNEWREVISION = 'File updated in newer Revision'
 SERVERFILEDELETED = 'File deleted in newer Revision'
 SERVERFILEADDED = 'New File committed in newer Revision'
 CHANGEREASONORDER=[MD5CHANGED, LOCALFILEHEADERADDED, SERVERNEWREVISION, UPDATEDUPSTREAM,DATECHANGED,SERVERFILEADDED , SERVERFILEDELETED]
+NOTINSYNCREASONSET = set([])
+
 
 colorscheme = {typeInput: QColor('#c2a609'),
                typeOutput: QColor('#0350ae'),

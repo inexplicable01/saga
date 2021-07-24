@@ -27,8 +27,10 @@ class DetailedMap():
         self.selecteddetail= selecteddetail
         self.containerscene = QGraphicsScene()
         self.textholder = self.containerscene.addText('Select a Container or Connection')
+        self.textholder.setDefaultTextColor(Qt.white)
         self.textholder.setPos(QPointF(0,0))
         self.viewitems={}
+
         self.detailsMapView.setScene(self.containerscene)
 
     def reset(self):
@@ -62,15 +64,18 @@ class containerBox(QGraphicsRectItem):
         # self.containerBoxWidth = containerBoxWidth
         # self.QPos = QPointF(50,50)
         self.setBrush(QBrush(Qt.transparent))
-        self.setPen(QPen(Qt.black))
+        self.setPen(QPen(Qt.white))
         self.containertitle=container.containerId
         self.containerscene = containerscene
         self.titletext = self.containerscene.addText(container.containerId)
         self.titletext.setPos(QPointF(10,10))
         self.titletext.setFont(QFont("Times",16))
+        self.titletext.setDefaultTextColor(Qt.white)
         self.inputlbl = self.containerscene.addText('Input')
+        self.inputlbl.setDefaultTextColor(Qt.white)
         self.inputlbl.setPos(QPointF(15,40))
         self.outputlbl = self.containerscene.addText('Output')
+        self.outputlbl.setDefaultTextColor(Qt.white)
         self.outputlbl.setPos(QPointF(self.rect().width()/2+ 15,40))
         self.crossbox={}
         # self.outputbox = {}
@@ -105,6 +110,7 @@ class containerBox(QGraphicsRectItem):
 
         ##Quick Hack to size height of Container Box
         self.setRect(0, 0,  containerBoxWidth,70 + max(typecounter.values())*100)
+        self.setPen(QPen(QBrush(Qt.white),4))
 
 
 class ConnectionBox():
@@ -114,14 +120,17 @@ class ConnectionBox():
 
     def __init__(self, containerscene,containerIn:Container, containerOut:Container,containerBoxHeight=containerBoxHeight, containerBoxWidth=containerBoxWidth):
         self.containInBox = QGraphicsRectItem(containerBoxWidth*-1.0, 0,  containerBoxWidth,containerBoxHeight)
+        self.containInBox.setPen(Qt.white)
         containerscene.addItem(self.containInBox)
         containerintext = QGraphicsTextItem(containerIn.containerId, parent=self.containInBox)
         containerintext.setPos(self.containInBox.rect().topLeft())
+        containerintext.setDefaultTextColor(Qt.white)
 
         self.containoutBox = QGraphicsRectItem(containerBoxWidth * gap, 0, containerBoxWidth, containerBoxHeight)
         containerscene.addItem(self.containoutBox)
         containerouttext = QGraphicsTextItem(containerOut.containerId, parent=self.containoutBox)
         containerouttext.setPos(self.containoutBox.rect().topLeft())
+        containerouttext.setDefaultTextColor(Qt.white)
 
         self.fileObj = []
 
@@ -163,11 +172,13 @@ class FileRect(QGraphicsRectItem):
             # self.setBrush(QBrush(colorscheme[type]))
             self.containertext = QGraphicsTextItem(fileinfo['Container'], parent=self)
             self.containertext.setPos(self.rect().topLeft()+QPoint(0,-20))
+            self.containertext.setDefaultTextColor(Qt.white)
         elif type==typeOutput:
             # self.setBrush(QBrush(colorscheme[type]))
             self.setPen(QPen(colorscheme[type], 4))
             for idx,outputcontainer in enumerate(fileinfo['Container']):
                 self.containertext = QGraphicsTextItem(outputcontainer, parent=self)
+                self.containertext.setDefaultTextColor(Qt.white)
                 self.containertext.setPos(self.rect().topRight()+QPoint(-50, -20 -idx*15))
         elif type=='Connection':
             grad = QLinearGradient(self.rect().topLeft(), self.rect().topRight())
@@ -179,9 +190,12 @@ class FileRect(QGraphicsRectItem):
             offset = 0.25 #print('')#nothing yet
 
         self.upbox = QGraphicsRectItem(containerBoxWidth*0.1,10 ,containerBoxWidth*0.25,40,self)
+        self.upbox.setPen(QPen(QBrush(Qt.white),3))
         self.upbox.setPos(self.rect().topLeft())
         self.upboxtext =QGraphicsTextItem(fileheader, parent=self.upbox)
         self.upboxtext.setPos(self.upbox.rect().topLeft())
+        self.upboxtext.setDefaultTextColor(Qt.white)
+
 
     #     self.upbox = {}
     #     self.upboxtext = {}

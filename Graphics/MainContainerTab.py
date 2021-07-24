@@ -11,7 +11,7 @@ from Graphics.QAbstract.historycelldelegate import HistoryCellDelegate
 # from Graphics.Dialogs import alteredinputFileDialog
 # from Graphics.ContainerPlot import ContainerPlot
 
-from Graphics.QAbstract.ConflictListModel import ConflictListModel, AddedListModel, DeletedListModel, UpstreamListModel
+
 from Graphics.Dialogs import alteredinputFileDialog
 from Graphics.ContainerPlot import ContainerPlot
 from Graphics.Dialogs import ErrorMessage, removeFileDialog, commitDialog, alteredinputFileDialog, \
@@ -22,18 +22,13 @@ from Graphics.PopUps.selectFileDialog import selectFileDialog
 
 import requests
 import os
-import hashlib
 from Config import BASE, SERVERNEWREVISION, SERVERFILEADDED, SERVERFILEDELETED, NEWCONTAINERFN, TEMPCONTAINERFN, \
     LOCALFILEHEADERADDED, TEMPFRAMEFN, colorscheme, typeOutput, typeInput, typeRequired, UPDATEDUPSTREAM
-from SagaApp.FrameStruct import Frame
-from SagaApp.Container import Container
 from SagaApp.WorldMap import WorldMap
 from Graphics.GuiUtil import AddIndexToView
 from Graphics.PopUps.AddFileToContainerPopUp import AddFileToContainerPopUp
-from os import listdir
-from os.path import isfile, join
-import json
 from SagaGuiModel import sagaguimodel
+from datetime import datetime
 
 
 class MainContainerTab():
@@ -72,6 +67,9 @@ class MainContainerTab():
         self.containerfiletable.clicked.connect(self.containerfileselected)
         self.commitmsgboxlbl = mainguihandle.commitmsgboxlbl
         self.containerdescriplbl = mainguihandle.containerdescriplbl
+        self.container_subtab = mainguihandle.container_subtab
+
+        self.container_subtab.setElideMode(Qt.ElideNone)
 
 
         self.newcontaineredit = mainguihandle.newcontaineredit
@@ -124,69 +122,16 @@ class MainContainerTab():
         refreshrevnum = str(sagaguimodel.maincontainer.revnum) + '/' + str(sagaguimodel.newestrevnum)
         # need to update above line to add additional / when refreshing multiple container revisions
 
-        self.conflictlistmodel = ConflictListModel(sagaguimodel.changes, sagaguimodel.newestframe)
-        self.addedlistmodel = AddedListModel(sagaguimodel.changes, sagaguimodel.newestframe)
-        self.deletedlistmodel = DeletedListModel(sagaguimodel.changes, sagaguimodel.newestframe, sagaguimodel.maincontainer.workingFrame)
-        self.upstreamlistmodel = UpstreamListModel(sagaguimodel.changes)
-        conflictpopup = refreshContainerPopUp(sagaguimodel.changes, self.conflictlistmodel, self.addedlistmodel,
-                                              self.deletedlistmodel,  self.upstreamlistmodel)
+        conflictlistmodel, addedlistmodel, deletedlistmodel, upstreamlistmodel, changes = sagaguimodel.getRefreshPopUpModels()
+        conflictpopup = refreshContainerPopUp(changes, conflictlistmodel, addedlistmodel,
+                                              deletedlistmodel,  upstreamlistmodel)
         filelist = conflictpopup.selectFiles()
-        wf = sagaguimodel.maincontainer.workingFrame
-        if filelist:
-            sagaguimodel.maincontainer.workingFrame.refreshedcheck = True
-            for fileheader in filelist.keys():
-                if filelist[fileheader] == 'Overwrite':
-                    fn = sagaguimodel.downloadFile(sagaguimodel.newestframe.filestrack[fileheader],
-                                                   wf.containerworkingfolder)
-                    sagaguimodel.maincontainer.workingFrame.filestrack[fileheader].md5 = \
-                        sagaguimodel.newestframe.filestrack[fileheader].md5
-                    sagaguimodel.maincontainer.workingFrame.filestrack[fileheader].lastEdited = os.path.getmtime(fn)
+        sagaguimodel.dealWithUserSelection(filelist)
 
-                elif filelist[fileheader] == 'Download Copy':
-                    filename, ext = os.path.splitext(wf.filestrack[fileheader].file_name)
-                    filecopy_name = filename + '_' + sagaguimodel.newestframe.FrameName + 'Copy' + \
-                                    ext
-                    fn = sagaguimodel.downloadFile(sagaguimodel.newestframe.filestrack[fileheader],
-                                                   wf.containerworkingfolder, filecopy_name)
-                    print('No changes to Frame')
-                elif filelist[fileheader] == 'Download':
-                    fn = sagaguimodel.downloadFile(sagaguimodel.newestframe.filestrack[fileheader],
-                                                   wf.containerworkingfolder)
-                    ft = sagaguimodel.newestframe.filestrack[fileheader]
-                    # filefullpath = os.path.join(
-                    #     sagaguimodel.maincontainer.containerworkingfolder, sagaguimodel.newestframe.filestrack[fileheader].ctnrootpath,
-                    #     sagaguimodel.newestframe.filestrack[fileheader].file_name)
-                    if ft.connection.connectionType.name in [typeRequired, typeOutput] :
-                        sagaguimodel.maincontainer.workingFrame.filestrack[fileheader] = \
-                            sagaguimodel.newestframe.filestrack[fileheader]
-                    else:
-                        raise ('Under Construction')
-                    # sagaguimodel.maincontainer.addFileObject(fileinfo=newfileobj)
-                elif filelist[fileheader] == 'Delete':
-                    filePath = os.path.join(
-                        wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
-                        wf.filestrack[fileheader].file_name)
-                    if os.path.exists(filePath):
-                        os.remove(filePath)
-                        sagaguimodel.maincontainer.removeFileHeader(fileheader)
-                    else:
-                        print("The file does not exist")
-                elif filelist[fileheader] == 'ReplaceInput':
-                    upstreamframe = sagaguimodel.changes[fileheader]['inputframe']
-                    fileEditPath = sagaguimodel.downloadFile(upstreamframe.filestrack[fileheader],
-                                                             wf.containerworkingfolder)
-                    fileb = open(fileEditPath, 'rb')
-                    upstreammd5 = hashlib.md5(fileb.read()).hexdigest()  ## md5 shouldn't need to be reread
-                    if upstreammd5 != upstreamframe.filestrack[fileheader].md5:
-                        raise (
-                            'Saga Error: upstream md5 and downloaded md5 file does not match')  # sanity check for now
-                    wf.filestrack[fileheader].md5 = upstreammd5  ### IS this really necessary?
-                    wf.filestrack[fileheader].connection.Rev = sagaguimodel.changes[fileheader]['revision']
-
-            wf.writeoutFrameYaml()
+        if sagaguimodel.sagasync.iscontainerinsync():
             sagaguimodel.downloadbranch()
-            self.containerstatuslabel.setText('Container Refreshed!  This Container now is at a Rev '+ refreshrevnum+ '+ state')
-
+            self.containerstatuslabel.setText(
+                'Container Refreshed!  This Container now is at a Rev ' + refreshrevnum + '+ state')
         sagaguimodel.getStatus()
         self.containerfiletable.model().update()
         #         TO DO add to commit function check of conflicting files and spit out error message or have user choose which file to commit
@@ -212,22 +157,27 @@ class MainContainerTab():
         self.checkdelta()
 
     def checkdelta(self):
+        print('Checking' + datetime.now().isoformat())
         # allowCommit, changes, fixInput , self.alterfiletracks= sagaguimodel.maincontainer.checkFrame(sagaguimodel.maincontainer.workingFrame)
-        statustext,isnewcontainer, allowcommit, needtorefresh, chgstr, changes = sagaguimodel.getStatus()
+        if sagaguimodel.maincontainer is None:
+            return
+
+        statustext, allowcommit, needtorefresh,  changes = sagaguimodel.getStatus()
         self.containerstatuslabel.setText(statustext)
         self.commitBttn.setEnabled(allowcommit)
         self.commitmsgEdit.setDisabled(not allowcommit)
-        self.newcontaineredit.setDisabled(not isnewcontainer) # if this is a new container, edit should be enabled.
+        self.newcontaineredit.setDisabled(not sagaguimodel.isNewContainer()) # if this is a new container, edit should be enabled.
         self.containerfiletable.model().update()
         self.refreshcontainerbttn.setEnabled(needtorefresh)
         self.frametextBrowser.setText('')
         for fileheader, change in changes.items():
-            chgstr = chgstr + fileheader + '\t' + ', '.join(change['reason']) + '\n'
+            # chgstr = chgstr + fileheader + '\t' + ', '.join(change['reason']) + '\n'
             text = '<b>'+fileheader + '</b>   :  '
             for reason in change['reason']:
                 hexcolor = QColor(colorscheme[reason]).name()
                 text = text + '<span style = "color:' + hexcolor + '"> '+reason+'</span>, '
             self.frametextBrowser.append(text)
+        print('Check Done ' + datetime.now().isoformat())
 
     def commitmsgeditchange(self):
         if len(self.commitmsgEdit.toPlainText()) <= 7:
@@ -248,10 +198,7 @@ class MainContainerTab():
 
     def commit(self):
         error_dialog = QErrorMessage()
-        # if len(self.commitmsgEdit.toPlainText()) <= 7:
-        #     error_dialog.showMessage('You need to put in a commit message longer than 8 characters')
-        #     error_dialog.exec_()
-        #     return
+
         if sagaguimodel.isNewContainer():
             ## opportunity to show way more information for Commit Dialog
             commitCheck = commitDialog(sagaguimodel.maincontainer.containerName, self.newcontaineredit.toPlainText(),
@@ -307,6 +254,7 @@ class MainContainerTab():
 
     def readcontainer(self, containerpath):
         # path = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
+
         goswitch, newsectionid , shouldmodelswitchmessage= sagaguimodel.shouldModelSwitch(containerpath)
         msg = QMessageBox()
         msg.setStandardButtons(QMessageBox.Ok)
@@ -426,9 +374,9 @@ class MainContainerTab():
     def initiate(self, inputs):
         containerworkingfolder = inputs['dir']
         containername = inputs['containername']
-        sagaguimodel.initiateNewContainer(containerworkingfolder, containername)
+        containerfilemodel = sagaguimodel.initiateNewContainer(containerworkingfolder, containername)
         self.containerlabel.setText(containername)
-        self.containerfiletable.setModel(ContainerFileModel(sagaguimodel.maincontainer, sagaguimodel))
+        self.containerfiletable.setModel(containerfilemodel)
         self.commithisttable.setModel(self.histModel)
         self.framelabel.setText('Revision 0 (New Container)')
         self.newcontaineredit.setEnabled(True)

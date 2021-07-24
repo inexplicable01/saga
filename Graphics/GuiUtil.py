@@ -50,17 +50,17 @@ class RotatedHeaderView(QHeaderView):
         return size
 import os
 def setStyle(mainguihandle, sourcecodedir):
-    txt = os.path.join(sourcecodedir, 'Graphics', 'StyleSheet', 'tab.stylesheet')
+    txt = os.path.join(sourcecodedir, 'Graphics', 'StyleSheet', 'cst.stylesheet')
     with open(txt, 'r') as txth:
         tabstylesheet = txth.read()
     mainguihandle.maintabwidget.setStyleSheet(tabstylesheet)
     mainguihandle.maintabwidget.setCursor(QCursor(Qt.ArrowCursor))
-    mainguihandle.container_subtab.setStyleSheet(tabstylesheet)
-    # mainguihandle.container_subtab.setCursor(QCursor(Qt.ArrowCursor))
+    # mainguihandle.container_subtab.setStyleSheet(tabstylesheet)
+    # # mainguihandle.container_subtab.setCursor(QCursor(Qt.ArrowCursor))
     mainguihandle.networktabwidget.setStyleSheet(tabstylesheet)
     mainguihandle.container_subtab.setStyleSheet(tabstylesheet)
-    mainguihandle.Map.setStyleSheet(tabstylesheet)
-    mainguihandle.ContainerTab.setStyleSheet(tabstylesheet)
+    # mainguihandle.Map.setStyleSheet(tabstylesheet)
+    # mainguihandle.ContainerTab.setStyleSheet(tabstylesheet)
 
     # mainguihandle.container_subtab.setCursor(QCursor(Qt.ArrowCursor))
 
@@ -72,15 +72,20 @@ def setStyle(mainguihandle, sourcecodedir):
     mainguihandle.commithisttable.setStyleSheet(tablestylesheet)
     mainguihandle.containerlisttable.setStyleSheet(tablestylesheet)
 
-    txt = os.path.join(sourcecodedir, 'Graphics', 'StyleSheet', 'view.stylesheet')
+    txt = os.path.join(sourcecodedir, 'Graphics', 'StyleSheet', 'tree.stylesheet')
     with open(txt, 'r') as txth:
-        viewstylesheet = txth.read()
-    mainguihandle.containerMapView.setStyleSheet(viewstylesheet)
-
-    txt = os.path.join(sourcecodedir, 'Graphics', 'StyleSheet', 'view.stylesheet')
-    with open(txt, 'r') as txth:
-        viewstylesheet = txth.read()
-    mainguihandle.containerMapView.setStyleSheet(viewstylesheet)
+        treestylesheet = txth.read()
+    mainguihandle.sagatreeview.setStyleSheet(treestylesheet)
+    #
+    # txt = os.path.join(sourcecodedir, 'Graphics', 'StyleSheet', 'view.stylesheet')
+    # with open(txt, 'r') as txth:
+    #     viewstylesheet = txth.read()
+    # mainguihandle.containerMapView.setStyleSheet(viewstylesheet)
+    #
+    # txt = os.path.join(sourcecodedir, 'Graphics', 'StyleSheet', 'view.stylesheet')
+    # with open(txt, 'r') as txth:
+    #     viewstylesheet = txth.read()
+    # mainguihandle.containerMapView.setStyleSheet(viewstylesheet)
 
 
 def setstyleoflabel(color, label):

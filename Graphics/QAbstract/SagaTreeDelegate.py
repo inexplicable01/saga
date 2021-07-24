@@ -55,10 +55,10 @@ class SagaTreeDelegate(QStyledItemDelegate):
 
         if index.column()==0:
             if selectedcontainerrownum==currow:
-                painter.setPen(QPen(QBrush(Qt.red), 4))
-                painter.setBrush(QBrush(Qt.red))
+                painter.setPen(QPen(QBrush(QColor('#FFB52E')), 4))
+                painter.setBrush(QBrush(QColor('#FFB52E')))
                 painter.drawRect(option.rect)
-                painter.setPen(QPen(QBrush(Qt.white), 4))
+                painter.setPen(QPen(QBrush(Qt.black), 4))
                 painter.drawText(option.rect, Qt.AlignLeft, index.internalPointer().data(0))
             elif currow in inputspaths['hori'].keys():
                 if inputspaths['hori'][currow]['linetype']=='file':

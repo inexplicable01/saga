@@ -8,43 +8,50 @@ import os
 from SagaApp.FileObjects import FileTrack
 from os.path import join
 import warnings
+import glob
 from SagaApp.FrameStruct import Frame
-
+# from SagaGuiModel.SagaSync import SagaSync
 
 STATUSCOLUMNHEADER='Status'
 
 class ContainerFileModel(QAbstractTableModel):
-    def __init__(self, maincontainer:Container, sagaguimodel):
+    def __init__(self, maincontainer:Container, sagasync):
 
         super(ContainerFileModel, self).__init__()
 
         self.headers = ['FileHeader', 'Role', 'Status','FileName','From', 'To', 'Last Edited', 'Rev Committed', 'Commit Message']
         self.maincontainer = maincontainer
-        self.sagaguimodel = sagaguimodel
+        self.sagasync = sagasync
         self.gathermodeldatafromContainer()
 
     def latestRevFor(self,maincontainer:Container,fileheader):
-        if fileheader not in maincontainer.FileHeaders.keys():
+        if fileheader not in maincontainer.getRefFrame().filestrack.keys():
             return fileheader + " not in Container " + maincontainer.containerName
-        curmd5 = maincontainer.workingFrame.filestrack[fileheader].md5
+        curmd5 = maincontainer.getRefFrame().filestrack[fileheader].md5
         # print(self.revnum, self.workingFrame.FrameName)
-        lastsamerevnum=maincontainer.revnum
-        while lastsamerevnum>1:
-            lastsamerevnum-=1
-            framefullpathyaml = join(maincontainer.containerworkingfolder, 'Main','Rev'+str(lastsamerevnum) +'.yaml')
+        lastsamerevnum = maincontainer.revnum
+        while lastsamerevnum > 1:
+            lastsamerevnum -= 1
+            framefullpathyaml = join(maincontainer.containerworkingfolder, 'Main',
+                                     'Rev' + str(lastsamerevnum) + '.yaml')
+
             if not os.path.exists(framefullpathyaml):
-                warnings.warn('this Should never happen')
-                raise('Model is looking for a Rev that is not in local folder')
-            #     self.downloadbranch(maincontainer.containerworkingfolder, maincontainer)
-            pastframe = Frame.LoadFrameFromYaml(framefullpathyaml, maincontainer.containerworkingfolder)
+                warnings.warn('Rev' + str(lastsamerevnum) + '.yaml  is missing')
+            try:
+                pastframe = Frame.loadRefFramefromYaml(framefullpathyaml, maincontainer.containerworkingfolder)
+            except:
+                warnings.warn('Rev' + str(lastsamerevnum) + '.yaml  did not load, could be corrupted')
             if fileheader in pastframe.filestrack.keys():
                 if curmd5 != pastframe.filestrack[fileheader].md5:
-                    return 'Rev'+str(lastsamerevnum+1), pastframe.commitMessage
+                    return 'Rev' + str(lastsamerevnum + 1), pastframe.commitMessage
+                    # returns Rev where md5 was still the same which is one Rev(this+1)
                 if lastsamerevnum == 1:
                     return 'Rev' + str(lastsamerevnum), pastframe.commitMessage
             else:
                 return 'Rev'+str(lastsamerevnum+1), pastframe.commitMessage
         return 'Rev0', 'work in progress'
+
+
 
     def gathermodeldatafromContainer(self):
         filedir = os.listdir(self.maincontainer.containerworkingfolder)
@@ -130,8 +137,8 @@ class ContainerFileModel(QAbstractTableModel):
     def update(self):
         self.gathermodeldatafromContainer()
         for i,rowdict in enumerate(self.containerfiles):
-            if rowdict['fileheader'] in self.sagaguimodel.changes.keys():
-                rowdict['change']  = self.sagaguimodel.changes[rowdict['fileheader']]
+            if rowdict['fileheader'] in self.sagasync.changes.keys():
+                rowdict['change']  = self.sagasync.changes[rowdict['fileheader']]
                 # self.containerfiles[i]['change'] = changes[rowdict['fileheader']]
             else:
                 rowdict['change'] = None

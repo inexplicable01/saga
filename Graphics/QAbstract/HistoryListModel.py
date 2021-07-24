@@ -16,11 +16,12 @@ class HistoryListModel(QAbstractTableModel):
 
         self.filetype=typeRequired
         if len(historyinfodict.keys()) == 0:
+            self.initiatilized = False
             self.containdata= [ 'Container Not Yet Committed']
             self.fileheaderlist=['Null']
             self.revheaders=['Null']
         else:
-
+            self.initiatilized = True
             self.revheaders, self.containdata, self.fileheaderlist = self.sorthistory(historyinfodict)
 
 
@@ -40,8 +41,8 @@ class HistoryListModel(QAbstractTableModel):
         # revheaders.sort loops through each element.  element1 goes into mysort. key takes in a method.
         # mysort accepts element1 and returns timestamp1, e2 timestamp2 etc.   and sorts in roder the timestamps.
         # This way, you can through in some complex functions to tailer to the sorting.
+
         revheaders.sort(key=mysort)
-        self.revheaders = revheaders
 
         for revs in historyinfodict.keys():
             # fileheaderlist =  historyinfodict[revs]['frame'].filestrack.keys() + fileheaderlist
@@ -156,9 +157,15 @@ class HistoryListModel(QAbstractTableModel):
 
     def rowCount(self, index):
         # The length of the outer list.
-        return len(self.containdata)
+        if self.initiatilized:
+            return len(self.containdata)
+        else:
+            return 0
 
     def columnCount(self, index):
         # The following takes the first sub-list, and returns
         # the length (only works if all rows are an equal length)
-        return len(self.containdata[0])
+        if self.initiatilized:
+            return len(self.containdata[0])
+        else:
+            return 0

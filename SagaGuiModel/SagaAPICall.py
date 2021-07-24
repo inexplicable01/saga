@@ -68,10 +68,10 @@ class SagaAPICall():
         return {'userstatusstatement': userstatusstatement,
                 'signinsuccess': signinsuccess} , userdata
 
-    def downloadContainer(self, newcontparentdirpath, containerId):
+    def downloadContainerCall(self, newcontparentdirpath, containerId, use):
         headers = {'Authorization': 'Bearer ' + self.authtoken}
         response = requests.get(BASE + 'CONTAINERS/containerID', headers=headers, data={'containerID': containerId})
-        ensureFolderExist(join(newcontparentdirpath, containerId, 'Main'))
+        ensureFolderExist(join(newcontparentdirpath, containerId, 'Main', 'Rev1.yaml'))## Hack 'File name is needed but not used.'
         dlcontent = json.loads(response.content.decode('utf-8'))
         requestfailed = False
         if requestfailed:
@@ -82,8 +82,9 @@ class SagaAPICall():
             frame.writeoutFrameYaml()
         cont = Container.LoadContainerFromDict(dlcontent['containerdict'],containerworkingfolder, CONTAINERFN)
         cont.save()
-        cont.yamlfn = TEMPCONTAINERFN
-        cont.save()
+        if use=='WorkingContainer':
+            cont.save(TEMPCONTAINERFN)
+            cont.yamlfn = TEMPCONTAINERFN
         # # if exists(join(containerworkingfolder, 'containerstate.yaml')):
         # #     unhidefile(join(containerworkingfolder, 'containerstate.yaml'))
         # # open(join(newcontparentdirpath, containerId, 'containerstate.yaml'), 'wb').write(response.content)
@@ -145,10 +146,8 @@ class SagaAPICall():
         os.utime(fn, (filetrack.lastEdited, filetrack.lastEdited))
         return fn#,self.filestrack[fileheader]
 
-    def downloadbranch(self,containerworkingfolder = None, cont:Container = None, branch='Main'):
-        if cont==None:
-            cont = self.maincontainer
-            containerworkingfolder=self.maincontainer.containerworkingfolder
+    def downloadbranch(self,containerworkingfolder, cont:Container, branch='Main'):
+
         payload = {'containerID': cont.containerId,
                    'branch': branch}
         headers = {

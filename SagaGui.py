@@ -125,7 +125,7 @@ class UI(QMainWindow):
 
     def SignIn(self):
         # print(BASE)
-        inputwindow = SigninDialog(mainguihandle=self)
+        inputwindow = SigninDialog(mainguihandle=self, sagaguimodel=sagaguimodel)
         inputs = inputwindow.getInputs()
         if inputs['signinsuccess']:
             self.refresh()
@@ -262,7 +262,7 @@ def excepthook(exc_type, exc_value, exc_tb):
     # or QtWidgets.QApplication.exit(0)
 
 
-sys.excepthook = excepthook
+# sys.excepthook = excepthook
 app = QApplication([])
 window = UI()
 errorDialog = QtWidgets.QErrorMessage()

@@ -21,11 +21,10 @@ class GanttListModel(QAbstractTableModel):
         self.containerheaders = []
         self.historydict={}
         self.datecommits={}
-        ganttdata=[]
+
         self.commitmessagedict={}
         self.weeksdict={}
 
-        self.sortedframes={}
 
         for containerid in containerids:
             self.containerheaders.append(containerid)
@@ -61,21 +60,26 @@ class GanttListModel(QAbstractTableModel):
             containerframes[containerid]={}
             for yamlfn in yamllist:
                 pastframe = Frame.LoadFrameFromYaml(yamlfn,os.path.join(desktopdir, 'ContainerMapWorkDir', containerid))
-                containerframes[containerid][pastframe.commitUTCdatetime]= pastframe
-
-            self.sortedframes[containerid]={}
-            for revi, timestamp in enumerate(sorted(containerframes[containerid])):
-                ## Main Action, Looping through the sorted frames of the container
                 weekstr, weeksago = weekstrfromtimestamp(pastframe.commitUTCdatetime)
                 if weeksago < weekstocheck:
-                    pastframe = containerframes[containerid][timestamp]
-                    self.sortedframes[containerid][timestamp] = pastframe
-                    continue
+                    containerframes[containerid][pastframe.commitUTCdatetime]= pastframe
+
+            # self.sortedframes[containerid]={}
+            # for revi, timestamp in enumerate(sorted(containerframes[containerid])):
+            #     ## Main Action, Looping through the sorted frames of the container
+            #     ## Why am I sorting through a dictionary?  Would it just make sure sense to ignore frames that have a timestamp older than X?
+            #     # ATTENTION
+            #     weekstr, weeksago = weekstrfromtimestamp(timestamp)
+            #     if weeksago < weekstocheck:
+            #         pastframe = containerframes[containerid][timestamp]
+            #         self.sortedframes[containerid][timestamp] = pastframe
 
         ##Checking output md5 changes and adding frames to cells
+
         for containerid in containerids:
-            for revi, timestamp in enumerate(sorted(self.sortedframes[containerid])):
-                pastframe = self.sortedframes[containerid][timestamp]
+            sortedTimestamps = sorted(containerframes[containerid])
+            for revi, timestamp in enumerate(sortedTimestamps):
+                pastframe = containerframes[containerid][timestamp]
 
                 weekstr, weeksago = weekstrfromtimestamp(pastframe.commitUTCdatetime)
                 self.weeksdict[weekstr][containerid]['cellinfo']['frames'].append(pastframe)
@@ -83,8 +87,8 @@ class GanttListModel(QAbstractTableModel):
                 msg = pastframe.FrameName + ' : ' + pastframe.commitMessage + ':' + str(pstdate.date())
                 self.commitmessagedict[weekstr][containerid]['msg'].append(msg)
                 if not revi==0:
-                    previoustimestamp = sorted(self.sortedframes[containerid])[revi-1]
-                    prevframe = self.sortedframes[containerid][previoustimestamp]
+                    previoustimestamp = sortedTimestamps[revi-1]
+                    prevframe = containerframes[containerid][previoustimestamp]
                     for fileheader, filetrack in pastframe.filestrack.items():
                         if containerid == 'CustomerRequirements' and fileheader=='CustomerReq':
                             a = 4
@@ -109,13 +113,17 @@ class GanttListModel(QAbstractTableModel):
                         #     if not prevframe.filestrack[fileheader].md5 == filetrack.md5:
                         #         self.weeksdict[weekstr][containerid]['cellinfo']['outputchanged']
 
+
+        ### A second look is needed for the transfer pair.  Transfer pair needs to know where all the outputs are before the loop.
+        ## maybe there's a smarter way tt do this.
         for containerid in containerids:
-            for revi, timestamp in enumerate(sorted(self.sortedframes[containerid])):
-                pastframe = self.sortedframes[containerid][timestamp]
+            sortedTimestamps = sorted(containerframes[containerid])
+            for revi, timestamp in enumerate(sortedTimestamps):
+                pastframe = containerframes[containerid][timestamp]
                 weekstr, weeksago = weekstrfromtimestamp(pastframe.commitUTCdatetime)
                 if not revi==0:
-                    previoustimestamp = sorted(self.sortedframes[containerid])[revi-1]
-                    prevframe = self.sortedframes[containerid][previoustimestamp]
+                    previoustimestamp = sortedTimestamps[revi-1]
+                    prevframe = containerframes[containerid][previoustimestamp]
                     for fileheader, filetrack in pastframe.filestrack.items():
                         if filetrack.connection.connectionType.name == typeInput:
                             if fileheader not in prevframe.filestrack.keys():

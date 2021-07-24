@@ -244,7 +244,7 @@ class UpstreamListModel(QAbstractTableModel):
 
             if UPDATEDUPSTREAM in self.changes[fileheader]['reason']:
                 self.conflictdata.append(fileheader)
-                self.upstreamfileupdate.append({'frame':changes[fileheader]['inputframe'],
+                self.upstreamfileupdate.append({'frame':changes[fileheader]['upstreamframe'],
                                                 'fileheader':fileheader,
                                                 'fromcontainer':changes[fileheader]['fromcontainer']
                                                 })

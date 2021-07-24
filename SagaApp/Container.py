@@ -337,8 +337,12 @@ class Container:
 
         return changesbyfile
 
-    def save(self, fn = TEMPCONTAINERFN):
+    def save(self, fn = None):
 #https://stackoverflow.com/questions/13215716/ioerror-errno-13-permission-denied-when-trying-to-open-hidden-file-in-w-mod
+        if fn is None:
+            fn = self.yamlfn
+        else:
+            fn = TEMPCONTAINERFN
         if os.path.exists(join(self.containerworkingfolder, fn)):
             unhidefile(join(self.containerworkingfolder, fn))
         outyaml = open(join(self.containerworkingfolder, fn), 'w')
