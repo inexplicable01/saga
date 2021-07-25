@@ -221,7 +221,7 @@ class MapTab():
 
     def updatecontainertodl(self, listtable):
         rownumber = listtable.row()
-        index = listtable.model().index(rownumber, 1)
+        index = listtable.model().index(rownumber, 0)
         containername = listtable.model().data(index, 0)
         self.dlContainerBttn.setEnabled(True)
         self.dlContainerBttn.setText('Click to Download Container ' + containername)

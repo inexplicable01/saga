@@ -247,6 +247,10 @@ class containerRect(QGraphicsRectItem):
                 delta = self.pos()-rectitem.pos()
                 xtomove = containerRectWidth - delta.x() if delta.x() > 0 else -1 * (containerRectWidth + delta.x())
                 ytomove= containerRectHeight - delta.y() if delta.y()>0 else -1*(containerRectHeight + delta.y())
+                if xtomove == 0:
+                    xtomove = 1
+                if ytomove == 0:
+                    ytomove = 1
                 if abs(xtomove)>abs(ytomove):
                     newpos = self.pos() + QPointF(0, (abs(ytomove)+RECTMARGINpx)*abs(ytomove)/ytomove)
                 else:
