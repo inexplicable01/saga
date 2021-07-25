@@ -6,7 +6,7 @@ from SagaApp.SagaUtil import makefilehidden, ensureFolderExist, unhidefile
 from Config import BASE, mapdetailstxt, CONTAINERFN, typeInput,typeOutput,typeRequired,NEWCONTAINERFN,SERVERNEWREVISION,SERVERFILEADDED, SERVERFILEDELETED,UPDATEDUPSTREAM, TEMPFRAMEFN, TEMPCONTAINERFN, NEWFRAMEFN
 import yaml
 import json
-import requests
+
 from SagaApp.Container import Container
 from SagaApp.FrameStruct import Frame
 from SagaApp.FileObjects import FileTrack
@@ -17,6 +17,8 @@ from os import listdir
 from os.path import isfile, join
 from SagaGuiModel.SagaAPICall import SagaAPICall
 from SagaGuiModel.SagaSync import SagaSync
+from subprocess import Popen
+import sys
 
 
 from Graphics.QAbstract.ContainerFileModel import ContainerFileModel
@@ -201,16 +203,6 @@ class SagaGuiModel():
             self.maincontainer.setAllowedUser(permissionsresponse['allowedUser'])
         return permissionsresponse, self.maincontainer.allowedUser
 
-        # response = requests.post(BASE + 'PERMISSIONS/AddUserToContainer',
-        #                          headers={"Authorization": 'Bearer ' + sagaguimodel.authtoken},
-        #                          json={"email": sagaguimodel.userdata['email'],
-        #                                "new_email":self.emailedit.text(),
-        #                                 "sectionid":sagaguimodel.userdata['current_sectionid'],
-        #                                "containerId": self.mainContainer.containerId,
-        #                                }
-        #                          )
-        # permissionsresponse = json.loads(response.content)
-
     def commitNewContainer(self, commitmessage):
         payload, filesToUpload = self.maincontainer.prepareNewCommitCall( commitmessage)
         returncontdict,returnframedict,servermessage = self.sagaapicall.commitNewContainerToServer(payload,filesToUpload)
@@ -225,8 +217,8 @@ class SagaGuiModel():
             self.maincontainer.yamlfn = TEMPCONTAINERFN
             self.maincontainer.save()
             try:
-                os.remove(self.maincontainer.containerworkingfolder, NEWCONTAINERFN)
-                os.remove(self.maincontainer.containerworkingfolder, 'Main',NEWFRAMEFN)
+                os.remove(join(self.maincontainer.containerworkingfolder, NEWCONTAINERFN))
+                os.remove(join(self.maincontainer.containerworkingfolder, 'Main',NEWFRAMEFN))
             except:
                 print('Can''t remove pre First Commit files.')
             return True
@@ -293,6 +285,15 @@ class SagaGuiModel():
             needtorefresh=True ## could be one line but I think this is easier to read
 
         return statustext, allowcommit, needtorefresh ,  changes
+
+    def getNewVersionInstaller(self, app):
+        # response = requests.get(BASE + 'GENERAL/UpdatedInstallation',
+        #                         headers={"Authorization": 'Bearer ' + self.authtoken})
+        installPath = os.path.join(self.desktopdir, 'Saga.exe')
+        # open(installPath, 'wb').write(response.content)
+        self.sagaapicall.getNewVersionCall(installPath)
+        Popen(installPath, shell=True)
+        sys.exit(app.exec_())
 
 
 

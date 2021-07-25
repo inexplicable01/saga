@@ -262,3 +262,9 @@ class SagaAPICall():
         newestrevnum = resp['newestrevnum']
         return newestframe,newestrevnum
 
+    def getNewVersionCall(self, installPath):
+        response = requests.get(BASE + 'GENERAL/UpdatedInstallation',
+                                headers={"Authorization": 'Bearer ' + self.authtoken})
+        open(installPath, 'wb').write(response.content)
+
+
