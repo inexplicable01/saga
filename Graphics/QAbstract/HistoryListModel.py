@@ -165,14 +165,14 @@ class HistoryListModel(QAbstractTableModel):
     def columnCount(self, index):
         # The following takes the first sub-list, and returns
         # the length (only works if all rows are an equal length)
-        if self.initiatilized:
+        if len(self.containdata)>0:
             return len(self.containdata[0])
         else:
             return 0
 
     def reset(self):
-        self.initiatilized=False
-        self.containdata = ['Container Not Yet Committed']
-        self.fileheaderlist = ['Null']
-        self.revheaders = ['Null']
 
+        self.containdata = []
+        self.fileheaderlist = []
+        self.revheaders = []
+        self.layoutChanged.emit()

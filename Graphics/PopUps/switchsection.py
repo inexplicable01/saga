@@ -34,7 +34,6 @@ class switchSectionDialog(QDialog):
         if report['status'] =='User Current Section successfully changed':##ATTENTION...Imean comone
             self.cursectionlbl.setText(usersection)
             self.newsection = usersection
-            self.mainguihandle.resetguionsectionswitch()
         else:
             self.cursectionlbl.setText('Error Occured.  Your current section has not change')
 

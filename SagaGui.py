@@ -30,9 +30,7 @@ import logging
 import traceback
 import yaml
 import warnings
-from functools import partial
 from Config import BASE,mapdetailstxt, testerlogin, TEMPCONTAINERFN
-from subprocess import Popen
 import sys
 
 
@@ -62,6 +60,9 @@ class UI(QMainWindow):
         if not os.name == 'nt':
             raise('saga designed only for windows right now')
         self.desktopdir = sagaguimodel.desktopdir
+        sagaguimodel.mainguihandle = self
+        with open(os.path.join(sagaguimodel.desktopdir, 'basicoutput'),'w+') as file:
+            file.write(sagaguimodel.sourcecodedir)
         ## There are two main paths that the GUI needs to be concerns about
         #1. Where the current container of interests is.
         #2. Where is the GUI running from?  This contains settings about the GUI itself and some larger meta-data
@@ -109,7 +110,7 @@ class UI(QMainWindow):
             # self.mainguihandle.checkUserStatus()
             if signinstatus['status'] == 'success':
                 self.refresh()
-            containerexample = 'C:/Users/happy/Documents/Saga/PartDesign/'+TEMPCONTAINERFN
+            containerexample = 'C:/Users/waich/LocalGitProjects/testcontainers_saga/PartDesign/'+TEMPCONTAINERFN
             self.maincontainertab.readcontainer(containerexample)
         self.show()
 
@@ -139,18 +140,13 @@ class UI(QMainWindow):
     def SignUp(self):
         # print(BASE)
         newuserwindow = newUserDialog(mainguihandle=self)
-        inputs = newuserwindow.getInputs()
-        if inputs:
-            response = requests.post(BASE + 'auth/register',
-                                     data=inputs)
-            authtoken = response.json()
-            if 'status' in authtoken.keys() and authtoken['status'] == 'success':
-                with open('token.txt', 'w') as tokenfile:
-                    json.dump(authtoken, tokenfile)
+        formentry = newuserwindow.getInputs()
+        if formentry:
+            signinsuccess = sagaguimodel.newUserSignUp(formentry)
+            if signinsuccess:
                 self.adjustGuiPerUserStatus()
-                # sagaguimodel.getWorldContainers()
             else:
-                print('usertoken[status] ' + authtoken['status'])
+                print('user sign in failed')
 
     def newContainer(self):
         newcontainergui = newContainerDialog("Select a local location for building your container")
@@ -181,15 +177,7 @@ class UI(QMainWindow):
         self.maptab.generateSagaTree(containerinfodict)
 
 
-    def resetguionsectionswitch(self):
-        self.maincontainertab.reset()
-        self.maptab.reset()
-        self.adjustGuiPerUserStatus()
 
-        ##Regenerate Container Ids of new section that got switched to.
-        containerinfodict = sagaguimodel.getWorldContainers()
-        self.maptab.generateContainerMap(containerinfodict)
-        self.maptab.generateSagaTree(containerinfodict)
         # self.gantttable.setModel(GanttListModel([], sagaguimodel.desktopdir))
 
     def newSection(self):
@@ -222,7 +210,18 @@ class UI(QMainWindow):
         self.actionContainer_Permission.setFont(font)
 
     def adjustGuiPerUserStatus(self):
-        status = sagaguimodel.checkUserStatus()
+        status, goswitch = sagaguimodel.checkUserStatus()
+        msg = QMessageBox()
+        msg.setStandardButtons(QMessageBox.Ok)
+        if goswitch:
+            report, usersection = sagaguimodel.sectionSwitch()
+            msg.setText(report['status'])
+            if report['status']== 'User Current Section successfully changed':
+                msg.setIcon(QMessageBox.Information)
+            else:
+                msg.setIcon(QMessageBox.Critical)
+                ## if we arrived here, then that means either
+            msg.exec_()
         self.userstatuslbl.setText(status['userstatusstatement'])
         self.menuContainer.setEnabled(status['signinsuccess'])
         self.menuSection.setEnabled(status['signinsuccess'])
@@ -236,6 +235,14 @@ class UI(QMainWindow):
                 if updater.update() == True:
                     sagaguimodel.getNewVersionInstaller(app)
 
+    def resetguionsectionswitch(self):
+        self.maincontainertab.reset()
+        self.maptab.reset()
+        # self.adjustGuiPerUserStatus()
+        ##Regenerate Container Ids of new section that got switched to.
+        containerinfodict = sagaguimodel.getWorldContainers()
+        self.maptab.generateContainerMap(containerinfodict)
+        self.maptab.generateSagaTree(containerinfodict)
 
 
 

@@ -143,7 +143,6 @@ class SagaSync():
         self.localframe = container.getRefFrame()
         self.workingframe = container.workingFrame
 
-
         self.changes = {}
         self.changes, self.alterfiletracks = container.compareToRefFrame(self.changes)
         upstreamupdated = self.checkUpstream(container)

@@ -3,7 +3,7 @@ import warnings
 
 from os.path import join
 from SagaApp.SagaUtil import makefilehidden, ensureFolderExist, unhidefile
-from Config import BASE, mapdetailstxt, CONTAINERFN, typeInput,typeOutput,typeRequired,NEWCONTAINERFN,SERVERNEWREVISION,SERVERFILEADDED, SERVERFILEDELETED,UPDATEDUPSTREAM, TEMPFRAMEFN, TEMPCONTAINERFN, NEWFRAMEFN
+from Config import sourcecodedirfromconfig,BASE, mapdetailstxt, CONTAINERFN, typeInput,typeOutput,typeRequired,NEWCONTAINERFN,SERVERNEWREVISION,SERVERFILEADDED, SERVERFILEDELETED,UPDATEDUPSTREAM, TEMPFRAMEFN, TEMPCONTAINERFN, NEWFRAMEFN
 import yaml
 import json
 
@@ -36,11 +36,12 @@ class SagaGuiModel():
         self.userdata= userdata
         self.containerwrkdir=containerwrkdir
         self.desktopdir = desktopdir
-        self.sourcecodedir = sourcecodedir
+        self.sourcecodedir = sourcecodedirfromconfig
         self.versionnumber = versionnumber
         self.guiworkingdir = os.getcwd()
         self.sagaapicall:SagaAPICall = SagaAPICall(authtoken)
         self.sagasync:SagaSync = SagaSync(self.sagaapicall,desktopdir)
+        self.mainguihandle = None
 
         self.maincontainer:Container = None
         self.userdata = None
@@ -79,12 +80,28 @@ class SagaGuiModel():
         return sagaguimodel
 
     def checkUserStatus(self):
-        signinresult, self.userdata = self.sagaapicall.authUserDetails(self.tokenfile)
+        goswitch = False
+        prev_sectionid = None
+        if self.userdata:
+            prev_sectionid=self.userdata['current_sectionid']
+        userdetailsresult, self.userdata = self.sagaapicall.authUserDetails(self.tokenfile)
         if self.userdata:
             sectioniddir = join(self.desktopdir, 'SagaGuiData', self.userdata['current_sectionid'])
             if not os.path.exists(sectioniddir):
                 os.mkdir(sectioniddir)
-        return signinresult
+            if prev_sectionid!=self.userdata['current_sectionid']:
+                goswitch= True
+        return userdetailsresult, goswitch
+
+    def newUserSignUp(self, formentry):
+        signupresponse = self.sagaapicall.newUserSignUpCall(formentry)
+
+        if signupresponse['status'] == 'success':###ATTENTION, MAIN MODEL SHOULD SET THE APICALL AUTHTOKEN
+            self.sagaapicall.authtoken = signupresponse['auth_token']
+            with open('token.txt', 'w') as tokenfile:
+                json.dump(signupresponse, tokenfile)
+            return True
+        return False
 
 
     def getWorldContainers(self):
@@ -147,10 +164,10 @@ class SagaGuiModel():
     def loadContainer(self, containerpath):
 
         self.maincontainer = Container.LoadContainerFromYaml(containerpath, revnum=None, ismaincontainer=True)
-        self.histModel = HistoryListModel(self.maincontainer .commithistory())
+        self.histModel = HistoryListModel(self.maincontainer .commithistory())### Attention, this should probalby be init at init
         self.histModel.individualfilehistory(self.maincontainer.commithistorybyfile())
 
-        self.containerfilemodel = ContainerFileModel(self.maincontainer, self.sagasync)
+        self.containerfilemodel = ContainerFileModel(self.maincontainer, self.sagasync)### Attention,
         return self.maincontainer, self.histModel, self.containerfilemodel
 
     def initiateNewContainer(self, containerworkingfolder, containername):
@@ -165,13 +182,11 @@ class SagaGuiModel():
         return self.containerfilemodel, self.histModel
 
 
+    def getAvailableSections(self):
+        # headers = {'Authorization': 'Bearer ' + self.authtoken}
+        sectiondict = self.sagaapicall.getAvailableSectionsCall()
+        return sectiondict
 
-    def modelsreset(self):
-        try:
-             self.histModel.reset()#ATTENTION...just awful
-        except:
-            pass
-###Calls
 
     def shouldModelSwitch(self,containerpath):
         loadingcontainer = Container.LoadContainerFromYaml(containerpath, revnum=None)
@@ -180,9 +195,31 @@ class SagaGuiModel():
         goswitch, newsectionid, message = self.sagaapicall.shouldModelSwitchCall(loadingcontainer.containerId)
         return goswitch, newsectionid, message
 
-    def sectionSwitch(self, newsectionid):
+    def sectionSwitch(self, newsectionid=None):
+        if newsectionid is None:
+            if self.userdata['current_sectionid'] is None:
+                return None, None
+            else:
+                newsectionid = self.userdata['current_sectionid']
         report, usersection = self.sagaapicall.sectionSwitchCall(newsectionid)
+        if report['status'] == 'User Current Section successfully changed':
+            self.reset()
+            self.mainguihandle.resetguionsectionswitch()
+        else:
+            print('Error Occured.  Your current section has not change')
         return report , usersection
+
+    def reset(self):
+        sagaguimodel.maincontainer = None
+        try:
+            self.histModel.reset()
+        except:
+            pass
+        try:
+            self.containerfilemodel.reset()
+        except:
+            pass
+
     def downloadFile(self, filetrack:FileTrack, containerworkingfolder, newfilename=None ):
         fn=self.sagaapicall.downloadFileCall(filetrack, containerworkingfolder, newfilename )
         return fn
@@ -251,13 +288,7 @@ class SagaGuiModel():
             print(resp)
             return  False,self.maincontainer.workingFrame.FrameName, 'Commit Failed!'
 ############SyncStatusStuff
-    #
-    #
-    # def checkState
 
-    # def syncModels(self):
-    #     syncmodels
-    #     return
     def getRefreshPopUpModels(self):
         return self.sagasync.syncStatusModels()
 

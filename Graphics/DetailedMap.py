@@ -115,7 +115,7 @@ class ConnectionBox():
     # ConnectionBox is currently a generic class while containerBox inherits from QRects
 # This is rather confusing and just not a very good structure  They should either both inherit from Qrects or both are just generic classes
 
-    def __init__(self, containerscene,containeridtoname, containerIn:Container, containerOut:Container,containerBoxHeight=containerBoxHeight, containerBoxWidth=containerBoxWidth):
+    def __init__(self, containerscene, containerIn:Container, containerOut:Container,containeridtoname,containerBoxHeight=containerBoxHeight, containerBoxWidth=containerBoxWidth):
         self.containInBox = QGraphicsRectItem(containerBoxWidth*-1.0, 0,  containerBoxWidth,containerBoxHeight)
         self.containInBox.setPen(Qt.white)
         containerscene.addItem(self.containInBox)

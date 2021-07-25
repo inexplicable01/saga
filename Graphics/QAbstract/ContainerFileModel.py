@@ -168,6 +168,11 @@ class ContainerFileModel(QAbstractTableModel):
         else:
             return len(self.headers)
 
+    def reset(self):
+        self.containerfiles=[]
+        self.maincontainer=None
+        self.layoutChanged.emit()
+
 
 
 # def createBeginRect(painter, cellrect, qtbrushcolor, squaresidepx, pxlinewidth):

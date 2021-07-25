@@ -257,10 +257,9 @@ class MainContainerTab():
 
 
     def reset(self):
-        sagaguimodel.maincontainer = None
+        sagaguimodel.reset()
         self.containerlabel.setText('')
-        self.histModel = HistoryListModel({})
-        self.commithisttable.setModel(self.histModel)
+        # self.commithisttable.setModel(self.histModel)
         # self.maincontainerplot.reset()
 
     def readcontainer(self, containerpath):
@@ -277,16 +276,15 @@ class MainContainerTab():
         if goswitch:
             report, usersection = sagaguimodel.sectionSwitch(newsectionid)
             msg.setText(report['status'])
-            if report['status']== 'User Current Section successfully changed to ' + usersection:
+            if report['status']== 'User Current Section successfully changed':
                 msg.setIcon(QMessageBox.Information)
-                self.mainguihandle.resetguionsectionswitch()
             else:
                 msg.setIcon(QMessageBox.Critical)
                 ## if we arrived here, then that means either
             msg.exec_()
 
         print('Loading ' + containerpath)
-        sagaguimodel.modelsreset()
+        sagaguimodel.reset()# In case there is no section switch
         cont, histModel, containerfilemodel = sagaguimodel.loadContainer(containerpath)
 
         # [self.workingdir, file_name] = os.path.split(containerpath)  ## working dir should be app level
