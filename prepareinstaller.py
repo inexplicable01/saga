@@ -11,4 +11,4 @@ shutil.copy('settings.yaml', 'dist/sagagui/settings.yaml')
 
 # os.mkdir('dist/SagaServerDeploy/SagaAPI')
 appdata = os.getenv('appdata')
-shutil.rmtree(os.path.join(appdata,'SagaServer'))
+# shutil.rmtree(os.path.join(appdata,'SagaServer'))

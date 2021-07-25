@@ -162,6 +162,9 @@ class containerRect(QGraphicsRectItem):
         # self.text.setPos(self.QPos)
         self.activeContainersObj = containermaphandle.activeContainersObj
         self.drawline=containermaphandle.drawline
+        self.containeridtoname={}
+        for containerid, container in containermaphandle.activeContainers.items():
+            self.containeridtoname[containerid] = container.containerName
         self.detailedmap = containermaphandle.detailedmap
         self.selecteddetail=containermaphandle.selecteddetail
         self.updatemapcoord=containermaphandle.updatemapcoord
@@ -239,7 +242,8 @@ class containerRect(QGraphicsRectItem):
 
     def mouseReleaseEvent(self,event):
         self.selecteddetail['selectedobjname']=self.container.containerId
-        self.detailedmap.selectedobj(self.container.containerId)
+        # containerName = self.containeridtoname[self.container.containerId]
+        self.detailedmap.selectedobj(self.container.containerId,self.containeridtoname)
         for containerid, rectitem in self.activeContainersObj.items():
             if containerid==self.container.containerId:
                 continue
@@ -247,6 +251,10 @@ class containerRect(QGraphicsRectItem):
                 delta = self.pos()-rectitem.pos()
                 xtomove = containerRectWidth - delta.x() if delta.x() > 0 else -1 * (containerRectWidth + delta.x())
                 ytomove= containerRectHeight - delta.y() if delta.y()>0 else -1*(containerRectHeight + delta.y())
+                if xtomove==0:
+                    xtomove=1
+                if ytomove==0:
+                    ytomove=1
                 if abs(xtomove)>abs(ytomove):
                     newpos = self.pos() + QPointF(0, (abs(ytomove)+RECTMARGINpx)*abs(ytomove)/ytomove)
                 else:
