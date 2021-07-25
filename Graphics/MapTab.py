@@ -226,8 +226,9 @@ class MapTab():
         self.dlContainerBttn.setEnabled(True)
         self.dlContainerBttn.setText('Click to Download Container ' + containername)
         index = listtable.model().index(rownumber, 0)
-        self.dlcontainerid = listtable.model().data(index, 0)
+        # self.dlcontainerid = listtable.model().data(index, 0)
         self.dlcontainername = containername
+        self.dlcontainerid = listtable.model().containernametoid[containername]
 
 
     def downloadcontainer(self):
