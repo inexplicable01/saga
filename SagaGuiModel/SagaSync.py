@@ -52,8 +52,13 @@ class SagaSync():
                     # This should really have two parts, one is to simply compare the last commit Rev of Downstream container to the last committed Rev of the Upstream container.
                     # if ref frame is upstreammd5  its fine, if workingframe is upstreammd5 its fine.
                     # if upstream md5 not equal to
-
-                    md5notsameasupstream = upstreamframe.filestrack[fileheader].md5 not in [ refFrame.filestrack[fileheader].md5,workingFrame.filestrack[fileheader].md5]
+                    if fileheader not in refFrame.filestrack.keys():
+                        md5notsameasupstream = upstreamframe.filestrack[fileheader].md5!=workingFrame.filestrack[fileheader].md5
+                        ## This also means this is newly added
+                        ## One explanation User just downloaded the input file and has altered it already.
+                        ## Or Upstream container has already updated there
+                    else:
+                        md5notsameasupstream = upstreamframe.filestrack[fileheader].md5 not in [ refFrame.filestrack[fileheader].md5,workingFrame.filestrack[fileheader].md5]
                     # refnum = revNumber(refFrame.filestrack[fileheader].connection.Rev)
                     # upstreamrevnumberlarger = revNumber(upstreamframe.FrameName)>refnum
                     if md5notsameasupstream:

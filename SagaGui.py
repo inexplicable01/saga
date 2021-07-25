@@ -33,7 +33,6 @@ import warnings
 from functools import partial
 from Config import BASE,mapdetailstxt, testerlogin, TEMPCONTAINERFN
 from subprocess import Popen
-
 import sys
 
 
@@ -41,10 +40,10 @@ import sys
 # from NewContainerGraphics import newContainerGraphics
 # from hackpatch import downloadedFrames
 
-if os.path.exists("token.txt"):
-    os.remove("token.txt")
+if os.path.exists(os.path.join(sagaguimodel.desktopdir,'token.txt')):
+    os.remove(os.path.join(sagaguimodel.desktopdir,'token.txt'))
 
-logging.basicConfig(filename='error.log', filemode='a',
+logging.basicConfig(filename=os.path.join(sagaguimodel.desktopdir,'error.log'), filemode='a',
                     format='%(asctime)s,%(msecs)d - %(name)s - %(levelname)s - %(message)s',
                     datefmt='%H:%M:%S')
 debugmode=False
@@ -235,12 +234,8 @@ class UI(QMainWindow):
             if sagaguimodel.versionnumber != serverVersion:
                 updater = updateDialog()
                 if updater.update() == True:
-                    response = requests.get(BASE + 'GENERAL/UpdatedInstallation',
-                                            headers={"Authorization": 'Bearer ' + self.authtoken})
-                    installPath = os.path.join(sagaguimodel.desktopdir, 'Saga.exe')
-                    open(installPath, 'wb').write(response.content)
-                    Popen(installPath, shell=True)
-                    sys.exit(app.exec_())
+                    sagaguimodel.getNewVersionInstaller(app)
+
 
 
 
