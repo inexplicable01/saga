@@ -195,6 +195,7 @@ class SagaGuiModel():
 
     def downloadbranch(self, branch='Main'):
         self.sagaapicall.downloadbranch(self.maincontainer.containerworkingfolder, self.maincontainer, branch )
+        self.maincontainer.updatememorydict()
 
     def addUserToContainer(self,emailtoadd):
         permissionsresponse = self.sagaapicall.addUserToContainerCall(self.userdata,emailtoadd,self.userdata['current_sectionid'],self.maincontainer.containerId)

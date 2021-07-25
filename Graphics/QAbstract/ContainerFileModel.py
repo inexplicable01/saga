@@ -30,6 +30,7 @@ class ContainerFileModel(QAbstractTableModel):
         curmd5 = maincontainer.getRefFrame().filestrack[fileheader].md5
         # print(self.revnum, self.workingFrame.FrameName)
         lastsamerevnum = maincontainer.revnum
+        lastloopframe = maincontainer.getRefFrame()
         while lastsamerevnum > 1:
             lastsamerevnum -= 1
             revyaml = 'Rev' + str(lastsamerevnum) + '.yaml'
@@ -38,13 +39,13 @@ class ContainerFileModel(QAbstractTableModel):
                 pastframe = maincontainer.memoryframesdict[revyaml]
                 if fileheader in pastframe.filestrack.keys():
                     if curmd5 != pastframe.filestrack[fileheader].md5:
-                        return 'Rev' + str(lastsamerevnum + 1), maincontainer.memoryframesdict[
-                            'Rev' + str(lastsamerevnum + 1) + '.yaml'].commitMessage
+                        return lastloopframe.FrameName, lastloopframe.commitMessage
                         # returns Rev where md5 was still the same which is one Rev(this+1)
                     if lastsamerevnum == 1:
                         return 'Rev' + str(lastsamerevnum), pastframe.commitMessage
                 else:
                     return 'Rev' + str(lastsamerevnum + 1), pastframe.commitMessage
+                lastloopframe = pastframe
             else:
                 warnings.warn('Rev' + str(lastsamerevnum) + '.yaml  cannot be found. Incomplete history')
         return 'Rev0', 'work in progress'

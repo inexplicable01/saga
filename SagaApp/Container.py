@@ -45,11 +45,17 @@ class Container:
         self.memoryframesdict={}
 
         if ismaincontainer==True:
-            yamllist = glob.glob(os.path.join(containerworkingfolder, 'Main', 'Rev*.yaml'))
-            for yamlfn in yamllist:
-                revyaml = os.path.basename(yamlfn)
-                pastframe = Frame.LoadFrameFromYaml(yamlfn, containerworkingfolder)
+            self.updatememorydict()
+
+
+    def updatememorydict(self):
+        yamllist = glob.glob(os.path.join(self.containerworkingfolder, 'Main', 'Rev*.yaml'))
+        for yamlfn in yamllist:
+            revyaml = os.path.basename(yamlfn)
+            if revyaml not in self.memoryframesdict.keys():
+                pastframe = Frame.LoadFrameFromYaml(yamlfn, self.containerworkingfolder)
                 self.memoryframesdict[revyaml] = pastframe
+
 
 
     @classmethod
