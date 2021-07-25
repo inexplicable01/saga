@@ -36,17 +36,17 @@ class ContainerFileModel(QAbstractTableModel):
 
             if revyaml in maincontainer.memoryframesdict.keys():
                 pastframe = maincontainer.memoryframesdict[revyaml]
+                if fileheader in pastframe.filestrack.keys():
+                    if curmd5 != pastframe.filestrack[fileheader].md5:
+                        return 'Rev' + str(lastsamerevnum + 1), maincontainer.memoryframesdict[
+                            'Rev' + str(lastsamerevnum + 1) + '.yaml'].commitMessage
+                        # returns Rev where md5 was still the same which is one Rev(this+1)
+                    if lastsamerevnum == 1:
+                        return 'Rev' + str(lastsamerevnum), pastframe.commitMessage
+                else:
+                    return 'Rev' + str(lastsamerevnum + 1), pastframe.commitMessage
             else:
                 warnings.warn('Rev' + str(lastsamerevnum) + '.yaml  cannot be found. Incomplete history')
-                continue
-            if fileheader in pastframe.filestrack.keys():
-                if curmd5 != pastframe.filestrack[fileheader].md5:
-                    return 'Rev' + str(lastsamerevnum + 1), maincontainer.memoryframesdict['Rev' + str(lastsamerevnum + 1)+ '.yaml'].commitMessage
-                    # returns Rev where md5 was still the same which is one Rev(this+1)
-                if lastsamerevnum == 1:
-                    return 'Rev' + str(lastsamerevnum), pastframe.commitMessage
-            else:
-                return 'Rev'+str(lastsamerevnum+1), pastframe.commitMessage
         return 'Rev0', 'work in progress'
 
 

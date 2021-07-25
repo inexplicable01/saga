@@ -161,7 +161,7 @@ class SagaSync():
             for fileheader in filelist.keys():
                 if filelist[fileheader] == 'Overwrite':
                     fn = self.sagaapicall.downloadFileCall(filetrack=nf.filestrack[fileheader],
-                                                   filepath=container.containerworkingfolder)
+                                                   containerworkingfolder=container.containerworkingfolder)
                     wf.filestrack[fileheader].md5 = nf.filestrack[fileheader].md5
                     wf.filestrack[fileheader].lastEdited = nf.filestrack[fileheader].lastEdited
 
