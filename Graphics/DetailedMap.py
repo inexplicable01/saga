@@ -14,9 +14,6 @@ import sys
 import requests
 import json
 import copy
-
-
-
 containerBoxHeight = 61
 containerBoxWidth = 300
 gap=0.1
@@ -37,7 +34,7 @@ class DetailedMap():
         self.containerscene = QGraphicsScene()
         self.detailsMapView.setScene(self.containerscene)
 
-    def selectedobj(self,selectedobjname):
+    def selectedobj(self,selectedobjname, containeridtoname):
         self.containerscene = QGraphicsScene()
 
         self.selecteddetail['selectedobjname'] = selectedobjname
@@ -46,11 +43,11 @@ class DetailedMap():
             [containerId_in, containerId_out] = selectedobjname.split('_')
             # print(containerId_in,containerId_out)
             ConnectionBox(self.containerscene,\
-                             self.activeContainers[containerId_in],self.activeContainers[containerId_out])
+                             self.activeContainers[containerId_in],self.activeContainers[containerId_out], containeridtoname)
         else:
             # print(selectedobjname)
             self.containerscene.addItem( \
-                containerBox(self.containerscene,self.activeContainers[selectedobjname]))
+                containerBox(self.containerscene,self.activeContainers[selectedobjname], containeridtoname))
         self.detailsMapView.setScene(self.containerscene)
 
     def passobj(self, containmap):
@@ -58,7 +55,7 @@ class DetailedMap():
 
 
 class containerBox(QGraphicsRectItem):
-    def __init__(self, containerscene,container,containerBoxHeight=containerBoxHeight, containerBoxWidth=containerBoxWidth):
+    def __init__(self, containerscene,container,containeridtoname, containerBoxHeight=containerBoxHeight, containerBoxWidth=containerBoxWidth):
         super().__init__(0, 0,  containerBoxWidth,containerscene.height())
         # self.containerBoxHeight = containerBoxHeight
         # self.containerBoxWidth = containerBoxWidth
@@ -89,7 +86,7 @@ class containerBox(QGraphicsRectItem):
                     # print(fileheader)
                     self.crossbox[fileheader] = FileRect(parent=self, locF=(containerBoxWidth + 40) * loc[type] / 2,
                                                          idx=typecounter[type], \
-                                                         fileinfo=fileinfo, fileheader=fileheader, type=type)
+                                                         fileinfo=fileinfo, fileheader=fileheader, type=type, containeridtoname=containeridtoname)
                     # if type == 'Output':
                     #     for containerName in fileinfo['Container']:
                     #         if containerName in self.crossbox:
@@ -118,7 +115,7 @@ class ConnectionBox():
     # ConnectionBox is currently a generic class while containerBox inherits from QRects
 # This is rather confusing and just not a very good structure  They should either both inherit from Qrects or both are just generic classes
 
-    def __init__(self, containerscene,containerIn:Container, containerOut:Container,containerBoxHeight=containerBoxHeight, containerBoxWidth=containerBoxWidth):
+    def __init__(self, containerscene,containeridtoname, containerIn:Container, containerOut:Container,containerBoxHeight=containerBoxHeight, containerBoxWidth=containerBoxWidth):
         self.containInBox = QGraphicsRectItem(containerBoxWidth*-1.0, 0,  containerBoxWidth,containerBoxHeight)
         self.containInBox.setPen(Qt.white)
         containerscene.addItem(self.containInBox)
@@ -138,7 +135,7 @@ class ConnectionBox():
         for upfileheader, upfileinfo in containerIn.FileHeaders.items():
             if upfileinfo['type']==typeOutput and set([containerOut.containerId]).issubset(set(upfileinfo['Container'])):
                 if containerOut.FileHeaders[upfileheader] and containerOut.FileHeaders[upfileheader]['type']==typeInput:
-                    self.fileObj.append(FileRect(None, containerBoxWidth*-0.5, idx, fileinfo=upfileinfo, fileheader=upfileheader, type='Connection'))
+                    self.fileObj.append(FileRect(None, containerBoxWidth*-0.5, idx, fileinfo=upfileinfo, fileheader=upfileheader, type='Connection', containeridtoname= containeridtoname))
                     containerscene.addItem(self.fileObj[-1])
                     idx +=1
 
@@ -149,7 +146,7 @@ class ConnectionBox():
 
 
 class FileRect(QGraphicsRectItem):
-    def __init__(self, parent, locF,idx,fileinfo,fileheader, type):
+    def __init__(self, parent, locF,idx,fileinfo,fileheader, type, containeridtoname):
 
         if type=='Connection':
             boxgap = 0.1
@@ -158,26 +155,21 @@ class FileRect(QGraphicsRectItem):
             boxgap = 0
             # self.boxgap = 0
         super().__init__(locF,70 + idx*100,containerBoxWidth * (1 + boxgap),60,parent)
-        # self.setParentItem(parent)
-        # self.setRect(locF, 60 + idx * 100, containerBoxWidth * (1 + boxgap), containerBoxHeight)
-        # self.fileCount = 1
-        # self.locF = locF
-        # self.idx = idx
-        # super().__init__(locF,60 + idx*100,containerBoxWidth * (1 + self.boxgap),60,parent)
-
 
 
         if type==typeInput:
             self.setPen(QPen(colorscheme[type], 4))
             # self.setBrush(QBrush(colorscheme[type]))
-            self.containertext = QGraphicsTextItem(fileinfo['Container'], parent=self)
+            containername = containeridtoname[fileinfo['Container']]
+            self.containertext = QGraphicsTextItem(containername, parent=self)
             self.containertext.setPos(self.rect().topLeft()+QPoint(0,-20))
             self.containertext.setDefaultTextColor(Qt.white)
         elif type==typeOutput:
             # self.setBrush(QBrush(colorscheme[type]))
             self.setPen(QPen(colorscheme[type], 4))
             for idx,outputcontainer in enumerate(fileinfo['Container']):
-                self.containertext = QGraphicsTextItem(outputcontainer, parent=self)
+                containername = containeridtoname[outputcontainer]
+                self.containertext = QGraphicsTextItem(containername, parent=self)
                 self.containertext.setDefaultTextColor(Qt.white)
                 self.containertext.setPos(self.rect().topRight()+QPoint(-50, -20 -idx*15))
         elif type=='Connection':

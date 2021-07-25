@@ -162,6 +162,9 @@ class containerRect(QGraphicsRectItem):
         # self.text.setPos(self.QPos)
         self.activeContainersObj = containermaphandle.activeContainersObj
         self.drawline=containermaphandle.drawline
+        self.containeridtoname={}
+        for containerid, container in containermaphandle.activeContainers.items():
+            self.containeridtoname[containerid] = container.containerName
         self.detailedmap = containermaphandle.detailedmap
         self.selecteddetail=containermaphandle.selecteddetail
         self.updatemapcoord=containermaphandle.updatemapcoord
@@ -239,7 +242,8 @@ class containerRect(QGraphicsRectItem):
 
     def mouseReleaseEvent(self,event):
         self.selecteddetail['selectedobjname']=self.container.containerId
-        self.detailedmap.selectedobj(self.container.containerId)
+        # containerName = self.containeridtoname[self.container.containerId]
+        self.detailedmap.selectedobj(self.container.containerId,self.containeridtoname)
         for containerid, rectitem in self.activeContainersObj.items():
             if containerid==self.container.containerId:
                 continue

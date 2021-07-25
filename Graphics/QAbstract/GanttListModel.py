@@ -314,7 +314,8 @@ class GanttListDelegate(QStyledItemDelegate):
                 transfer = index.model().weeksdict[weekstr][containerid]['transfer']
                 for toinput in transfer['toinput']:
                     c = index.model().weeksdictlist.index(toinput['weekstr'])
-                    r = index.model().containerheaders.index(toinput['containerid'])
+                    containername = index.model().containeridtoname[toinput['containerid']]
+                    r = index.model().containerheaders.index(containername)
 
                     # print(c,r)
 

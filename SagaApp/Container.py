@@ -1,7 +1,4 @@
 from SagaApp.FrameStruct import Frame
-from pymongo import MongoClient
-from bson.objectid import ObjectId
-import gridfs
 import copy
 import hashlib
 import os
@@ -229,15 +226,16 @@ class Container:
         return containerdictjson,framedictjson, updateinfojson, filesToUpload
 
     def setContainerForNextframe(self,yamlframefnfullpath):
+        yamlframefn = os.path.basename(yamlframefnfullpath)
         self.workingFrame = Frame.loadRefFramefromYaml(yamlframefnfullpath, self.containerworkingfolder)
         self.refframefullpath = yamlframefnfullpath
         self.save(fn=CONTAINERFN, commitprocess=True)
         # self.workingFrame.writeoutFrameYaml()
         self.workingFrame.writeoutFrameYaml(fn=TEMPFRAMEFN)
-        yamlframefn = os.path.basename(yamlframefnfullpath)
         m = re.search('Rev(\d+).yaml', yamlframefn)
         if m:
             self.revnum = int(m.group(1))
+        self.memoryframesdict[yamlframefn] = Frame.loadRefFramefromYaml(yamlframefnfullpath, self.containerworkingfolder)
 
     def prepareNewCommitCall(self, commitmessage):
 

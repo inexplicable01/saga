@@ -216,6 +216,7 @@ class SagaGuiModel():
             self.maincontainer.setContainerForNextframe(yamlframefnfullpath)
             self.maincontainer.yamlfn = TEMPCONTAINERFN
             self.maincontainer.save()
+            # self.maincontainer.memoryframesdict[returnframedict['FrameName'] + '.yaml'] = Frame.LoadFrameFromYaml(yamlframefnfullpath, self.maincontainer.containerworkingfolder)
             try:
                 os.remove(join(self.maincontainer.containerworkingfolder, NEWCONTAINERFN))
                 os.remove(join(self.maincontainer.containerworkingfolder, 'Main',NEWFRAMEFN))
