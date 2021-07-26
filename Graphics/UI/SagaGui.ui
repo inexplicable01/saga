@@ -74,7 +74,7 @@
          <enum>QTabWidget::West</enum>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="Map">
          <property name="styleSheet">
@@ -329,7 +329,7 @@
               <item row="1" column="0">
                <widget class="QLabel" name="requiredlbl">
                 <property name="text">
-                 <string>Required</string>
+                 <string>Working</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>

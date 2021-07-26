@@ -1,10 +1,10 @@
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QColor
 import os
-
-# BASE = "http://fatpanda1985.pythonanywhere.com/"
+import sys
+BASE = "http://fatpanda1985.pythonanywhere.com/"
 # BASE = "http://10.0.0.227:9500/"
-BASE = "http://127.0.0.1:5000/"
+# BASE = "http://127.0.0.1:5000/"
 sourcecodedirfromconfig = os.path.abspath(os.path.dirname(__file__))
 # comment
 typeInput='Input'
@@ -32,9 +32,9 @@ CHANGEREASONORDER=[MD5CHANGED, LOCALFILEHEADERADDED, SERVERNEWREVISION, UPDATEDU
 NOTINSYNCREASONSET = set([])
 
 
-colorscheme = {typeInput: QColor('#c2a609'),
+colorscheme = {typeInput: QColor('#FFB52E'),
                typeOutput: QColor('#0350ae'),
-               typeRequired:QColor(Qt.darkMagenta) ,
+               typeRequired:QColor('#BB86FC'),
                 typeUnversioned:QColor(Qt.gray),
                DATECHANGED: Qt.cyan,
                MD5CHANGED: Qt.red,
@@ -130,7 +130,18 @@ privatepackagecustomer = {'first_name':'Good',
                    'email':'customer@gmail.com',
                     'password':'passwordCust',
 }
-testerlogin=waichak
+
+testerlogin={
+                    'first_name':'',
+                   'last_name':'',
+                   'email':'',
+                    'password':'',
+}
+
+debugmode=False
+if len(sys.argv)>1:
+    if 'debug' ==sys.argv[1]:
+        testerlogin=waichak
 
 
 TEMPCONTAINERFN='temp_containerstate.yaml'

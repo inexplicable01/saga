@@ -38,8 +38,8 @@ import sys
 # from NewContainerGraphics import newContainerGraphics
 # from hackpatch import downloadedFrames
 
-if os.path.exists(os.path.join(sagaguimodel.desktopdir,'token.txt')):
-    os.remove(os.path.join(sagaguimodel.desktopdir,'token.txt'))
+if os.path.exists(sagaguimodel.tokenfile):
+    os.remove(sagaguimodel.tokenfile)
 
 logging.basicConfig(filename=os.path.join(sagaguimodel.desktopdir,'error.log'), filemode='a',
                     format='%(asctime)s,%(msecs)d - %(name)s - %(levelname)s - %(message)s',
@@ -132,8 +132,8 @@ class UI(QMainWindow):
             # sagaguimodel.getWorldContainers()
 
     def SignOut(self):
-        if os.path.exists("token.txt"):
-            os.remove("token.txt")
+        if os.path.exists(sagaguimodel.tokenfile):
+            os.remove(sagaguimodel.tokenfile)
         self.adjustGuiPerUserStatus()
         # print('sign out' + BASE)
 
@@ -144,7 +144,7 @@ class UI(QMainWindow):
         if formentry:
             signinsuccess = sagaguimodel.newUserSignUp(formentry)
             if signinsuccess:
-                self.adjustGuiPerUserStatus()
+                self.refresh()
             else:
                 print('user sign in failed')
 
@@ -190,7 +190,7 @@ class UI(QMainWindow):
                                      data=inputs)
             authtoken = response.json()
             print('usertoken[status] ' + authtoken['status'])
-            with open('token.txt', 'w') as tokenfile:
+            with open(sagaguimodel.tokenfile, 'w') as tokenfile:
                 json.dump(authtoken, tokenfile)
 
             self.adjustGuiPerUserStatus()
@@ -244,9 +244,6 @@ class UI(QMainWindow):
         self.maptab.generateContainerMap(containerinfodict)
         self.maptab.generateSagaTree(containerinfodict)
 
-
-
-
 def excepthook(exc_type, exc_value, exc_tb):
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
     print("error caught!:")
@@ -257,7 +254,8 @@ def excepthook(exc_type, exc_value, exc_tb):
     # or QtWidgets.QApplication.exit(0)
 
 
-# sys.excepthook = excepthook
+if not debugmode:
+    sys.excepthook = excepthook
 app = QApplication([])
 window = UI()
 errorDialog = QtWidgets.QErrorMessage()

@@ -76,6 +76,14 @@ def setStyle(mainguihandle, sourcecodedir):
     with open(txt, 'r') as txth:
         treestylesheet = txth.read()
     mainguihandle.sagatreeview.setStyleSheet(treestylesheet)
+
+    txt = os.path.join(sourcecodedir, 'Graphics', 'StyleSheet', 'specific.stylesheet')
+    with open(txt, 'r') as txth:
+        specificstylesheet = txth.read()
+    mainguihandle.commitBttn.setStyleSheet(specificstylesheet)
+    mainguihandle.commitmsgEdit.setStyleSheet(specificstylesheet)
+    mainguihandle.newcontaineredit.setStyleSheet(specificstylesheet)
+
     #
     # txt = os.path.join(sourcecodedir, 'Graphics', 'StyleSheet', 'view.stylesheet')
     # with open(txt, 'r') as txth:

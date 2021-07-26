@@ -165,7 +165,8 @@ class MainContainerTab():
         statustext, allowcommit, needtorefresh,  changes = sagaguimodel.getStatus()
         print('aft GetStatus' + datetime.now().isoformat())
         self.containerstatuslabel.setText(statustext)
-        self.commitBttn.setEnabled(allowcommit)
+        if allowcommit:
+            self.commitmsgeditchange()
         self.commitmsgEdit.setDisabled(not allowcommit)
         self.newcontaineredit.setDisabled(not sagaguimodel.isNewContainer()) # if this is a new container, edit should be enabled.
 

@@ -98,7 +98,7 @@ class SagaGuiModel():
 
         if signupresponse['status'] == 'success':###ATTENTION, MAIN MODEL SHOULD SET THE APICALL AUTHTOKEN
             self.sagaapicall.authtoken = signupresponse['auth_token']
-            with open('token.txt', 'w') as tokenfile:
+            with open(sagaguimodel.tokenfile, 'w') as tokenfile:
                 json.dump(signupresponse, tokenfile)
             return True
         return False
@@ -162,7 +162,7 @@ class SagaGuiModel():
             raise('self.maincontainer not initatiated yet, this function should not be called')
 
     def loadContainer(self, containerpath):
-
+        # raise('WRITE THIS GODDAMN Error')
         self.maincontainer = Container.LoadContainerFromYaml(containerpath, revnum=None, ismaincontainer=True)
         self.histModel = HistoryListModel(self.maincontainer .commithistory())### Attention, this should probalby be init at init
         self.histModel.individualfilehistory(self.maincontainer.commithistorybyfile())
