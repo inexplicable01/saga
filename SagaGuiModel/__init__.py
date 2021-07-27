@@ -219,6 +219,7 @@ class SagaGuiModel():
     def downloadFile(self, filetrack:FileTrack, containerworkingfolder, newfilename=None ):
         fn=self.sagaapicall.downloadFileCall(filetrack, containerworkingfolder, newfilename )
         return fn
+
     def downloadContainer(self,containerworkingfolder,  dlcontainerid, use = 'NetworkContainer' ):
         containerworkingfolder, cont = self.sagaapicall.downloadContainerCall(containerworkingfolder,  dlcontainerid, use )
         if use=='WorkingContainer':
