@@ -94,9 +94,9 @@ class UI(QMainWindow):
         self.actionContainer_Permission.triggered.connect(self.containerPermission)
         # l1.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.setCursor(QCursor(Qt.ArrowCursor))
-
-        self.ContainerTab.installEventFilter(self)
-        self.containerfiletable.installEventFilter(self)
+        #
+        # self.ContainerTab.installEventFilter(self)
+        # self.containerfiletable.installEventFilter(self)
         self.versionLabel.setText(str(sagaguimodel.versionnumber))
 
         self.startingcheck = False
@@ -116,14 +116,14 @@ class UI(QMainWindow):
             self.maincontainertab.readcontainer(containerexample)
         self.show()
 
-    def eventFilter(self, source, event):
-        if (event.type() in [QtCore.QEvent.FocusIn,QtCore.QEvent.MouseButtonPress]):
-            #     and
-            # source is self.ContainerTab):
-            # print('eventFilter: focus in')
-            self.maincontainertab.checkdelta()
-            # return true here to bypass default behaviour
-        return super(UI, self).eventFilter(source, event)
+    # def eventFilter(self, source, event):
+    #     if (event.type() in [QtCore.QEvent.FocusIn,QtCore.QEvent.MouseButtonPress]):
+    #         #     and
+    #         # source is self.ContainerTab):
+    #         # print('eventFilter: focus in')
+    #         # self.maincontainertab.checkdelta()
+    #         # return true here to bypass default behaviour
+    #     return super(UI, self).eventFilter(source, event)
 
     def SignIn(self):
         # print(BASE)

@@ -68,6 +68,7 @@ class MainContainerTab():
         self.commitmsgboxlbl = mainguihandle.commitmsgboxlbl
         self.containerdescriplbl = mainguihandle.containerdescriplbl
         self.container_subtab = mainguihandle.container_subtab
+        self.getstatusbttn = mainguihandle.getstatusbttn
 
         self.container_subtab.setElideMode(Qt.ElideNone)
 
@@ -86,6 +87,7 @@ class MainContainerTab():
         # self.workingdir = ''
         self.removefilebttn.clicked.connect(self.removeFileInfo)
         self.addtocontainerbttn.clicked.connect(self.addToContainer)
+        self.getstatusbttn.clicked.connect(self.checkdelta)
         # self.refreshBttn.clicked.connect(self.checkdelta)
         # self.downloadUpstreamBttn.clicked.connect(self.downloadUpstream)
         self.refreshcontainerbttn.clicked.connect(self.updateToLatestRevision)

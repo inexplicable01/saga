@@ -127,7 +127,8 @@ class SagaTreeModel(QAbstractItemModel):
                     localfilerow=self.rowmapper[containerid + '_' + fileheader]
                     if fromcontainerid not in inputlinelength.keys():
                         inputlinelength[fromcontainerid]=ipath /(len(containerinputids)+1)
-                        inputlinecolor[fromcontainerid] = hexyellowshades[ipath-1]
+                        colori = 4 if (ipath-1)>4 else ipath-1
+                        inputlinecolor[fromcontainerid] = hexyellowshades[colori]
                         inputspaths['hori'][fromcontainerrow] = {'direc': 'left',
                                                                  'length': inputlinelength[fromcontainerid],
                                                                  'linetype': 'container',
@@ -151,7 +152,8 @@ class SagaTreeModel(QAbstractItemModel):
                 elif fileinfo['type'] == typeOutput:
                     localfilerow = self.rowmapper[containerid + '_' + fileheader]
                     outputlinelength[containerid+ '_' + fileheader] = opath/(len(fileoutputs)+1)
-                    outputlinecolor[containerid + '_' + fileheader] = hexblueshades[opath-1]
+                    coloro = 4 if (opath - 1) > 4 else opath-1
+                    outputlinecolor[containerid + '_' + fileheader] = hexblueshades[coloro]
                     outputspaths['hori'][localfilerow] = {'direc': 'right',
                                                            'length': outputlinelength[containerid+ '_' + fileheader],
                                                           'hexcolor': outputlinecolor[containerid + '_' + fileheader],

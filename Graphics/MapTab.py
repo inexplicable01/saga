@@ -148,7 +148,8 @@ class MapTab():
 
 
     def updateCommitMessages(self, listtable):
-        containerid= listtable.model().containerheaders[listtable.row()]
+        containername= listtable.model().containerheaders[listtable.row()]
+        containerid = listtable.model().containernametoid[containername]
         weeksago= listtable.model().weeksdictlist[listtable.column()]
         # print(listtable.model().commitmessagedict[weeksago][containerid])
         str = '\n'.join(listtable.model().commitmessagedict[weeksago][containerid]['msg'])

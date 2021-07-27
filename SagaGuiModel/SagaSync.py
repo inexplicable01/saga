@@ -44,10 +44,10 @@ class SagaSync():
                     # Check to see if input file is internal to container, not referencing other containers
                     containerID = workingFrame.filestrack[fileheader].connection.refContainerId
 
-                    upstreamcont = Container.LoadContainerFromYaml(containerfnfullpath=
-                                                                   join(self.desktopdir, 'ContainerMapWorkDir', containerID, CONTAINERFN))
-                    if upstreamcont is None:
-                        containerworkingfolder, upstreamcont = self.sagaapicall.downloadContainer(join(self.desktopdir, 'ContainerMapWorkDir'),
+                    # upstreamcont = Container.LoadContainerFromYaml(containerfnfullpath=
+                    #                                                join(self.desktopdir, 'ContainerMapWorkDir', containerID, CONTAINERFN))
+                    # if upstreamcont is None:
+                    containerworkingfolder, upstreamcont = self.sagaapicall.downloadContainerCall(join(self.desktopdir, 'ContainerMapWorkDir'),
                                                                                                    containerID, 'NetworkContainer')
                     upstreamframe = upstreamcont.getRefFrame()
                     # Is it necessary that we get the existing file's md5.   Why does checking upstream require knowledge the change in the current md5?
