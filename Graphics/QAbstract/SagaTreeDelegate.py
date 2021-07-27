@@ -55,8 +55,8 @@ class SagaTreeDelegate(QStyledItemDelegate):
 
         if index.column()==0:
             if selectedcontainerrownum==currow:
-                painter.setPen(QPen(QBrush(QColor('#3700B3')), 4))
-                painter.setBrush(QBrush(QColor('#3700B3')))
+                painter.setPen(QPen(QBrush(QColor('#BB86FC')), 4))
+                painter.setBrush(QBrush(QColor('#BB86FC')))
                 painter.drawRect(option.rect)
                 painter.setPen(QPen(QBrush(Qt.white), 4))
                 painter.drawText(option.rect, Qt.AlignLeft, index.internalPointer().data(0))

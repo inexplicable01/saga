@@ -32,9 +32,9 @@ CHANGEREASONORDER=[MD5CHANGED, LOCALFILEHEADERADDED, SERVERNEWREVISION, UPDATEDU
 NOTINSYNCREASONSET = set([])
 
 
-colorscheme = {typeInput: QColor('#FFB52E'),
-               typeOutput: QColor('#0350ae'),
-               typeRequired:QColor('#BB86FC'),
+colorscheme = {typeInput: QColor('#D0F0C0'),
+               typeRequired:QColor('#03DAC6'),
+                typeOutput: QColor('#3700B3'),
                 typeUnversioned:QColor(Qt.gray),
                DATECHANGED: Qt.cyan,
                MD5CHANGED: Qt.red,
