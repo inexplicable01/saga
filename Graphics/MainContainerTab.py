@@ -223,7 +223,7 @@ class MainContainerTab():
                     containeryaml = os.path.join(sagaguimodel.maincontainer.containerworkingfolder, TEMPCONTAINERFN)
                     self.mainguihandle.maincontainertab.readcontainer(containeryaml)
                     self.mainguihandle.maintabwidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
-                    self.mainguihandle.refresh()
+                    self.mainguihandle.loadSection()
                     # self.mainguihandle.maptab.updateContainerMap()
                     self.newcontaineredit.setDisabled(True)
                 else:
@@ -248,7 +248,7 @@ class MainContainerTab():
 
             if committed:
                 self.commitBttn.setDisabled(True)
-                self.mainguihandle.refresh()
+                self.mainguihandle.loadSection() # Redownloads entire Section.   Is this right?
                 self.framelabel.setText(newframerev)
                 self.checkdelta()
                 self.commitmsgEdit.setText('')
@@ -258,7 +258,7 @@ class MainContainerTab():
 
 
     def reset(self):
-        sagaguimodel.reset()
+        sagaguimodel.modelreset()
         self.containerlabel.setText('')
         # self.commithisttable.setModel(self.histModel)
         # self.maincontainerplot.reset()
@@ -285,7 +285,7 @@ class MainContainerTab():
             msg.exec_()
 
         print('Loading ' + containerpath)
-        sagaguimodel.reset()# In case there is no section switch
+        sagaguimodel.modelreset()# In case there is no section switch
         cont, histModel, containerfilemodel = sagaguimodel.loadContainer(containerpath)
 
         # [self.workingdir, file_name] = os.path.split(containerpath)  ## working dir should be app level

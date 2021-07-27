@@ -198,7 +198,7 @@ class MapTab():
         if not self.sagatreeviewcolumnmoved:
             self.sagatreeview.header().moveSection(1, 0)
             self.sagatreeviewcolumnmoved = True
-        print(self.sagatreeview.header())
+        # print(self.sagatreeview.header())
         self.sagatreeview.setItemsExpandable(True)
 
     def sagatreeclicked(self, index):

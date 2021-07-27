@@ -141,7 +141,14 @@ testerlogin={
 debugmode=False
 if len(sys.argv)>1:
     if 'debug' ==sys.argv[1]:
-        testerlogin=waichak
+        if sys.argv[2]=='waichak':
+            testerlogin=waichak
+        elif sys.argv[2]=='userc':
+            testerlogin=userclogin
+        elif sys.argv[2]=='jimmy':
+            testerlogin=jimmy
+
+
 
 
 TEMPCONTAINERFN='temp_containerstate.yaml'

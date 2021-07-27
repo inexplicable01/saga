@@ -21,7 +21,7 @@ QLabel
 /*-----QToolButton-----*/
 QToolButton
 {
-	background-color: qlineargradient(spread:repeat, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(254, 171, 66, 255),stop:1 rgba(255, 153, 0, 255));
+	background-color: #3700B3;
 	color: #000;
 	font-size: 14pt;
 	border-radius: 4px;

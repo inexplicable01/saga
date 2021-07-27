@@ -109,8 +109,10 @@ class UI(QMainWindow):
                                                                sagaguimodel.tokenfile)
             # self.mainguihandle.checkUserStatus()
             if signinstatus['status'] == 'success':
-                self.refresh()
-            containerexample = 'C:/Users/waich/LocalGitProjects/testcontainers_saga/PartDesign/'+TEMPCONTAINERFN
+                self.adjustGuiByUserStatusChange()
+                self.guireset()
+                self.loadSection()
+            containerexample = 'C:/Users/waich/LocalGitProjects/testcontainers_saga/AdminPlanningBackUp/'+TEMPCONTAINERFN
             self.maincontainertab.readcontainer(containerexample)
         self.show()
 
@@ -128,13 +130,18 @@ class UI(QMainWindow):
         inputwindow = SigninDialog(mainguihandle=self, sagaguimodel=sagaguimodel)
         inputs = inputwindow.getInputs()
         if inputs['signinsuccess']:
-            self.refresh()
+            self.adjustGuiByUserStatusChange()
+            self.guireset()
+            self.loadSection()
             # sagaguimodel.getWorldContainers()
 
     def SignOut(self):
         if os.path.exists(sagaguimodel.tokenfile):
             os.remove(sagaguimodel.tokenfile)
-        self.adjustGuiPerUserStatus()
+        sagaguimodel.signOut()
+        self.adjustGuiByUserStatusChange()
+        self.guireset()
+        # self.loadSection()
         # print('sign out' + BASE)
 
     def SignUp(self):
@@ -144,7 +151,9 @@ class UI(QMainWindow):
         if formentry:
             signinsuccess = sagaguimodel.newUserSignUp(formentry)
             if signinsuccess:
-                self.refresh()
+                self.adjustGuiByUserStatusChange()
+                self.guireset()
+                self.loadSection()
             else:
                 print('user sign in failed')
 
@@ -169,15 +178,6 @@ class UI(QMainWindow):
         if sagaguimodel.maincontainer:
             permissiongui = permissionsDialog(sagaguimodel.maincontainer, self)
             permissiongui.exec_()
-
-    def refresh(self):
-        self.adjustGuiPerUserStatus()
-        containerinfodict = sagaguimodel.getWorldContainers()
-        self.maptab.generateContainerMap(containerinfodict)
-        self.maptab.generateSagaTree(containerinfodict)
-
-
-
         # self.gantttable.setModel(GanttListModel([], sagaguimodel.desktopdir))
 
     def newSection(self):
@@ -192,16 +192,17 @@ class UI(QMainWindow):
             print('usertoken[status] ' + authtoken['status'])
             with open(sagaguimodel.tokenfile, 'w') as tokenfile:
                 json.dump(authtoken, tokenfile)
-
-            self.adjustGuiPerUserStatus()
+            self.guireset()
+            self.loadSection()
 
     def enterSection(self):
         sectioninfo, currentsection = sagaguimodel.sagaapicall.getListofSectionsforUser()
         switchsectiongui = switchSectionDialog(self, sectioninfo, currentsection)
         needtoupdateworldmap = switchsectiongui.waitfordone()
         if needtoupdateworldmap:
-            # print(inputs)
-            self.refresh()
+            # self.adjustGuiByUserStatusChange()
+            self.guireset()
+            self.loadSection()
 
     def setPermissionsEnable(self):
         self.actionContainer_Permission.setEnabled(True)
@@ -209,19 +210,17 @@ class UI(QMainWindow):
         font.setStrikeOut(False)
         self.actionContainer_Permission.setFont(font)
 
-    def adjustGuiPerUserStatus(self):
-        status, goswitch = sagaguimodel.checkUserStatus()
-        msg = QMessageBox()
-        msg.setStandardButtons(QMessageBox.Ok)
-        if goswitch:
-            report, usersection = sagaguimodel.sectionSwitch()
-            msg.setText(report['status'])
-            if report['status']== 'User Current Section successfully changed':
-                msg.setIcon(QMessageBox.Information)
-            else:
-                msg.setIcon(QMessageBox.Critical)
-                ## if we arrived here, then that means either
-            msg.exec_()
+    def guireset(self):
+        self.maincontainertab.reset()
+        self.maptab.reset()
+
+    def loadSection(self):
+        containerinfodict = sagaguimodel.getWorldContainers()
+        self.maptab.generateContainerMap(containerinfodict)
+        self.maptab.generateSagaTree(containerinfodict)
+
+    def adjustGuiByUserStatusChange(self):
+        status = sagaguimodel.checkUserStatus()
         self.userstatuslbl.setText(status['userstatusstatement'])
         self.menuContainer.setEnabled(status['signinsuccess'])
         self.menuSection.setEnabled(status['signinsuccess'])
@@ -234,15 +233,6 @@ class UI(QMainWindow):
                 updater = updateDialog()
                 if updater.update() == True:
                     sagaguimodel.getNewVersionInstaller(app)
-
-    def resetguionsectionswitch(self):
-        self.maincontainertab.reset()
-        self.maptab.reset()
-        # self.adjustGuiPerUserStatus()
-        ##Regenerate Container Ids of new section that got switched to.
-        containerinfodict = sagaguimodel.getWorldContainers()
-        self.maptab.generateContainerMap(containerinfodict)
-        self.maptab.generateSagaTree(containerinfodict)
 
 def excepthook(exc_type, exc_value, exc_tb):
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))

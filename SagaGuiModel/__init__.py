@@ -46,6 +46,8 @@ class SagaGuiModel():
         self.maincontainer:Container = None
         self.userdata = None
         self.tokenfile = tokenfile
+        self.histModel = HistoryListModel({})  ### Attention, this should probalby be init at init
+        self.containerfilemodel = ContainerFileModel(None, self.sagasync, self)### Attention, ### Attention, this should probalby be init at init
 
         guidirs= [ 'SagaGuiData','ContainerMapWorkDir']
         if not os.path.exists(self.desktopdir):
@@ -80,18 +82,19 @@ class SagaGuiModel():
         return sagaguimodel
 
     def checkUserStatus(self):
-        goswitch = False
-        prev_sectionid = None
-        if self.userdata:
-            prev_sectionid=self.userdata['current_sectionid']
         userdetailsresult, self.userdata = self.sagaapicall.authUserDetails(self.tokenfile)
         if self.userdata:
             sectioniddir = join(self.desktopdir, 'SagaGuiData', self.userdata['current_sectionid'])
             if not os.path.exists(sectioniddir):
                 os.mkdir(sectioniddir)
-            if prev_sectionid!=self.userdata['current_sectionid']:
-                goswitch= True
-        return userdetailsresult, goswitch
+        return userdetailsresult
+
+    def signOut(self):
+        self.maincontainer: Container = None
+        self.userdata = None
+        self.modelreset()
+
+
 
     def newUserSignUp(self, formentry):
         signupresponse = self.sagaapicall.newUserSignUpCall(formentry)
@@ -105,11 +108,12 @@ class SagaGuiModel():
 
 
     def getWorldContainers(self):
-        self.containerinfodict = self.sagaapicall.getContainerInfoDict()
+        self.containerinfodict = self.sagaapicall.getContainerInfoDict()### Get list of containers by authtoken.
         if 'EMPTY' in self.containerinfodict.keys():
             return {}
         for containerID in self.containerinfodict.keys():
             print(containerID, self.containerinfodict[containerID]['ContainerDescription'])
+            self.containeridtoname[containerID] = self.containerinfodict[containerID]['ContainerDescription']
             self.downloadContainer(join(self.desktopdir,'ContainerMapWorkDir',containerID), containerID)
         if not os.path.exists(join(self.desktopdir, 'SagaGuiData', self.userdata['current_sectionid'])):
             os.mkdir(join(self.desktopdir, 'SagaGuiData',self.userdata['current_sectionid']))
@@ -159,34 +163,30 @@ class SagaGuiModel():
         if self.maincontainer:
             return self.maincontainer.yamlfn == NEWCONTAINERFN
         else:
-            raise('self.maincontainer not initatiated yet, this function should not be called')
+            warnings.warn ('self.maincontainer not initatiated yet')
+            return False
+
 
     def loadContainer(self, containerpath):
         # raise('WRITE THIS GODDAMN Error')
         self.maincontainer = Container.LoadContainerFromYaml(containerpath, revnum=None, ismaincontainer=True)
-        self.histModel = HistoryListModel(self.maincontainer .commithistory())### Attention, this should probalby be init at init
+        # self.histModel = HistoryListModel(self.maincontainer .commithistory())### Attention, this should probalby be init at init
+        self.histModel.load(self.maincontainer.commithistory())
         self.histModel.individualfilehistory(self.maincontainer.commithistorybyfile())
-
-        self.containerfilemodel = ContainerFileModel(self.maincontainer, self.sagasync)### Attention,
+        self.containerfilemodel.update(self.maincontainer)### Attention,
         return self.maincontainer, self.histModel, self.containerfilemodel
 
     def initiateNewContainer(self, containerworkingfolder, containername):
-        os.mkdir(containerworkingfolder)
-        os.mkdir(os.path.join(containerworkingfolder, 'Main'))
+        ensureFolderExist(os.path.join(containerworkingfolder, 'Main', 'anything'))#### ATTENTION Need to fix ensureFolderExists
         self.maincontainer = Container.InitiateContainer(containerworkingfolder, containername)
-        # self.maincontainer.workingFrame = Frame.InitiateFrame(parentcontainerid=self.maincontainer.containerId,
-        #                                                       parentcontainername=containername,
-        #                                                       containerworkingfolder=containerworkingfolder)
-        self.containerfilemodel = ContainerFileModel(self.maincontainer, self.sagasync)
-        self.histModel=HistoryListModel({})
+        self.containerfilemodel.update(self.maincontainer)#
+        self.histModel.load(self.maincontainer.commithistory())
         return self.containerfilemodel, self.histModel
 
 
     def getAvailableSections(self):
-        # headers = {'Authorization': 'Bearer ' + self.authtoken}
         sectiondict = self.sagaapicall.getAvailableSectionsCall()
         return sectiondict
-
 
     def shouldModelSwitch(self,containerpath):
         loadingcontainer = Container.LoadContainerFromYaml(containerpath, revnum=None)
@@ -203,22 +203,18 @@ class SagaGuiModel():
                 newsectionid = self.userdata['current_sectionid']
         report, usersection = self.sagaapicall.sectionSwitchCall(newsectionid)
         if report['status'] == 'User Current Section successfully changed':
-            self.reset()
-            self.mainguihandle.resetguionsectionswitch()
+            self.modelreset()
+            self.mainguihandle.loadSection()
         else:
             print('Error Occured.  Your current section has not change')
         return report , usersection
 
-    def reset(self):
-        sagaguimodel.maincontainer = None
-        try:
-            self.histModel.reset()
-        except:
-            pass
-        try:
-            self.containerfilemodel.reset()
-        except:
-            pass
+    def modelreset(self):
+        self.maincontainer = None
+        self.containeridtoname= {}
+        ## Sagatree, Network and Gantt models???
+        self.histModel.reset()
+        self.containerfilemodel.reset()
 
     def downloadFile(self, filetrack:FileTrack, containerworkingfolder, newfilename=None ):
         fn=self.sagaapicall.downloadFileCall(filetrack, containerworkingfolder, newfilename )
@@ -280,7 +276,8 @@ class SagaGuiModel():
             makefilehidden(yamlframefn)
             self.maincontainer.setContainerForNextframe(yamlframefnfullpath)
             # self.maincontainer.save(fn=CONTAINERFN, commitprocess=True)
-            self.histModel.rePopulate(self.maincontainer.commithistory())
+            self.histModel.load(self.maincontainer.commithistory())
+            self.containerfilemodel.update()
             return True, self.maincontainer.workingFrame.FrameName, 'Commit Success!'
         else:
             print('Commit Fail')
@@ -306,6 +303,7 @@ class SagaGuiModel():
                 allowcommit = True
             return 'New Container', allowcommit, False, {}
         self.newestframe, self.newestrevnum = self.sagaapicall.callLatestRevision(self.maincontainer)
+        filesupdated, wffilesupdated = self.maincontainer.updateworkframe()
         notlatestrev = False
         if self.maincontainer.revnum < self.newestrevnum:
             self.sagasync.setNewestFrame(self.newestframe)

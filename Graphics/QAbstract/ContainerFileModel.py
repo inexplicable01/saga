@@ -15,14 +15,17 @@ from SagaApp.FrameStruct import Frame
 STATUSCOLUMNHEADER='Status'
 
 class ContainerFileModel(QAbstractTableModel):
-    def __init__(self, maincontainer:Container, sagasync):
+    def __init__(self, maincontainer:Container, sagasync, sagaguimodel):
 
         super(ContainerFileModel, self).__init__()
 
         self.headers = ['FileHeader', 'Role', 'Status','FileName', 'Last Edited', 'Rev Committed', 'Commit Message']
         self.maincontainer = maincontainer
         self.sagasync = sagasync
-        self.gathermodeldatafromContainer()
+        self.containidtoname = []
+        self.sagaguimodel = sagaguimodel
+        if self.maincontainer is not None:
+            self.gathermodeldatafromContainer()
 
     def latestRevFor(self,maincontainer:Container,fileheader):
         if fileheader not in maincontainer.getRefFrame().filestrack.keys():
@@ -34,7 +37,6 @@ class ContainerFileModel(QAbstractTableModel):
         while lastsamerevnum > 1:
             lastsamerevnum -= 1
             revyaml = 'Rev' + str(lastsamerevnum) + '.yaml'
-
             if revyaml in maincontainer.memoryframesdict.keys():
                 pastframe = maincontainer.memoryframesdict[revyaml]
                 if fileheader in pastframe.filestrack.keys():
@@ -100,9 +102,21 @@ class ContainerFileModel(QAbstractTableModel):
                     return rowdict['fileheader']
                 elif self.headers[c]=='Role':
                     if rowdict['fileinfo']['type'] == typeInput:
-                        return typeInput + ' From ' + rowdict['fileinfo']['Container']
+                        id = rowdict['fileinfo']['Container']
+                        try:
+                            containername = self.sagaguimodel.containerinfodict[id]['ContainerDescription']
+                        except:
+                            containername = rowdict['fileinfo']['Container']
+                        return typeInput + ' From ' + containername
                     elif rowdict['fileinfo']['type'] == typeOutput:
-                        return typeOutput + ' To ' +  ','.join(rowdict['fileinfo']['Container'])
+                        strout = typeOutput + ' To '
+                        for containerid in rowdict['fileinfo']['Container']:
+                            try:
+                                containername = self.sagaguimodel.containerinfodict[containerid]['ContainerDescription']
+                            except:
+                                containername = containerid
+                            strout = strout + containername + ','
+                        return strout
                     elif rowdict['fileinfo']['type'] == typeRequired:
                         return typeRequired
                 elif self.headers[c]==STATUSCOLUMNHEADER:
@@ -143,7 +157,9 @@ class ContainerFileModel(QAbstractTableModel):
                 else:
                     return QColor(Qt.white)
 
-    def update(self):
+    def update(self, newcontainer= None):
+        if newcontainer is not None:
+            self.maincontainer = newcontainer
         self.gathermodeldatafromContainer()
         for i,rowdict in enumerate(self.containerfiles):
             if rowdict['fileheader'] in self.sagasync.changes.keys():

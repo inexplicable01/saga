@@ -91,4 +91,4 @@ class SigninDialog(QDialog):
             self.signedin = True
             self.accept()
         else:
-            print('ATTENTION: View code to deal with sign in failure')
+            print('ATTENTION: Need View code to deal with sign in failure')
