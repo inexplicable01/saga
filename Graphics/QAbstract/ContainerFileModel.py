@@ -15,14 +15,17 @@ from SagaApp.FrameStruct import Frame
 STATUSCOLUMNHEADER='Status'
 
 class ContainerFileModel(QAbstractTableModel):
-    def __init__(self, maincontainer:Container, sagasync):
+    def __init__(self, maincontainer:Container, sagasync, sagaguimodel):
 
         super(ContainerFileModel, self).__init__()
 
         self.headers = ['FileHeader', 'Role', 'Status','FileName', 'Last Edited', 'Rev Committed', 'Commit Message']
         self.maincontainer = maincontainer
         self.sagasync = sagasync
-        self.gathermodeldatafromContainer()
+        self.containidtoname = []
+        self.sagaguimodel = sagaguimodel
+        if self.maincontainer is not None:
+            self.gathermodeldatafromContainer()
 
     def latestRevFor(self,maincontainer:Container,fileheader):
         if fileheader not in maincontainer.getRefFrame().filestrack.keys():
@@ -34,7 +37,6 @@ class ContainerFileModel(QAbstractTableModel):
         while lastsamerevnum > 1:
             lastsamerevnum -= 1
             revyaml = 'Rev' + str(lastsamerevnum) + '.yaml'
-
             if revyaml in maincontainer.memoryframesdict.keys():
                 pastframe = maincontainer.memoryframesdict[revyaml]
                 if fileheader in pastframe.filestrack.keys():
@@ -100,9 +102,21 @@ class ContainerFileModel(QAbstractTableModel):
                     return rowdict['fileheader']
                 elif self.headers[c]=='Role':
                     if rowdict['fileinfo']['type'] == typeInput:
-                        return typeInput + ' From ' + rowdict['fileinfo']['Container']
+                        id = rowdict['fileinfo']['Container']
+                        try:
+                            containername = self.sagaguimodel.containerinfodict[id]['ContainerDescription']
+                        except:
+                            containername = rowdict['fileinfo']['Container']
+                        return typeInput + ' From ' + containername
                     elif rowdict['fileinfo']['type'] == typeOutput:
-                        return typeOutput + ' To ' +  ','.join(rowdict['fileinfo']['Container'])
+                        strout = typeOutput + ' To '
+                        for containerid in rowdict['fileinfo']['Container']:
+                            try:
+                                containername = self.sagaguimodel.containerinfodict[containerid]['ContainerDescription']
+                            except:
+                                containername = containerid
+                            strout = strout + containername + ','
+                        return strout
                     elif rowdict['fileinfo']['type'] == typeRequired:
                         return typeRequired
                 elif self.headers[c]==STATUSCOLUMNHEADER:
@@ -137,8 +151,15 @@ class ContainerFileModel(QAbstractTableModel):
 
                 filetype = self.containerfiles[index.row()]['fileinfo']['type']
                 return QColor(colorscheme[filetype])
+            elif role == Qt.ForegroundRole:
+                if self.containerfiles[index.row()]['fileinfo']['type']==typeInput:
+                    return QColor(Qt.black)
+                else:
+                    return QColor(Qt.white)
 
-    def update(self):
+    def update(self, newcontainer= None):
+        if newcontainer is not None:
+            self.maincontainer = newcontainer
         self.gathermodeldatafromContainer()
         for i,rowdict in enumerate(self.containerfiles):
             if rowdict['fileheader'] in self.sagasync.changes.keys():
@@ -167,6 +188,11 @@ class ContainerFileModel(QAbstractTableModel):
             return 0
         else:
             return len(self.headers)
+
+    def reset(self):
+        self.containerfiles=[]
+        self.maincontainer=None
+        self.layoutChanged.emit()
 
 
 
@@ -240,7 +266,11 @@ class ContainerFileDelegate(QStyledItemDelegate):
 
             topleft = QPointF(option.rect.left()+option.rect.width()*0.2,  option.rect.top())
             textrect = QRectF(topleft, option.rect.bottomRight())
-            painter.setPen(QPen(QBrush(Qt.white), 1))
+            if filetrack.connection.connectionType.name in [typeOutput, typeRequired]:
+                textcolor = Qt.white
+            else:
+                textcolor = Qt.black
+            painter.setPen(QPen(QBrush(textcolor), 1))
             painter.drawText(textrect, Qt.AlignCenter, filetrack.file_name)
         elif STATUSCOLUMNHEADER==header:
             if change:

@@ -148,6 +148,22 @@ class Container:
             container.save()
         return container
 
+    def updateworkframe(self):
+        wf = self.workingFrame
+        wffilesupdated = []
+        for fileheader in wf.filestrack.keys():
+            filefullpath = os.path.join(self.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+                                    wf.filestrack[fileheader].file_name)
+            fileb = open(filefullpath, 'rb')
+            readmd5 = hashlib.md5(fileb.read()).hexdigest()
+            filesupdated = False
+            if wf.filestrack[fileheader].md5!=readmd5:
+                wf.filestrack[fileheader].md5 = readmd5
+                filesupdated = True
+                wffilesupdated.append((fileheader, filefullpath))
+        return filesupdated, wffilesupdated
+
+
     def compareToRefFrame(self, changes):
         alterfiletracks=[]
         wf = self.workingFrame

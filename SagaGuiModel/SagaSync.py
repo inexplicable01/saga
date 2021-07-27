@@ -4,12 +4,14 @@ from Config import BASE, CONTAINERFN, TEMPCONTAINERFN
 from SagaApp.SagaUtil import makefilehidden, ensureFolderExist, unhidefile
 from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
+from SagaApp.Change import Change
+
 from SagaApp.FileObjects import FileTrack
 import json
 import hashlib
 from Graphics.QAbstract.ConflictListModel import ConflictListModel, AddedListModel, DeletedListModel, UpstreamListModel
 from Config import BASE, mapdetailstxt, CONTAINERFN, typeInput,typeOutput,typeRequired,NEWCONTAINERFN,SERVERNEWREVISION,\
-    SERVERFILEADDED, SERVERFILEDELETED,UPDATEDUPSTREAM, TEMPFRAMEFN, TEMPCONTAINERFN, NEWFRAMEFN,NOTINSYNCREASONSET
+    SERVERFILEADDED, SERVERFILEDELETED,UPDATEDUPSTREAM, TEMPFRAMEFN, TEMPCONTAINERFN, NEWFRAMEFN,NOTINSYNCREASONSET, LOCALFILEHEADERADDED
 from SagaGuiModel.SagaAPICall import SagaAPICall
 class SagaSync():
     def __init__(self, sagaapicall, desktopdir):
@@ -143,7 +145,6 @@ class SagaSync():
         self.localframe = container.getRefFrame()
         self.workingframe = container.workingFrame
 
-
         self.changes = {}
         self.changes, self.alterfiletracks = container.compareToRefFrame(self.changes)
         upstreamupdated = self.checkUpstream(container)
@@ -152,6 +153,76 @@ class SagaSync():
         changeisrelevant = self.checkChangeIsRelevant(container)
 
         return upstreamupdated, statustext, notlatestrev, containerchanged ,changeisrelevant, self.changes
+
+    # def checkContainerStatus2(self, container, newestrevnum):
+    #     ###################ORDER IS IMPORTANT HERE..I think####
+    #     self.localframe = container.getRefFrame()
+    #     self.workingframe = container.workingFrame
+    #     def gatherfileheaders(lf:Frame, wf:Frame, nf:Frame):
+    #         changes = {}
+    #         if nf is None:
+    #             newestframefileheaders = set([])
+    #         else:
+    #             newestframefileheaders = set(nf.filestrack.keys())
+    #         wffileheaders = set(wf.filestrack.keys())
+    #         localframefileheaders = set(lf.filestrack.keys())
+    #         combinedheaders = localframefileheaders.union(wffileheaders)
+    #         combinedheaders.union(newestframefileheaders)
+    #         for fileheader in combinedheaders:
+    #             inlf = fileheader in lf.filestrack.keys()
+    #             inwf = fileheader in wf.filestrack.keys()
+    #             innf = fileheader in nf.filestrack.keys()
+    #             if inlf:
+    #                 filetype = lf.filestrack[fileheader].connection.connectionType.name
+    #             elif inwf:
+    #                 filetype = lf.filestrack[fileheader].connection.connectionType.name
+    #             elif innf:
+    #                 filetype = lf.filestrack[fileheader].connection.connectionType.name
+    #             #Assumes users doesn't change filetype on you.
+    #             c = Change(fileheader, filetype)
+    #             refframefileheaders = list(lf.filestrack.keys())
+    #             for fileheader in wf.FileHeaders.keys():
+    #                 ## how to manage if container and frame deviates on fileheader counts
+    #                 if not inlf and inwf: # check if fileheader is in the refframe, If not in frame, that means user just added a new fileheader
+    #                     c[fileheader].reason.append(LOCALFILEHEADERADDED)
+    #                     continue
+    #                 if inlf and inwf:# if in both frames
+    #                     if lf.filestrack[fileheader].md5 != wf.filestrack[fileheader].md5:
+    #                 # if fileheader not in refframe.filestrack.keys() and fileheader not in wf.filestrack.keys():
+    #                 #     # check if fileheader is in neither refframe or current frame,
+    #                 #     raise ('somehow Container needs to track ' + fileheader + 'but its not in ref frame or current frame')
+    #             changes[fileheader] = c
+    #         return changes
+    #     refframe = Frame.loadRefFramefromYaml(self.refframefullpath,self.containerworkingfolder)
+    #
+    #
+    #
+    #         # calculate md5 of file, if md5 has changed, update md5
+    #
+    #
+    #             wf.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
+    #             changes[fileheader] = {'reason': [MD5CHANGED]}
+    #             if wf.filestrack[fileheader].connection.connectionType==typeInput:
+    #                 alterfiletracks.append(wf.filestrack[fileheader])
+    #             # if file has been updated, update last edited
+    #             wf.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
+    #             continue
+    #         elif wf.filestrack[fileheader].lastEdited != refframe.filestrack[fileheader].lastEdited:
+    #             changes[fileheader] = {'reason': [DATECHANGED]}
+    #             wf.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
+    #             print('Date changed without Md5 changing')
+    #             continue
+    #
+    #     for removedheaders in refframefileheaders:
+    #         changes[removedheaders] = {'reason': [LOCALFILEHEADERREMOVED]}
+    #     self.changes = gatherfileheaders(self.localframe, self.workingframe, self.newestframe)
+    #     self.changes, self.alterfiletracks = container.compareToRefFrame(self.changes)
+    #     upstreamupdated = self.checkUpstream(container)
+    #     statustext, notlatestrev = self.checkLatestRevision(container,newestrevnum)
+    #     containerchanged = self.checkContainerChanged(container)
+    #     changeisrelevant = self.checkChangeIsRelevant(container)
+    #
+    #     return upstreamupdated, statustext, notlatestrev, containerchanged ,changeisrelevant, self.changes
 
     def updateContainerWithUserSelection(self,filelist, container:Container):
         wf = container.workingFrame

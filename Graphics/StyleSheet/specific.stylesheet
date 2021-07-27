@@ -1,0 +1,33 @@
+QPushButton::disabled {
+    background-color: #C2C7CB;
+    border: 0px solid #C2C7CB;
+    color:white
+}
+
+QPushButton::enabled {
+    background-color: #3700B3;
+    border: 1px solid #3700B3;
+    color:white
+}
+
+QLineEdit::disabled {
+    background-color: #C2C7CB;
+}
+
+QLineEdit::enabled {
+    background-color: grey;
+}
+
+QTextEdit::disabled {
+    background-color: gray;
+    color:black;
+}
+
+QTextEdit::enabled {
+    background-color: white;
+    color:black;
+}
+
+QTextBrowser::enabled {
+    background-color: white;
+}

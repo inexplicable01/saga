@@ -17,12 +17,27 @@ class HistoryListModel(QAbstractTableModel):
         self.filetype=typeRequired
         if len(historyinfodict.keys()) == 0:
             self.initiatilized = False
-            self.containdata= [ 'Container Not Yet Committed']
-            self.fileheaderlist=['Null']
-            self.revheaders=['Null']
+            self.containdata= []
+            self.fileheaderlist=[]
+            self.revheaders=[]
         else:
             self.initiatilized = True
             self.revheaders, self.containdata, self.fileheaderlist = self.sorthistory(historyinfodict)
+
+    def load(self, historyinfodict):
+        self.currow = []
+        self.filetype = typeRequired
+        if len(historyinfodict.keys()) == 0:
+            self.initiatilized = False
+            self.containdata= []
+            self.fileheaderlist=[]
+            self.revheaders=[]
+        else:
+            self.initiatilized = True
+            self.revheaders, self.containdata, self.fileheaderlist = self.sorthistory(historyinfodict)
+        self.layoutChanged.emit()
+
+
 
 
     def sorthistory(self,historyinfodict):
@@ -109,14 +124,7 @@ class HistoryListModel(QAbstractTableModel):
 
         self.filestatus=filestatus
 
-    def rePopulate(self,historyinfodict):
-        if len(historyinfodict.keys()) == 0:
-            self.containdata = ['Container Not Yet Committed']
-            self.fileheaderlist = ['Null']
-            self.revheaders = ['Null']
-        else:
-            self.revheaders, self.containdata, self.fileheaderlist = self.sorthistory( historyinfodict)
-        self.dataChanged
+
 
 
     def data(self, index, role):
@@ -165,14 +173,14 @@ class HistoryListModel(QAbstractTableModel):
     def columnCount(self, index):
         # The following takes the first sub-list, and returns
         # the length (only works if all rows are an equal length)
-        if self.initiatilized:
+        if len(self.containdata)>0:
             return len(self.containdata[0])
         else:
             return 0
 
     def reset(self):
-        self.initiatilized=False
-        self.containdata = ['Container Not Yet Committed']
-        self.fileheaderlist = ['Null']
-        self.revheaders = ['Null']
 
+        self.containdata = []
+        self.fileheaderlist = []
+        self.revheaders = []
+        self.layoutChanged.emit()

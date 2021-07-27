@@ -18,9 +18,7 @@ class SagaAPICall():
         # print(self.email.text())
         payload = {'email': email,
                    'password': password}
-        response = requests.post(BASE + 'auth/login',
-                                 data=payload,
-                                 )
+        response = requests.post(BASE + 'auth/login',data=payload)
         signinresp = response.json()
 
         print('usertoken[status] ' + signinresp['status'])
@@ -30,10 +28,17 @@ class SagaAPICall():
             with open(tokenfile, 'w') as tokenfile:
                 json.dump(signinresp, tokenfile)
                 #ATTENTION, MAY NOT NEED THIS ANYMORE POtentail security issue?
-
         else:
             status = 'failed'
         return {'status': status}
+
+    def newUserSignUpCall(self,formentry):
+        response = requests.post(BASE + 'auth/register',
+                                 data=formentry)
+        signupresponse = response.json()
+        # if signupresponse['status'] == 'success':
+        #     self.authtoken = signupresponse['auth_token']
+        return signupresponse
 
     def authUserDetails(self,tokenfile):
         if self.authtoken is None:
@@ -67,6 +72,15 @@ class SagaAPICall():
             userdata = None
         return {'userstatusstatement': userstatusstatement,
                 'signinsuccess': signinsuccess} , userdata
+
+    def getAvailableSectionsCall(self):
+        # headers = {'Authorization': 'Bearer ' + self.authtoken}
+        response = requests.get(BASE + 'SECTION/List')
+
+        sectiondict = json.loads(response.content)
+        # sectioninfo = resp['sectioninfo']
+        # currentsection = resp['currentsection']
+        return sectiondict
 
     def getListofSectionsforUser(self):
         headers = {'Authorization': 'Bearer ' + self.authtoken}
@@ -179,6 +193,8 @@ class SagaAPICall():
                 unhidefile(join(containerworkingfolder, branch, rev))
             open(join(containerworkingfolder, branch, rev), 'wb').write(revyaml.content)
             makefilehidden(join(containerworkingfolder,branch, rev))
+
+
 
     def getContainerInfoDict(self):
         response = requests.get(BASE + 'CONTAINERS/List', headers={"Authorization": 'Bearer ' + self.authtoken})

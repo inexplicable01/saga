@@ -1,23 +1,2 @@
 
 
-QLineEdit::disabled {
-    background-color: #C2C7CB;
-}
-
-QLineEdit::enabled {
-    background-color: grey;
-}
-
-QTextEdit::disabled {
-    background-color: gray;
-    color:black;
-}
-
-QTextEdit::enabled {
-    background-color: white;
-    color:black;
-}
-
-QTextBrowser::enabled {
-    background-color: gray;
-}

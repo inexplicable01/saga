@@ -32,6 +32,7 @@ class ContainerMap():
         self.mainguihandle=mainguihandle
         self.mapdet={'containerlocations':{}}
         self.sectionid=''
+        self.containeridtoname= {}
 
     def reset(self):
         self.containerscene = QGraphicsScene()
@@ -40,6 +41,7 @@ class ContainerMap():
         self.containerConnectLines={}  # dictionary of lineId:LineObject
         self.activeContainersObj = {}
         self.activeContainers={}
+        self.containeridtoname = {}
 
     def drawline(self):
         for containerId_in, containerId_outlist in self.containerConnections.items():
@@ -48,7 +50,7 @@ class ContainerMap():
                 if lineid not in self.containerConnectLines:
                     Q1 = self.activeContainersObj[containerId_in].containercenter()
                     Q2 = self.activeContainersObj[containerId_out].containercenter()
-                    self.containerConnectLines[lineid] = containerLine(Q1,Q2,lineid, self.detailedmap)
+                    self.containerConnectLines[lineid] = containerLine(Q1,Q2,lineid, self.detailedmap, self.containeridtoname)
                     self.containerscene.addItem(self.containerConnectLines[lineid])
                 else:
                     Q1 = self.activeContainersObj[containerId_in].containercenter()
@@ -93,6 +95,8 @@ class ContainerMap():
 
     def addActiveContainers(self, container:Container):
         self.activeContainers[container.containerId]=container
+        for containerid, container in self.activeContainers.items():
+            self.containeridtoname[containerid] = container.containerName
 
     def plot(self):
         try:
@@ -266,19 +270,20 @@ class containerRect(QGraphicsRectItem):
         self.update()
 
 class containerLine(QGraphicsLineItem):
-    def __init__(self, Q1,Q2,lineid,detailedmap):
+    def __init__(self, Q1,Q2,lineid,detailedmap, containeridtoname):
         # self.containerConnectLines[lineid] = self.containerscene.addLine(QLineF(Q1, Q2), QPen(Qt.green))
         super().__init__(QLineF(Q1, Q2))
         self.setPen(QPen(QBrush(Qt.green), 6))
         self.lineid=lineid
         self.detailedmap=detailedmap
+        self.containeridtoname = containeridtoname
 
 
 
         # self.setFlag(QGraphicsItem.ItemIsMovable, True)
     def mousePressEvent(self,event):
         print(self.lineid)
-        self.detailedmap.selectedobj(self.lineid)
+        self.detailedmap.selectedobj(self.lineid, self.containeridtoname)
 
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget = None):

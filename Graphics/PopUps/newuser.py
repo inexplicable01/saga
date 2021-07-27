@@ -4,10 +4,6 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-from Graphics.QAbstract.ContainerListModel import ContainerListModel
-
-
-import os
 import sys
 import requests
 import json
@@ -18,6 +14,7 @@ from Config import BASE
 import random
 import string
 from SagaApp.Section import Section
+from SagaGuiModel import sagaguimodel
 
 
 class newUserDialog(QDialog):
@@ -34,39 +31,57 @@ class newUserDialog(QDialog):
         'password':self.passwordedit,
         'email':self.emailedit}
 
-        # self.existingsectionbox.setEnabled(False)
-        # self.sectiondescedit.textChanged[str].connect(self.textChanged)
-        # self.newsectionedit.textChanged[str].connect(self.textChanged)
+        sectiondict = sagaguimodel.getAvailableSections()
+        self.comboboxid = []
+        self.sectioncombobox.addItem('Please Select a Section to register to:')
+        self.comboboxid.append('Invalid')
+        self.selectedsection = 'Invalid'
+        for sectionid, sectiondict in sectiondict.items():
+            self.sectioncombobox.addItem(sectiondict['sectionname'] + " : " + sectiondict['description'])
+            self.comboboxid.append(sectionid)
+
+        # self.sectioncombobox.setEnabled(False)
+        # self.sectiondescedit.entrychanged[str].connect(self.entrychanged)
+        # self.newsectionedit.entrychanged[str].connect(self.entrychanged)
         # self.checkedits['sectiondescription']=self.sectiondescedit
         # self.checkedits['sectionname']=self.newsectionedit
 
-        self.lastnameedit.textChanged[str].connect(self.textChanged)
-        self.firstnameedit.textChanged[str].connect(self.textChanged)
-        self.passwordedit.textChanged[str].connect(self.textChanged)
-        self.emailedit.textChanged[str].connect(self.textChanged)
+        self.lastnameedit.textChanged[str].connect(self.entrychanged)
+        self.firstnameedit.textChanged[str].connect(self.entrychanged)
+        self.passwordedit.textChanged[str].connect(self.entrychanged)
+        self.emailedit.textChanged[str].connect(self.entrychanged)
+
+        self.sectioncombobox.activated.connect(self.selectionsection)
 
         self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
 
         self.warninglbl.setText('All enabled entries must be filled')
 
-    def textChanged(self):
+    def entrychanged(self):
         formready = True
         for key,edit in self.checkedits.items():
-            if key == 'sectionid':
-                continue
+            if self.selectedsection == 'Invalid':
+                formready=False
+                wrningtext='Please Select a section to register to'
+                print(self.selectedsection)
             if len(edit.text())<1:
                 formready=False
+                print(edit.text())
+        if formready:
+            self.warninglbl.setText('Hit Okay to Register')
         self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(formready)
+
+    def selectionsection(self):
+        self.selectedsection = self.comboboxid[self.sectioncombobox.currentIndex()]
+        self.entrychanged()
     #
     #
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:
             formentry={}
             for key, edit in self.checkedits.items():
-                if key=='sectionid':
-                    formentry[key]=self.comboboxid[self.existingsectionbox.currentIndex()]
-                else:
-                    formentry[key]=edit.text()
+                formentry[key]=edit.text()
+            formentry['sectionid'] = self.comboboxid[self.sectioncombobox.currentIndex()]
             return formentry
             #
         else:

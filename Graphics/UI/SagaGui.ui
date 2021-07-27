@@ -101,7 +101,7 @@
           <item>
            <widget class="QTabWidget" name="networktabwidget">
             <property name="currentIndex">
-             <number>1</number>
+             <number>0</number>
             </property>
             <widget class="QWidget" name="networkmaptab">
              <attribute name="title">
@@ -329,7 +329,7 @@
               <item row="1" column="0">
                <widget class="QLabel" name="requiredlbl">
                 <property name="text">
-                 <string>Required</string>
+                 <string>Working</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -651,7 +651,7 @@ QMenuBar::item:disabled {
 }
 
  QMenuBar::item:selected, QMenu::item:hover{
- background-color: qlineargradient(spread:repeat, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(254, 171, 66, 255),stop:1 rgba(255, 153, 0, 255));
+ background-color: #3700B3
  }
 
 QMenu {
@@ -666,7 +666,7 @@ QMenu {
  }
 
  QMenu::item:selected, QMenu::item:hover{
- background-color: qlineargradient(spread:repeat, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(254, 171, 66, 255),stop:1 rgba(255, 153, 0, 255));
+ background-color: #3700B3
  }
 
 </string>
