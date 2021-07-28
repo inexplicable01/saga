@@ -152,10 +152,10 @@ class ContainerFileModel(QAbstractTableModel):
                 filetype = self.containerfiles[index.row()]['fileinfo']['type']
                 return QColor(colorscheme[filetype])
             elif role == Qt.ForegroundRole:
-                if self.containerfiles[index.row()]['fileinfo']['type']==typeInput:
-                    return QColor(Qt.black)
-                else:
+                if self.containerfiles[index.row()]['fileinfo']['type'] == typeOutput:
                     return QColor(Qt.white)
+                else:
+                    return QColor(Qt.black)
 
     def update(self, newcontainer= None):
         if newcontainer is not None:
@@ -266,7 +266,7 @@ class ContainerFileDelegate(QStyledItemDelegate):
 
             topleft = QPointF(option.rect.left()+option.rect.width()*0.2,  option.rect.top())
             textrect = QRectF(topleft, option.rect.bottomRight())
-            if filetrack.connection.connectionType.name in [typeOutput, typeRequired]:
+            if filetrack.connection.connectionType.name in [typeOutput]:
                 textcolor = Qt.white
             else:
                 textcolor = Qt.black

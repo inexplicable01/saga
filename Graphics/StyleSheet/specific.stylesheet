@@ -1,13 +1,15 @@
 QPushButton::disabled {
     background-color: #C2C7CB;
     border: 0px solid #C2C7CB;
-    color:white
+    color:black
+    border-radius: 3px
 }
 
 QPushButton::enabled {
-    background-color: #3700B3;
-    border: 1px solid #3700B3;
-    color:white
+    background-color: #03DAC6;
+    border: 1px solid #03DAC6;
+    color:black
+    border-radius: 3px
 }
 
 QLineEdit::disabled {

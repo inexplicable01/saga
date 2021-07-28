@@ -1,8 +1,8 @@
 QWidget
 {
 	background-color: QLinearGradient(x1:0, y1:0, x2:0, y2:1, stop:1 #212121, stop:.4 #343434);
-	color: #000000;
-	border-color: #000000;
+	color: #303030;
+	border-color: #303030;
 
 }
 
@@ -14,6 +14,7 @@ QLabel
 	color: #fff;
 	font-size: 14pt;
 	border-color: #000000;
+	border-radius: 1px
 
 }
 
@@ -21,7 +22,7 @@ QLabel
 /*-----QToolButton-----*/
 QToolButton
 {
-	background-color: #3700B3;
+	background-color: #BB86FC;
 	color: #000;
 	font-size: 14pt;
 	border-radius: 4px;
@@ -55,8 +56,7 @@ QTabBar::tab
 
 QTabWidget::pane
 {
-    border: 1px solid #3700B3;
-    top: 1px;
+
 
 }
 
@@ -77,21 +77,24 @@ QTabBar::tab:!selected
     color: #fff;
     border-bottom-style: solid;
     margin-top: 3px;
-    background-color: QLinearGradient(x1:0, y1:0, x2:0, y2:1, stop:1 #212121, stop:.4 #343434);
+    background-color: QLinearGradient(x1:0, y1:0, x2:0, y2:1, stop:1 #212121, stop:.4 #444444);
+    border-radius: 3px
 
 }
 
 QTabBar::tab:selected
 {
-	background-color: #3700B3;
-	color: white;
+	background-color: #BB86FC;
+	color: black;
     margin-bottom: 0px;
+    border-radius: 3px
 
 }
 
 QTabBar::tab:!selected:hover
 {
-    background-color: QLinearGradient(x1:0, y1:0, x2:0, y2:1, stop:1 #212121, stop:0.4 #343434, stop:0.2 #343434, stop:0.1 #3700B3);
+    background-color: QLinearGradient(x1:0, y1:0, x2:0, y2:1, stop:1 #212121, stop:0.4 #444444, stop:0.2 #343434, stop:0.1 #BB86FC);
+    border-radius: 3px
 
 }
 
@@ -99,10 +102,12 @@ QPushButton::disabled {
     background-color: #C2C7CB;
     border: 0px solid #C2C7CB;
     color:white
+    border-radius: 3px
 }
 
 QPushButton::enabled {
-    background-color: #3700B3;
-    border: 1px solid #3700B3;
-    color:white
+    background-color: #D0F0C0;
+    border: 1px solid #BB86FC;
+    color:black
+    border-radius: 3px
 }

@@ -26,7 +26,7 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget
-{	background-color: black;
+{	background-color: #333333;
 	color: white;
 }</string>
   </property>
@@ -42,10 +42,6 @@
    </property>
    <property name="styleSheet">
     <string notr="true">QMainWindow
-{
-	background-color: black
-
-}
 
 
 
@@ -366,7 +362,7 @@
              <enum>QTabWidget::Rounded</enum>
             </property>
             <property name="currentIndex">
-             <number>0</number>
+             <number>2</number>
             </property>
             <property name="elideMode">
              <enum>Qt::ElideMiddle</enum>
@@ -517,6 +513,19 @@
                   <height>16777215</height>
                  </size>
                 </property>
+                <property name="styleSheet">
+                 <string notr="true">QPushButton::disabled {
+    background-color: #C2C7CB;
+    border: 0px solid #C2C7CB;
+    color:black
+}
+
+QPushButton::enabled {
+    background-color: #03DAC6;
+    border: 1px solid #03DAC6;
+    color:black
+}</string>
+                </property>
                 <property name="text">
                  <string>Add To Container</string>
                 </property>
@@ -530,6 +539,19 @@
                   <height>16777215</height>
                  </size>
                 </property>
+                <property name="styleSheet">
+                 <string notr="true">QPushButton::disabled {
+    background-color: #C2C7CB;
+    border: 0px solid #C2C7CB;
+    color:black
+}
+
+QPushButton::enabled {
+    background-color: #03DAC6;
+    border: 1px solid #03DAC6;
+    color:black
+}</string>
+                </property>
                 <property name="text">
                  <string>Refresh Container</string>
                 </property>
@@ -542,6 +564,19 @@
                   <width>300</width>
                   <height>16777215</height>
                  </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QPushButton::disabled {
+    background-color: #C2C7CB;
+    border: 0px solid #C2C7CB;
+    color:black
+}
+
+QPushButton::enabled {
+    background-color: #03DAC6;
+    border: 1px solid #03DAC6;
+    color:black
+}</string>
                 </property>
                 <property name="text">
                  <string>Remove From Container</string>
@@ -658,7 +693,7 @@ QMenuBar::item:disabled {
 }
 
  QMenuBar::item:selected, QMenu::item:hover{
- background-color: #3700B3
+ background-color: #BB86FC
  }
 
 QMenu {
@@ -673,7 +708,7 @@ QMenu {
  }
 
  QMenu::item:selected, QMenu::item:hover{
- background-color: #3700B3
+ background-color: #BB86FC
  }
 
 </string>
