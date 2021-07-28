@@ -97,7 +97,7 @@
           <item>
            <widget class="QTabWidget" name="networktabwidget">
             <property name="currentIndex">
-             <number>0</number>
+             <number>1</number>
             </property>
             <widget class="QWidget" name="networkmaptab">
              <attribute name="title">
@@ -130,6 +130,19 @@
                   <property name="enabled">
                    <bool>false</bool>
                   </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton::disabled {
+    background-color: #C2C7CB;
+    border: 0px solid #C2C7CB;
+    color:black
+}
+
+QPushButton::enabled {
+    background-color: #03DAC6;
+    border: 1px solid #03DAC6;
+    color:black
+}</string>
+                  </property>
                   <property name="text">
                    <string>Click on Container to Select</string>
                   </property>
@@ -159,6 +172,19 @@
               </item>
               <item>
                <widget class="QPushButton" name="pushButton">
+                <property name="styleSheet">
+                 <string notr="true">QPushButton::disabled {
+    background-color: #C2C7CB;
+    border: 0px solid #C2C7CB;
+    color:black
+}
+
+QPushButton::enabled {
+    background-color: #03DAC6;
+    border: 1px solid #03DAC6;
+    color:black
+}</string>
+                </property>
                 <property name="text">
                  <string>Saga Eject</string>
                 </property>
@@ -476,6 +502,19 @@
                   <height>54</height>
                  </size>
                 </property>
+                <property name="styleSheet">
+                 <string notr="true">QPushButton::disabled {
+    background-color: #C2C7CB;
+    border: 0px solid #C2C7CB;
+    color:black
+}
+
+QPushButton::enabled {
+    background-color: #03DAC6;
+    border: 1px solid #03DAC6;
+    color:black
+}</string>
+                </property>
                 <property name="text">
                  <string>Commit</string>
                 </property>
@@ -500,6 +539,19 @@
               </property>
               <item>
                <widget class="QPushButton" name="getstatusbttn">
+                <property name="styleSheet">
+                 <string notr="true">QPushButton::disabled {
+    background-color: #C2C7CB;
+    border: 0px solid #C2C7CB;
+    color:black
+}
+
+QPushButton::enabled {
+    background-color: #03DAC6;
+    border: 1px solid #03DAC6;
+    color:black
+}</string>
+                </property>
                 <property name="text">
                  <string>Get Status</string>
                 </property>

@@ -63,7 +63,11 @@ class MainContainerTab():
         # self.fileHistoryBttn = mainguihandle.fileHistoryBttn
         # self.fileHistoryBttn.setDisabled(True)
         self.containerfiletable = mainguihandle.containerfiletable
-        self.containerfiletable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        # self.containerfiletable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        self.containerfiletable.horizontalHeader().setStretchLastSection(True)
+
+
         self.containerfiletable.clicked.connect(self.containerfileselected)
         self.commitmsgboxlbl = mainguihandle.commitmsgboxlbl
         self.containerdescriplbl = mainguihandle.containerdescriplbl
@@ -134,8 +138,7 @@ class MainContainerTab():
             sagaguimodel.downloadbranch()
             self.containerstatuslabel.setText(
                 'Container Refreshed!  This Container now is at a Rev ' + refreshrevnum + '+ state')
-        sagaguimodel.getStatus()
-        self.containerfiletable.model().update()
+        self.checkdelta()
         #         TO DO add to commit function check of conflicting files and spit out error message or have user choose which file to commit
         # pass along list of files different to pop up screen
         # populate new pop up screen with list of files different and option for user to overwrite or download a copy
@@ -182,6 +185,9 @@ class MainContainerTab():
                 text = text + '<span style = "color:' + hexcolor + '"> '+reason+'</span>, '
             self.frametextBrowser.append(text)
         self.containerfiletable.model().update()
+        width = self.containerfiletable.width()
+        self.containerfiletable.setColumnWidth(0, 140)
+        self.containerfiletable.setColumnWidth(3, 250)
         print('Check Done ' + datetime.now().isoformat())
 
     def commitmsgeditchange(self):
@@ -301,8 +307,7 @@ class MainContainerTab():
 
         self.containerfiletable.setModel(containerfilemodel)
         self.containerfiletable.setItemDelegate(ContainerFileDelegate())
-        sagaguimodel.getStatus()
-        self.containerfiletable.model().update()
+        self.checkdelta()
 
 
         self.setTab(True)
@@ -338,9 +343,7 @@ class MainContainerTab():
             downloadfile = sagaguimodel.maincontainer.addFileObject(fileinfo=fileinfo)
             if downloadfile:
                 sagaguimodel.downloadFile(filetrack=downloadfile['filetrack'], containerworkingfolder=sagaguimodel.maincontainer.containerworkingfolder)
-            sagaguimodel.getStatus()
-            self.containerfiletable.model().update()
-
+            self.checkdelta()
 
     def removeFileInfo(self):
         # remove fileheader from current main container
@@ -355,8 +358,7 @@ class MainContainerTab():
 
         if remove:
             sagaguimodel.maincontainer.removeFileHeader(self.curfileheader)
-            sagaguimodel.getStatus()
-            self.containerfiletable.model().update()
+            self.checkdelta()
             self.removefilebttn.setEnabled(False)
 
     def containerfileselected(self, containerfileindex):

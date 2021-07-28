@@ -80,7 +80,7 @@ def setStyle(mainguihandle, sourcecodedir):
     txt = os.path.join(sourcecodedir, 'Graphics', 'StyleSheet', 'specific.stylesheet')
     with open(txt, 'r') as txth:
         specificstylesheet = txth.read()
-    mainguihandle.commitBttn.setStyleSheet(specificstylesheet)
+    # mainguihandle.commitBttn.setStyleSheet(specificstylesheet)
     mainguihandle.commitmsgEdit.setStyleSheet(specificstylesheet)
     mainguihandle.newcontaineredit.setStyleSheet(specificstylesheet)
 
