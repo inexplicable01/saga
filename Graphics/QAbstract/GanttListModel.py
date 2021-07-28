@@ -11,7 +11,7 @@ from datetime import datetime
 from Config import typeOutput,typeRequired, typeInput, colorscheme, CONTAINERFN
 
 def weekstrfromtimestamp(commitUTCdatetime):
-    weeksago = math.floor((datetime.utcnow().timestamp() - commitUTCdatetime) / (3600))
+    weeksago = math.floor((datetime.utcnow().timestamp() - commitUTCdatetime) / (3600*4))
     return 'week -' + str(weeksago), weeksago
 
 class GanttListModel(QAbstractTableModel):

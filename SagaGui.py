@@ -106,13 +106,13 @@ class UI(QMainWindow):
         if debugmode:
             signinstatus = sagaguimodel.sagaapicall.signInCall(testerlogin['email'],
                                                                testerlogin['password'],
-                                                               sagaguimodel.tokenfile)
+                                                                  sagaguimodel.tokenfile)
             # self.mainguihandle.checkUserStatus()
             if signinstatus['status'] == 'success':
                 self.adjustGuiByUserStatusChange()
                 self.guireset()
                 self.loadSection()
-            containerexample = 'C:/Users/waich/LocalGitProjects/testcontainers_saga/AdminPlanningBackUp/'+TEMPCONTAINERFN
+            containerexample = 'C:/Users/waich/LocalGitProjects/testcontainers_saga/FormationDesignGroup/Customer/'+TEMPCONTAINERFN
             self.maincontainertab.readcontainer(containerexample)
         self.show()
 

@@ -308,6 +308,8 @@ class SagaGuiModel():
         notlatestrev = False
         if self.maincontainer.revnum < self.newestrevnum:
             self.sagasync.setNewestFrame(self.newestframe)
+        else:
+            self.sagasync.setNewestFrame(None)
         upstreamupdated, statustext, notlatestrev, containerchanged, changeisrelevant, changes =self.sagasync.checkContainerStatus(self.maincontainer, self.newestrevnum)
 
         if changeisrelevant or containerchanged:
