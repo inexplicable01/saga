@@ -179,10 +179,12 @@ class MainContainerTab():
         self.frametextBrowser.setText('')
         for fileheader, change in changes.items():
             # chgstr = chgstr + fileheader + '\t' + ', '.join(change['reason']) + '\n'
+            if not change.worthNoting():
+                continue
             text = '<b>'+fileheader + '</b>   :  '
-            for reason in change['reason']:
-                hexcolor = QColor(colorscheme[reason]).name()
-                text = text + '<span style = "color:' + hexcolor + '"> '+reason+'</span>, '
+            text = text + change.writeHTMLStatus()
+
+
             self.frametextBrowser.append(text)
         self.containerfiletable.model().update()
         width = self.containerfiletable.width()

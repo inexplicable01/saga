@@ -275,7 +275,7 @@ class ContainerFileDelegate(QStyledItemDelegate):
         elif STATUSCOLUMNHEADER==header:
             if change:
                 # changenum = len(change['reason'])
-                for ic, changereason in enumerate(change['reason']):
+                for ic, changereason in enumerate(change.reason):
                     reasonnum = CHANGEREASONORDER.index(changereason)
                     intv = option.rect.width()/len(CHANGEREASONORDER)
                     tl = QPointF(option.rect.left() +  intv * reasonnum + intv*0.1, option.rect.top()+0.2*option.rect.height())

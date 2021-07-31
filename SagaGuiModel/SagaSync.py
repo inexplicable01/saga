@@ -5,7 +5,7 @@ from SagaApp.SagaUtil import makefilehidden, ensureFolderExist, unhidefile
 from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
 from SagaApp.Change import Change
-
+import re
 from SagaApp.FileObjects import FileTrack
 import json
 import hashlib
@@ -15,6 +15,9 @@ from Config import BASE, mapdetailstxt, CONTAINERFN, typeInput,typeOutput,typeRe
     TEMPFRAMEFN, TEMPCONTAINERFN, NEWFRAMEFN,NOTINSYNCREASONSET, \
     LOCALFILEHEADERADDED, LOCALFILEHEADERREMOVED,MD5CHANGED
 from SagaGuiModel.SagaAPICall import SagaAPICall
+from SagaGuiModel.SyncScenario import *
+
+
 class SagaSync():
     def __init__(self, sagaapicall, desktopdir):
         self.changes = {}
@@ -92,7 +95,7 @@ class SagaSync():
 
     def checkLatestRevision(self, maincontainer:Container, newestrevnum):
         ## This is the only place that knows of a later revision.
-        self.newestFiles = {}
+        # self.newestFiles = {}
         notlatestrev = maincontainer.revnum < newestrevnum
         if notlatestrev:
             # self.refreshContainerBttn.setEnabled(True)
@@ -102,28 +105,28 @@ class SagaSync():
             # else:
             statustext = 'Newer Revision Exists!' + ' Current Rev: ' + str(maincontainer.revnum)\
                          + ', Latest Rev: ' + str(newestrevnum)
-            # if the newest rev num is different from local rev num:
-            # loop through filesttrack of both newest frame, check if file exists in current frame and compare MD5s,
-            # if exists, add update message to changes, if notadd new file message
-            refframe = maincontainer.getRefFrame()
-            for fileheader in self.newestframe.filestrack.keys():
-                if fileheader in refframe.filestrack.keys():
-                    if self.newestframe.filestrack[fileheader].md5 != refframe.filestrack[fileheader].md5:
-                        if fileheader in self.changes.keys():
-                            self.changes[fileheader]['reason'].append(SERVERNEWREVISION)
-                        else:
-                            self.changes[fileheader] = {'reason': [SERVERNEWREVISION]}
-                        # if 'File updated....' is within changes reason dictionary, display delta in GUI
-                else:
-                    self.changes[fileheader] = {'reason': [SERVERFILEADDED]}
-
-            # Loop through working frame to check if any files have been deleted in new revision
-            for fileheader in refframe.filestrack.keys():
-                if fileheader not in self.newestframe.filestrack.keys():
-                    if fileheader in self.changes.keys():
-                        self.changes[fileheader]['reason'].append(SERVERFILEDELETED)
-                    else:
-                        self.changes[fileheader] = {'reason': [SERVERFILEDELETED]}
+            # # if the newest rev num is different from local rev num:
+            # # loop through filesttrack of both newest frame, check if file exists in current frame and compare MD5s,
+            # # if exists, add update message to changes, if notadd new file message
+            # refframe = maincontainer.getRefFrame()
+            # for fileheader in self.newestframe.filestrack.keys():
+            #     if fileheader in refframe.filestrack.keys():
+            #         if self.newestframe.filestrack[fileheader].md5 != refframe.filestrack[fileheader].md5:
+            #             if fileheader in self.changes.keys():
+            #                 self.changes[fileheader]['reason'].append(SERVERNEWREVISION)
+            #             else:
+            #                 self.changes[fileheader] = {'reason': [SERVERNEWREVISION]}
+            #             # if 'File updated....' is within changes reason dictionary, display delta in GUI
+            #     else:
+            #         self.changes[fileheader] = {'reason': [SERVERFILEADDED]}
+            #
+            # # Loop through working frame to check if any files have been deleted in new revision
+            # for fileheader in refframe.filestrack.keys():
+            #     if fileheader not in self.newestframe.filestrack.keys():
+            #         if fileheader in self.changes.keys():
+            #             self.changes[fileheader]['reason'].append(SERVERFILEDELETED)
+            #         else:
+            #             self.changes[fileheader] = {'reason': [SERVERFILEDELETED]}
         else:
             statustext='This is the latest revision'
         return statustext , notlatestrev
@@ -142,28 +145,33 @@ class SagaSync():
                 changeisrelevant = True
         return changeisrelevant
 
-    def checkContainerStatus(self, container, newestrevnum):
-        ###################ORDER IS IMPORTANT HERE..I think####
-        self.localframe = container.getRefFrame()
-        self.workingframe = container.workingFrame
+    # def checkContainerStatus(self, container, newestrevnum):
+    #     ###################ORDER IS IMPORTANT HERE..I think####
+    #     self.localframe = container.getRefFrame()
+    #     self.workingframe = container.workingFrame
+    #
+    #     self.changes = {}
+    #     self.changes, self.alterfiletracks = container.compareToRefFrame(self.changes)
+    #     upstreamupdated = self.checkUpstream(container)
+    #     statustext, notlatestrev = self.checkLatestRevision(container,newestrevnum)
+    #     containerchanged = self.checkContainerChanged(container)
+    #     changeisrelevant = self.checkChangeIsRelevant(container)
+    #
+    #     return upstreamupdated, statustext, notlatestrev, containerchanged ,changeisrelevant, self.changes
 
-        self.changes = {}
-        self.changes, self.alterfiletracks = container.compareToRefFrame(self.changes)
-        upstreamupdated = self.checkUpstream(container)
-        statustext, notlatestrev = self.checkLatestRevision(container,newestrevnum)
-        containerchanged = self.checkContainerChanged(container)
-        changeisrelevant = self.checkChangeIsRelevant(container)
+    def checkContainerStatus(self, container:Container, newestrevnum):
 
-        return upstreamupdated, statustext, notlatestrev, containerchanged ,changeisrelevant, self.changes
 
-    def checkContainerStatus2(self, container:Container, newestrevnum):
-        ###################ORDER IS IMPORTANT HERE..I think####
+        upstreamupdated = False
+        containerchanged = False
         self.localframe = container.getRefFrame()
         self.workingframe = container.workingFrame
         lf = self.localframe
         wf = self.workingframe
         nf = self.newestframe
-        # def gatherfileheaders(lf:Frame, wf:Frame, nf:Frame):
+
+        statustext, notlatestrev = self.checkLatestRevision(container,newestrevnum)
+
         changes = {}
         if nf is None:
             newestframefileheaders = set([])
@@ -180,36 +188,100 @@ class SagaSync():
             innf = fileheader in newestframefileheaders
             if inlf:
                 filetype = lf.filestrack[fileheader].connection.connectionType.name
-            elif inwf:
-                filetype = lf.filestrack[fileheader].connection.connectionType.name
-            elif innf:
-                filetype = lf.filestrack[fileheader].connection.connectionType.name
+            if inwf:
+                filetype = wf.filestrack[fileheader].connection.connectionType.name
+            if innf:
+                filetype = nf.filestrack[fileheader].connection.connectionType.name
+            # if not wf.filestrack[fileheader].connection.connectionType.name==\
+            #     lf.filestrack[fileheader].connection.connectionType.name==\
+            #     nf.filestrack[fileheader].connection.connectionType.name:
+            #     raise(fileheader + ' local frame, working frame and newest frame has different file types. Saga not prepared to deal with that yet')
+            #
+            #
+
             #Assumes users doesn't change filetype on you.
+            ## ATTENTION PUT CHECKER IN TO make sure all 3 file types are the same
             c = Change(fileheader, filetype)
-            if typeInput:
-                if container.revnum < newestrevnum:## Need to sync, lf, wf, nf, uf
-                    pass
 
-                else: ## Need to sync lf, wf, uf
-                    pass
-            else:
-                if container.revnum < newestrevnum:## Need to sync, lf, wf, nf
-                    pass
+            if inlf:
+                c.lffiletrack = lf.filestrack[fileheader]
+            if inwf:
+                c.wffiletrack = wf.filestrack[fileheader]
+            if innf:
+                c.nffiletrack = nf.filestrack[fileheader]
 
-                else:## Need to sync lf, wf
-                    if not inlf and inwf:  # check if fileheader is in the refframe,
-                        # If not in frame, that means user just added a new fileheader
-                        # Scenrario 1
-                        c[fileheader].reason.append(LOCALFILEHEADERADDED)
-                    elif inlf and not inwf:  # check if fileheader is in the refframe,
-                        # If not in workingframe, that means user just removed a fileheader
-                        # Scenrario 2
-                        c[fileheader].reason.append(LOCALFILEHEADERREMOVED)
-                    elif inlf and inwf:  # if in both frames
-                        if lf.filestrack[fileheader].md5 != wf.filestrack[fileheader].md5:
-                            c[fileheader].reason.append(MD5CHANGED)
+            if inwf and inlf:
+                c.md5changed = lf.filestrack[fileheader].md5!=wf.filestrack[fileheader].md5# check for md5 change
+                containerchanged = True
+
+            ## Fileheaders h
+            if not inlf and inwf:
+                c.reason.append(LOCALFILEHEADERADDED)
+                containerchanged = True
+            elif inlf and not inwf:
+                c.reason.append(LOCALFILEHEADERADDED)
+                containerchanged = True
+
+            if container.revnum < newestrevnum:
+                if not inlf and innf:
+                    c.reason.append(SERVERFILEADDED)
+                elif inlf and not innf:
+                    c.reason.append(SERVERFILEDELETED)
+                c.newerframeexists = True
+                if innf:
+                    c.nffiletrack = nf.filestrack[fileheader]
+                    c.needtoregardnewest = True
+
+            if c.filetype==typeInput:
+                containerID = wf.filestrack[fileheader].connection.refContainerId
+                containerworkingfolder, upstreamcont = self.sagaapicall.downloadContainerCall(
+                    join(self.desktopdir, 'ContainerMapWorkDir', containerID),
+                    containerID, 'NetworkContainer')
+                uf = upstreamcont.getRefFrame()
+                upstreamframefileheaderset = set(uf.filestrack.keys())
+                if fileheader not in upstreamframefileheaderset:
+                    raise('Somethings broken.  Upstream frame should have this fileheader. ')
+                    c.alterinput=True## in uf?
+                    # if wf.filestrack[fileheader].md5 in upstreamcont.filemd5history[fileheader].keys():
+                    #     uf.filestrack[fileheader].lastupdated
+                    #     c.wffiletrack = wf.filestrack[fileheader]
+                    #     c.uffiletrack = uf.filestrack[fileheader]
+                    #     # c.wffiletrack = wf.filestrack[fileheader]
+                    # else:
+                    #     c.needdecisionfromuser = True
+                    #     c.description(USERCREATEDALTEREDINPUT)
+                else:
+                    inuf=True
+
+                if inwf:
+                    if wf.filestrack[fileheader].md5 in upstreamcont.filemd5history[fileheader].keys():
+                        if innf:
+                            c, upstreamupdated = self.SyncInputFiletrack(upstreamupdated, wf.filestrack[fileheader], uf.filestrack[fileheader],
+                                                        upstreamcont, c, nf.filestrack[fileheader])
+                        else:
+                            c, upstreamupdated = self.SyncInputFiletrack(upstreamupdated, wf.filestrack[fileheader], uf.filestrack[fileheader],
+                                                        upstreamcont, c)
                     else:
-                        raise('Should not be coming to this')
+                        c.needdecisionfromuser = True
+                        c.alterinput = True
+                        c.description(USERCREATEDALTEREDINPUT)
+
+                # Check if Newest fileheader added
+
+                # if container.revnum < newestrevnum:## Need to sync, lf, wf, nf, uf
+                #     c.newerframeexists = True
+                #  # if 7,6,5 and 15,14,13,12
+                if c.newerframeexists:
+                    c.inputscenariono = 8 * innf + 4 * inuf + 2 * inlf + inwf
+                else:
+                    c.inputscenariono = 4 * inuf + 2 * inlf + inwf
+            else:
+                ## Required/Output
+                if c.newerframeexists:
+                    c.reqoutscenariono = 4*innf + 2*inlf + inwf
+                else:
+                    c.reqoutscenariono =  2 * inlf + inwf
+                # Check if Newest fileheader added
             # refframefileheaders = list(lf.filestrack.keys())
             # for fileheader in wf.FileHeaders.keys():
                 ## how to manage if container and frame deviates on fileheader counts
@@ -218,37 +290,96 @@ class SagaSync():
                 #     # check if fileheader is in neither refframe or current frame,
                 #     raise ('somehow Container needs to track ' + fileheader + 'but its not in ref frame or current frame')
             changes[fileheader] = c
-        return upstreamupdated, statustext, notlatestrev, containerchanged ,changeisrelevant, self.changes
+        self.changes = changes
+        return upstreamupdated, statustext, notlatestrev, containerchanged ,containerchanged, self.changes
         # refframe = Frame.loadRefFramefromYaml(self.refframefullpath,self.containerworkingfolder)
 
+    def SyncInputFiletrack(self, upstreamupdated, wfft:FileTrack, ufft:FileTrack, upcont:Container, c:Change, nfft:FileTrack = None, newestexist=False):
+        # UF Rev,WF Rev, NF Rev)
+        # upstreamupdated = False
+        wfuprevnum = numofRev(wfft.lastupdated)
 
+        latestframe = numofRev(upcont.getRefFrame().FrameName)
+        ufrevnum = numofRev(ufft.lastupdated)
+        if nfft:
+            nfuprevnum = numofRev(nfft.lastupdated)
+            if wfuprevnum == ufrevnum:
+                if wfuprevnum == nfuprevnum:  # tri1
+                    c.needrefresh = False
+                    c.description = INPUT_NEWFRAME_SCENARIO15A
+                    # c.nffiletrack = nfft   No Conflict
+                else:  # NF is out of sync although wrking frame is in sync.
+                    c.needrefresh = False
+                    c.description = INPUT_NEWFRAME_SCENARIO15B
 
-            # calculate md5 of file, if md5 has changed, update md5
-
-
-        #         wf.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
-        #         changes[fileheader] = {'reason': [MD5CHANGED]}
-        #         if wf.filestrack[fileheader].connection.connectionType==typeInput:
-        #             alterfiletracks.append(wf.filestrack[fileheader])
-        #         # if file has been updated, update last edited
-        #         wf.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
-        #         continue
-        #     elif wf.filestrack[fileheader].lastEdited != refframe.filestrack[fileheader].lastEdited:
-        #         changes[fileheader] = {'reason': [DATECHANGED]}
-        #         wf.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
-        #         print('Date changed without Md5 changing')
-        #         continue
-        #
-        # for removedheaders in refframefileheaders:
-        #     changes[removedheaders] = {'reason': [LOCALFILEHEADERREMOVED]}
-        # self.changes = gatherfileheaders(self.localframe, self.workingframe, self.newestframe)
-        # self.changes, self.alterfiletracks = container.compareToRefFrame(self.changes)
-        # upstreamupdated = self.checkUpstream(container)
-        # statustext, notlatestrev = self.checkLatestRevision(container,newestrevnum)
-        # containerchanged = self.checkContainerChanged(container)
-        # changeisrelevant = self.checkChangeIsRelevant(container)
-        #
-        # return upstreamupdated, statustext, notlatestrev, containerchanged ,changeisrelevant, self.changes
+            else:  # wfuprevnum != ufrevnum:
+                upstreamupdated = True
+                if wfuprevnum==nfuprevnum:
+                    c.reason.append('NFFILEHEADEROUTDATED')
+                    c.description = INPUT_NEWFRAME_SCENARIO15C
+                    c.needdecisionfromuser = True
+                    pass  # WF and NF are at the same frame but not the same with upstream, no conflict.  Does WF want to update?
+                elif ufrevnum == nfuprevnum:# WF not eual to UF and NF same as UF means that NEwest frame is updated.   most likely newest frame has updated sync.
+                    c.needdecisionfromuser = True
+                    c.reason.append('NFFILEHEADEROUTDATED')
+                    c.description = INPUT_NEWFRAME_SCENARIO15D
+                else:
+                    c.needdecisionfromuser = True
+                    c.description = INPUT_NEWFRAME_SCENARIO15E
+                    # c.reason.append('NFFILEHEADEROUTDATED')
+        # else:
+        #     if wfuprevnum == ufrevnum:
+        #         c.needdecisionfromuser = False
+        #         c.description = INPUT_NEWFRAME_SCENARIO7A if newestexist else INPUT_LOCALFRAME_SCENARIO7A
+        #     else:
+        #         upstreamupdated = True
+        #         c.needdecisionfromuser = True
+        #         c.description = INPUT_NEWFRAME_SCENARIO7B if newestexist else INPUT_LOCALFRAME_SCENARIO7B
+        return c , upstreamupdated
+    #
+    # def md5comparison(self):
+    #     if c.lffiletrack.md5 == c.wffiletrack.md5:
+    #         if c.wffiletrack.md5 == c.nffiletrack.md5:
+    #             print('everything is in sync')
+    #         else:
+    #             print('nf is updated.  Need to Refresh/Conflict')
+    #     else:
+    #         if c.wffiletrack.md5 == c.nffiletrack.md5:
+    #             print('somehow wf file is same as newest and different from local')
+    #         else:
+    #             if c.lffiletrack.md5 != c.nffiletrack.md5:
+    #                 print('lf!=wf!=nf Newest is updated to something else and youve updated also. So '
+    #                       'conflict.  Need to resolve which version.')
+    #             else:
+    #                 print('lf!=wf!=nf but lf==nf  Newest hasnt changed from Lf, so you there is not really a conflict'
+    #                       + 'User would simply create a new version of this file.')
+    #
+    #         # calculate md5 of file, if md5 has changed, update md5
+    #
+    #
+    #     #         wf.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
+    #     #         changes[fileheader] = {'reason': [MD5CHANGED]}
+    #     #         if wf.filestrack[fileheader].connection.connectionType==typeInput:
+    #     #             alterfiletracks.append(wf.filestrack[fileheader])
+    #     #         # if file has been updated, update last edited
+    #     #         wf.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
+    #     #         continue
+    #     #     elif wf.filestrack[fileheader].lastEdited != refframe.filestrack[fileheader].lastEdited:
+    #     #         changes[fileheader] = {'reason': [DATECHANGED]}
+    #     #         wf.filestrack[fileheader].lastEdited = os.path.getmtime(filename)
+    #     #         print('Date changed without Md5 changing')
+    #     #         continue
+    #     #
+    #     # for removedheaders in refframefileheaders:
+    #     #     changes[removedheaders] = {'reason': [LOCALFILEHEADERREMOVED]}
+    #     # self.changes = gatherfileheaders(self.localframe, self.workingframe, self.newestframe)
+    #     # self.changes, self.alterfiletracks = container.compareToRefFrame(self.changes)
+    #     # upstreamupdated = self.checkUpstream(container)
+    #     # statustext, notlatestrev = self.checkLatestRevision(container,newestrevnum)
+    #     # containerchanged = self.checkContainerChanged(container)
+    #     # changeisrelevant = self.checkChangeIsRelevant(container)
+    #     #
+    #     # return upstreamupdated, statustext, notlatestrev, containerchanged ,changeisrelevant, self.changes
 
     def updateContainerWithUserSelection(self,filelist, container:Container):
         wf = container.workingFrame
@@ -308,3 +439,12 @@ class SagaSync():
                 iscontainerinsync= False
 
         return iscontainerinsync
+
+
+def numofRev(rev):
+    m = re.search('Rev(\d+)', rev)
+    if m:
+        return int(m.group(1))
+    else:
+        return 0
+

@@ -3,12 +3,12 @@ import os
 import json
 from datetime import datetime
 from SagaApp.Connection import FileConnection
-from Config import typeRequired
+from Config import typeRequired, NEEDSDOCTOR
 
 class FileTrack:
     def __init__(self, FileHeader, containerworkingfolder, \
                  file_name, connection:FileConnection=None, style=None, lastEdited=None, committedby='waichak', \
-                 md5=None,  commitUTCdatetime=None,persist: bool = True , ctnrootpathlist = []
+                 md5=None,  commitUTCdatetime=None,persist: bool = True , ctnrootpathlist = [], lastupdated=NEEDSDOCTOR
                  ):
         self.FileHeader = FileHeader
         self.file_name = file_name
@@ -21,6 +21,7 @@ class FileTrack:
             connection = FileConnection(
                 None, typeRequired, branch='Main', Rev = None
             )
+        self.lastupdated = lastupdated
         self.connection=connection
         self.persist=persist
         if len(ctnrootpathlist)>0:

@@ -11,11 +11,12 @@ import warnings
 import re
 import uuid
 from Config import BASE,LOCALFILEHEADERADDED, MD5CHANGED,DATECHANGED , LOCALFILEHEADERREMOVED,\
-    typeInput,typeOutput,typeRequired,  TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN,CONTAINERFN
+    typeInput,typeOutput,typeRequired,  TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN,CONTAINERFN,NEEDSDOCTOR
 # from hackpatch import workingdir
 from SagaApp.SagaUtil import getFramePathbyRevnum,makefilehidden, unhidefile
 from datetime import datetime
 import ctypes
+import shutil
 from os.path import join
 # from SagaGuiModel import sagaguimodel
 
@@ -53,7 +54,7 @@ class Container:
         for yamlfn in yamllist:
             revyaml = os.path.basename(yamlfn)
             if revyaml not in self.memoryframesdict.keys():
-                pastframe = Frame.LoadFrameFromYaml(yamlfn, self.containerworkingfolder)
+                pastframe = Frame.loadRefFramefromYaml(yamlfn, self.containerworkingfolder)
                 self.memoryframesdict[revyaml] = pastframe
 
 
@@ -87,7 +88,7 @@ class Container:
         FileHeaders = containerdict['FileHeaders']
         refframefullpath, revnum = getFramePathbyRevnum(os.path.join(containerworkingfolder, currentbranch), revnum)
         try:
-            workingFrame = Frame.LoadFrameFromYaml(refframefullpath,containerworkingfolder)
+            workingFrame = Frame.loadRefFramefromYaml(refframefullpath,containerworkingfolder)
         except Exception as e:
             workingFrame = Frame.InitiateFrame(parentcontainerid=containerdict['containerId'],
                                                parentcontainername=containerdict['containerName'],
@@ -101,6 +102,7 @@ class Container:
                            allowedUser=containerdict['allowedUser'],
                            currentbranch=currentbranch, revnum=revnum,
                            refframefullpath=refframefullpath, workingFrame=workingFrame, ismaincontainer=ismaincontainer)
+        container.FixConnections()
         return container
 
 
@@ -125,7 +127,17 @@ class Container:
         if 'readingUsers' not in containeryaml.keys():
             containeryaml['readingUsers']=[]
         if ismaincontainer:
-            workingFrame = Frame.LoadCurrentFrame(containerworkingfolder=containerworkingfolder, containfn=containeryamlfn)
+            CONTAINERLIST = [TEMPCONTAINERFN, CONTAINERFN]
+            if containeryamlfn in CONTAINERLIST:
+                workingyamlfn = TEMPFRAMEFN
+            else:
+                workingyamlfn = NEWFRAMEFN
+            framefullpath = os.path.join(containerworkingfolder, 'Main', workingyamlfn)
+            if not os.path.exists(framefullpath):
+                framefullpath, revnum = getFramePathbyRevnum(os.path.join(containerworkingfolder, 'Main'), None)
+                shutil.copy(framefullpath, os.path.join(containerworkingfolder, 'Main', TEMPFRAMEFN))
+            workingFrame = Frame.loadRefFramefromYaml(refframefullpath=os.path.join(containerworkingfolder, 'Main', TEMPFRAMEFN),
+                                                      containerworkingfolder=containerworkingfolder)
         else:
             workingFrame = None
 
@@ -143,6 +155,7 @@ class Container:
                            currentbranch=currentbranch, revnum=revnum,
                            refframefullpath=refframefullpath, workingFrame=workingFrame,
                             yamlfn=containeryamlfn, ismaincontainer=ismaincontainer)
+        container.FixConnections()
         if container.yamlfn == CONTAINERFN:
             container.yamlfn == TEMPFRAMEFN
             container.save()
@@ -151,17 +164,58 @@ class Container:
     def updateworkframe(self):
         wf = self.workingFrame
         wffilesupdated = []
+        filesupdated = False
         for fileheader in wf.filestrack.keys():
             filefullpath = os.path.join(self.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
                                     wf.filestrack[fileheader].file_name)
             fileb = open(filefullpath, 'rb')
             readmd5 = hashlib.md5(fileb.read()).hexdigest()
-            filesupdated = False
             if wf.filestrack[fileheader].md5!=readmd5:
                 wf.filestrack[fileheader].md5 = readmd5
                 filesupdated = True
                 wffilesupdated.append((fileheader, filefullpath))
+        if filesupdated:
+            wf.writeoutFrameYaml()
         return filesupdated, wffilesupdated
+
+    def FixConnections(self):
+        revnum = 1
+        filemd5={}
+        filemd5history={}
+        while revnum<100:
+            REVSTR= 'Rev' + str(revnum)
+            yamlfn = os.path.join(self.containerworkingfolder, 'Main', 'Rev'+str(revnum)+'.yaml')
+            if os.path.exists(yamlfn):
+                try:
+                    pastframe = Frame.loadRefFramefromYaml(yamlfn, self.containerworkingfolder)
+                except:
+                    print('Rev'+str(revnum)+'.yaml doesnt exist')
+                    revnum+=1
+                    continue
+                for fileheader, filetrack in pastframe.filestrack.items():
+                    if filetrack.lastupdated == NEEDSDOCTOR:
+                        if fileheader in filemd5.keys():
+                            if filemd5[fileheader]['md5'] == filetrack.md5:
+                                filetrack.lastupdated = filemd5[fileheader]['latestrev']
+                            else:
+                                filetrack.lastupdated = REVSTR
+                                filemd5[fileheader] = {'latestrev': REVSTR, 'md5': filetrack.md5}
+                            if filetrack.md5 not in filemd5history[fileheader].keys():
+                                filemd5history[fileheader][filetrack.md5]= REVSTR
+                        else:
+                            filemd5history[fileheader] = {filetrack.md5:REVSTR}
+                            filemd5[fileheader] = {'latestrev': REVSTR, 'md5': filetrack.md5}
+                            filetrack.lastupdated = REVSTR
+                    # if filetrack.connection.connectionType.name==typeOutput:
+                    #         print(self.containerId + ' ID with name ' + self.containerName + ' and ' + revnum + ' has ' + fileheader +' has broken Input rev ')
+
+                    if filetrack.connection.connectionType.name==typeInput:
+                        if filetrack.connection.Rev is None:
+                            print(self.containerId + ' ID with name ' + self.containerName + ' and ' + revnum + ' has ' + fileheader +' has broken Input rev ')
+                pastframe.writeoutFrameYaml(fn = 'Rev'+str(revnum)+'.yaml')
+            revnum+=1
+        self.filemd5history = filemd5history
+
 
 
     def compareToRefFrame(self, changes):

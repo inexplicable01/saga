@@ -112,7 +112,7 @@ class UI(QMainWindow):
                 self.adjustGuiByUserStatusChange()
                 self.guireset()
                 self.loadSection()
-            containerexample = 'C:/Users/waich/LocalGitProjects/testcontainers_saga/FormationDesignGroup/Customer/'+TEMPCONTAINERFN
+            containerexample = 'C:/Users/waich/LocalGitProjects/testcontainers_saga/FormationDesignGroup/NewestRev/IndustrialDesigner/'+TEMPCONTAINERFN
             self.maincontainertab.readcontainer(containerexample)
         self.show()
 

@@ -63,7 +63,7 @@ class GanttListModel(QAbstractTableModel):
             yamllist = glob.glob(os.path.join(desktopdir, 'ContainerMapWorkDir', containerid, 'Main', 'Rev*.yaml'))
             containerframes[containerid]={}
             for yamlfn in yamllist:
-                pastframe = Frame.LoadFrameFromYaml(yamlfn,os.path.join(desktopdir, 'ContainerMapWorkDir', containerid))
+                pastframe = Frame.loadRefFramefromYaml(yamlfn,os.path.join(desktopdir, 'ContainerMapWorkDir', containerid))
                 weekstr, weeksago = weekstrfromtimestamp(pastframe.commitUTCdatetime)
                 if weeksago < weekstocheck:
                     containerframes[containerid][pastframe.commitUTCdatetime]= pastframe
