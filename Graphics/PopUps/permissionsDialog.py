@@ -59,6 +59,7 @@ class permissionsDialog(QDialog):
         self.emailedit.textChanged[str].connect(self.textChanged)
         # self.adduserbttn.clicked.connect()
         self.exitbttn.clicked.connect(self.reject)
+        self.exec_()
 
     def adduser(self):
         permissionsresponse, allowedUsers  = sagaguimodel.addUserToContainer(self.emailedit.text())

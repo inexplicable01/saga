@@ -10,28 +10,54 @@ import json
 from Graphics.Dialogs import downloadProgressBar
 from PyQt5.QtGui import QGuiApplication
 from datetime import datetime
+from PyQt5.QtWidgets import *
+
+
 
 class SagaAPICall():
     def __init__(self, authtoken = None):
         self.authtoken = authtoken
+        self.errormessageboxhandle = None
 
-    def signInCall(self, email, password, tokenfile):
+
+    def callhandling(self, URL, data):
+
+
+        try:
+            response = requests.post(URL, data=data)
+            response.raise_for_status()
+            # Code here will only run if the request is successful
+        except requests.exceptions.HTTPError as errh:
+            print(errh)
+        except requests.exceptions.ConnectionError as errc:
+            print(errc)
+        except requests.exceptions.Timeout as errt:
+            print(errt)
+        except requests.exceptions.RequestException as err:
+            print(err)
+        if response.status_code == 200:
+            print("The request was a success!")
+            # Code here will only run if the request is successful
+        elif response.status_code == 404:
+            print("Result not found!")
+
+
+    def signInCall(self, email, password):
         # print(self.email.text())
+        expectedreturnkeysindict = ['status', 'message', 'auth_token', 'useremail', 'first_name', 'current_sectionname',
+                                    'current_sectionid', 'sectionname_list', 'sectionid_list', 'last_name',
+                                    'exptimestamp', 'version_num']
         payload = {'email': email,
                    'password': password}
         response = requests.post(BASE + 'auth/login',data=payload)
-        signinresp = response.json()
+        signinresp = json.loads(response.content)
 
-        print('usertoken[status] ' + signinresp['status'] + datetime.now().isoformat())
         if signinresp['status']=='success':
             status = 'success'
             self.authtoken = signinresp['auth_token']
-            with open(tokenfile, 'w') as tokenfile:
-                json.dump(signinresp, tokenfile)
-                #ATTENTION, MAY NOT NEED THIS ANYMORE POtentail security issue?
         else:
             status = 'failed'
-        return {'status': status}
+        return {'status': status, 'usertokeninfo':signinresp}
 
     def newUserSignUpCall(self,formentry):
         response = requests.post(BASE + 'auth/register',
@@ -237,10 +263,19 @@ class SagaAPICall():
         resp = json.loads(switchresponse.content)
         report = resp['report']##ATTENTION...Imean comone
         usersection = resp['usersection']
+
+        self.errormessageboxhandle.setText(report['status'])
+        if report['status'] == 'User Current Section successfully changed':
+            self.errormessageboxhandle.setIcon(QMessageBox.Information)
+        else:
+            self.errormessageboxhandle.setIcon(QMessageBox.Critical)
+            ## if we arrived here, then that means either
+        self.errormessageboxhandle.exec_()
         return report, usersection
 
     def addUserToContainerCall(self,userdata,emailtoadd,current_sectionid,containerId):
 
+        expectedresponse=[]
         response = requests.post(BASE + 'PERMISSIONS/AddUserToContainer',
                                  headers={"Authorization": 'Bearer ' + self.authtoken},
                                  json={"email": userdata['email'],
@@ -250,6 +285,12 @@ class SagaAPICall():
                                        }
                                  )
         permissionsresponse = json.loads(response.content)
+
+        print(permissionsresponse['ServerMessage'])
+        if permissionsresponse['result']:
+            self.maincontainer.setAllowedUser(permissionsresponse['allowedUser'])
+        return permissionsresponse, self.maincontainer.allowedUser
+
         return permissionsresponse
 
     def shouldModelSwitchCall(self,containerId):
@@ -263,7 +304,12 @@ class SagaAPICall():
         goswitch = permissionsresponsecontent['goswitch']
         newsectionid=permissionsresponsecontent['sectionid']
         message =permissionsresponse.headers['message']
-        return goswitch, newsectionid, message
+
+        if newsectionid is None:
+            # print('shouldModelSwitch call produced some sort of error')
+            self.errormessageboxhandle.setText(message)
+            self.errormessageboxhandle.exec_()
+        return goswitch, newsectionid
 
     def getNewestFrame(self, maincontainer:Container, sectionid):
         ## This is the only place that knows of a later revision.

@@ -5,9 +5,10 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import yaml
 from SagaApp.Container import Container
-from Config import typeInput,typeOutput,typeRequired, colorscheme,mapdetailstxt,RECTMARGINpx
+from Config import typeInput,typeOutput,typeRequired, colorscheme,mapdetailstxt,RECTMARGINpx, sourcecodedirfromconfig
 from math import pi
 import os
+from os.path import join
 from SagaGuiModel import sagaguimodel
 
 containerRectWidth=100

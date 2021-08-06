@@ -92,6 +92,14 @@ class SagaGuiModel():
                 os.mkdir(sectioniddir)
         return userdetailsresult
 
+    def signIn(self, email, password):
+        signinstatus = self.sagaapicall.signInCall(email, password)
+
+        if signinstatus['status'] == 'success':
+            with open(self.tokenfile, 'w') as tokenfilefh:
+                json.dump(signinstatus['usertokeninfo'], tokenfilefh)    #ATTENTION, MAY NOT NEED THIS ANYMORE POtentail security issue?
+        return {'status': signinstatus['status']}
+
     def signOut(self):
         self.maincontainer: Container = None
         self.userdata = None
@@ -185,19 +193,17 @@ class SagaGuiModel():
 
     def loadContainer(self, containerpath, ismaincontainer=False):
         # raise('WRITE THIS GODDAMN Error')
+        goswitch, newsectionid = self.shouldModelSwitch(containerpath)
+        if goswitch:
+            report, usersection = self.sectionSwitch(newsectionid)
         self.container_reset()
         print('start of loadcontainer' + datetime.now().isoformat())
         self.maincontainer = Container.LoadContainerFromYaml(containerpath, revnum=None, ismaincontainer=ismaincontainer)
-        # print('end of loadcontainer' + datetime.now().isoformat())
-        # self.histModel = HistoryListModel(self.maincontainer .commithistory())### Attention, this should probalby be init at init
-        # print('histModel.load' + datetime.now().isoformat())
         self.histModel.load(self.maincontainer.commithistory())
-        # print('start of individualfilehistory' + datetime.now().isoformat())
         self.histModel.individualfilehistory(self.maincontainer.commithistorybyfile())
-        # print('start of containerfilemodel.update(' + datetime.now().isoformat())
         self.containerfilemodel.update(self.maincontainer)### Attention,
         # print('hist and container model end' + datetime.now().isoformat())
-        return self.maincontainer, self.histModel, self.containerfilemodel
+        return self.maincontainer
 
     def initiateNewContainer(self, containerworkingfolder, containername):
         ensureFolderExist(os.path.join(containerworkingfolder, 'Main', 'anything'))#### ATTENTION Need to fix ensureFolderExists
@@ -218,8 +224,8 @@ class SagaGuiModel():
             raise('Could not load container with file ' + containerpath)###Attention feed to gui error box.
         if loadingcontainer.yamlfn == NEWCONTAINERFN:
             return False, self.userdata['current_sectionid'],'This is a new container'
-        goswitch, newsectionid, message = self.sagaapicall.shouldModelSwitchCall(loadingcontainer.containerId)
-        return goswitch, newsectionid, message
+        goswitch, newsectionid = self.sagaapicall.shouldModelSwitchCall(loadingcontainer.containerId)
+        return goswitch, newsectionid
 
     def sectionSwitch(self, newsectionid=None):
         # print('sectionstart' + datetime.now().isoformat())

@@ -55,12 +55,8 @@ if len(sys.argv)>1:
         if len(sys.argv)>2:
             debugsignin = True
 
-# print('something')
-
-
 class UI(QMainWindow):
     def __init__(self):
-
         super(UI, self).__init__()
         # with open('C:/Users/waich/AppData/Roaming/SagaDesktop/testing.txt', 'a+') as file:
         #     file.write('\n1\n\n\n')
@@ -72,11 +68,14 @@ class UI(QMainWindow):
             raise('saga designed only for windows right now')
         self.desktopdir = sagaguimodel.desktopdir
         sagaguimodel.mainguihandle = self
+        sagaguimodel.sagaapicall.errormessageboxhandle=QMessageBox()
+        sagaguimodel.sagaapicall.errormessageboxhandle.setStandardButtons(QMessageBox.Ok)
         with open(os.path.join(sagaguimodel.desktopdir, 'basicoutput.txt'),'w+') as file:
             file.write(sagaguimodel.sourcecodedir)
         ## There are two main paths that the GUI needs to be concerns about
         #1. Where the current container of interests is.
         #2. Where is the GUI running from?  This contains settings about the GUI itself and some larger meta-data
+
 
         ## newcontainertab handles all the QT features on the new container tab, Initiates to false
         # self.newcontainertab = NewContainerTab(self)
@@ -119,9 +118,7 @@ class UI(QMainWindow):
         setStyle(self, sagaguimodel.sourcecodedir)
 
         if debugsignin:
-            signinstatus = sagaguimodel.sagaapicall.signInCall(testerlogin['email'],
-                                                               testerlogin['password'],
-                                                                  sagaguimodel.tokenfile)
+            signinstatus = sagaguimodel.signIn(testerlogin['email'], testerlogin['password'])
             # self.mainguihandle.checkUserStatus()
             if signinstatus['status'] == 'success':
                 self.adjustGuiByUserStatusChange()
@@ -180,14 +177,6 @@ class UI(QMainWindow):
             self.maintabwidget.setCurrentIndex(self.maincontainertab.index)
 
     def find_Local_Container(self):
-        # inputwindow = InputDialog(MainGuiHandle=MainGuiHandle)
-        # (fname, fil) = QFileDialog.getOpenFileName(self, 'Open container file', '.',
-        #                                            "Container (*containerstate.yaml)")
-        # if fname:
-        #     # print(fname)
-        #     self.maincontainertab.readcontainer(fname)
-        #     self.maintabwidget.setCurrentIndex(self.maincontainertab.index)
-        #     self.maincontainertab.refreshedcheck = 0
         folderdialog = SagaFolderDialog(os.getcwd())
         containeryaml = folderdialog.getfilepath()
         if containeryaml:
@@ -197,8 +186,8 @@ class UI(QMainWindow):
 
     def containerPermission(self):
         if sagaguimodel.maincontainer:
-            permissiongui = permissionsDialog(sagaguimodel.maincontainer, self)
-            permissiongui.exec_()
+            permissionsDialog(sagaguimodel.maincontainer, self)
+
         # self.gantttable.setModel(GanttListModel([], sagaguimodel.desktopdir))
 
     def newSection(self):

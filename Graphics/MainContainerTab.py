@@ -280,31 +280,11 @@ class MainContainerTab():
     def readcontainer(self, containerpath):
         # path = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
         # print('start of readcontainer' + datetime.now().isoformat())
-        goswitch, newsectionid , shouldmodelswitchmessage= sagaguimodel.shouldModelSwitch(containerpath)
-        # print('end of call' + datetime.now().isoformat())
-        msg = QMessageBox()
-        msg.setStandardButtons(QMessageBox.Ok)
-        if newsectionid is None:
-            print('shouldModelSwitch call produced some sort of error')
-            msg.setText(shouldmodelswitchmessage)
-            msg.exec_()
-
-        if goswitch:
-            report, usersection = sagaguimodel.sectionSwitch(newsectionid)
-            msg.setText(report['status'])
-            if report['status']== 'User Current Section successfully changed':
-                msg.setIcon(QMessageBox.Information)
-            else:
-                msg.setIcon(QMessageBox.Critical)
-                ## if we arrived here, then that means either
-            msg.exec_()
-
         print('Loading ' + containerpath)
         # sagaguimodel.container_reset()# In case there is no section switch
-        # print('start of loadcontainer' + datetime.now().isoformat())
-        cont, histModel, containerfilemodel = sagaguimodel.loadContainer(containerpath, ismaincontainer=True)
+
+        cont = sagaguimodel.loadContainer(containerpath, ismaincontainer=True)
         print('end of loadcontainer' + datetime.now().isoformat())
-        # [self.workingdir, file_name] = os.path.split(containerpath)  ## working dir should be app level
         self.containerlabel.setText('Container Name : ' + cont.containerName)
         self.containerdescriplbl.setText(sagaguimodel.maincontainer.description)
         self.framelabel.setText(cont.workingFrame.FrameName)
@@ -317,15 +297,7 @@ class MainContainerTab():
             self.contstackedwidget.setCurrentIndex(0)## index 0 is container description
         ## Enable Permission button since Main Container
         self.mainguihandle.setPermissionsEnable()
-        # print('end of read container' + datetime.now().isoformat())
         self.checkdelta()
-
-    # def addwidget(self):
-    #     print('add widget')
-    #     if self.contstackedwidget.currentIndex()==0:
-    #         self.contstackedwidget.setCurrentIndex(1)
-    #     else:
-    #         self.contstackedwidget.setCurrentIndex(0)
 
     # def FileViewItemRectFeedback(self, type, view, fileheader, curContainer):
     #     self.curfileheader = fileheader

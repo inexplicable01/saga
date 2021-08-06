@@ -4,9 +4,9 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import QColor
 import os
 import sys
-BASE = "http://fatpanda1985.pythonanywhere.com/"
+# BASE = "http://fatpanda1985.pythonanywhere.com/"
 # BASE = "http://10.0.0.227:9500/"
-# BASE = "http://127.0.0.1:5000/"
+BASE = "http://127.0.0.1:5000/"
 sourcecodedirfromconfig = os.path.abspath(os.path.dirname(__file__))
 
 # with open('C:/Users/waich/AppData/Roaming/SagaDesktop/testing.txt', 'a+') as file:
