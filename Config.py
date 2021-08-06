@@ -1,3 +1,5 @@
+
+
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QColor
 import os
@@ -6,6 +8,9 @@ BASE = "http://fatpanda1985.pythonanywhere.com/"
 # BASE = "http://10.0.0.227:9500/"
 # BASE = "http://127.0.0.1:5000/"
 sourcecodedirfromconfig = os.path.abspath(os.path.dirname(__file__))
+
+# with open('C:/Users/waich/AppData/Roaming/SagaDesktop/testing.txt', 'a+') as file:
+#     file.write('\n'+sourcecodedirfromconfig+'\n\n\n')
 # comment
 typeInput='Input'
 typeOutput='Output'
@@ -30,6 +35,8 @@ SERVERFILEDELETED = 'File deleted in newer Revision'
 SERVERFILEADDED = 'New File committed in newer Revision'
 CHANGEREASONORDER=[MD5CHANGED, LOCALFILEHEADERADDED, SERVERNEWREVISION, UPDATEDUPSTREAM,DATECHANGED,SERVERFILEADDED , SERVERFILEDELETED]
 NOTINSYNCREASONSET = set([])
+NEEDSDOCTOR = 'NEEDSDOCTOR'
+TOBECOMMITTED = 'To be Committed'
 
 
 colorscheme = {typeInput: QColor('#D0F0C0'),
@@ -141,12 +148,15 @@ testerlogin={
 debugmode=False
 if len(sys.argv)>1:
     if 'debug' ==sys.argv[1]:
-        if sys.argv[2]=='waichak':
-            testerlogin=waichak
-        elif sys.argv[2]=='userc':
-            testerlogin=userclogin
-        elif sys.argv[2]=='jimmy':
-            testerlogin=jimmy
+        try:
+            if sys.argv[2]=='waichak':
+                testerlogin=waichak
+            elif sys.argv[2]=='userc':
+                testerlogin=userclogin
+            elif sys.argv[2]=='jimmy':
+                testerlogin=jimmy
+        except:
+            pass
 
 
 
@@ -168,3 +178,7 @@ sagaworkingfiles=[CONTAINERFN,TEMPCONTAINERFN,NEWCONTAINERFN,'Main']
 
 hexyellowshades = ['#fefcf3','#faea95','#f5d838','#c2a609','#655604']
 hexblueshades = ['#8cbefc', '#2383fa', '#0350ae', '#012045', '#0a233c']
+
+#
+# with open('testing.txt', 'a+') as file:
+#     file.write('\nmore\n\n\n')

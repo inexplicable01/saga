@@ -4,7 +4,8 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-import os
+from os.path import join
+from Config import sourcecodedirfromconfig
 import sys
 import requests
 import json
@@ -15,7 +16,8 @@ class switchSectionDialog(QDialog):
     def __init__(self, mainguihandle,sectioninfo,currentsection):
         super().__init__()
         self.mainguihandle=mainguihandle
-        uic.loadUi("Graphics/UI/switchsection.ui", self)
+
+        uic.loadUi(join(sourcecodedirfromconfig, "Graphics", "UI", "switchsection.ui"), self)
         print(sectioninfo)
         self.oldsection = currentsection
         self.newsection = currentsection

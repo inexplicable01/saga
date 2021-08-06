@@ -19,13 +19,15 @@ from SagaGuiModel.SagaAPICall import SagaAPICall
 from SagaGuiModel.SagaSync import SagaSync
 from subprocess import Popen
 import sys
+from datetime import datetime
 
 
 from Graphics.QAbstract.ContainerFileModel import ContainerFileModel
 
 
 
-from Graphics.QAbstract.ConflictListModel import ConflictListModel, AddedListModel, DeletedListModel, UpstreamListModel
+# from Graphics.QAbstract.ConflictListModel import ConflictListModel2, NoticeListModel
+#     # AddedListModel, DeletedListModel, UpstreamListModel
 import re
 
 
@@ -40,8 +42,9 @@ class SagaGuiModel():
         self.versionnumber = versionnumber
         self.guiworkingdir = os.getcwd()
         self.sagaapicall:SagaAPICall = SagaAPICall(authtoken)
-        self.sagasync:SagaSync = SagaSync(self.sagaapicall,desktopdir)
+        self.sagasync:SagaSync = SagaSync(self,desktopdir)
         self.mainguihandle = None
+        self.networkcontainers={}
 
         self.maincontainer:Container = None
         self.userdata = None
@@ -68,9 +71,9 @@ class SagaGuiModel():
             desktopdir = ''
 
         try:
-            with open('settings.yaml', 'r') as file:
+            with open(join(sourcecodedirfromconfig, 'settings.yaml'), 'r') as file:
                 settingsyaml = yaml.load(file, Loader=yaml.FullLoader)
-            sourcecodedir = settingsyaml['sourcecodedir']
+            sourcecodedir = sourcecodedirfromconfig
             versionnumber= settingsyaml['versionnumber']
             tokenlocation = settingsyaml['tokenlocation']
             tokenfilename = settingsyaml['tokenfilename']
@@ -92,7 +95,7 @@ class SagaGuiModel():
     def signOut(self):
         self.maincontainer: Container = None
         self.userdata = None
-        self.modelreset()
+        self.container_reset()
 
 
 
@@ -111,14 +114,27 @@ class SagaGuiModel():
         self.containerinfodict = self.sagaapicall.getContainerInfoDict()### Get list of containers by authtoken.
         if 'EMPTY' in self.containerinfodict.keys():
             return {}
+        self.networkcontainers={}
+        self.containeridtoname={}
         for containerID in self.containerinfodict.keys():
             print(containerID, self.containerinfodict[containerID]['ContainerDescription'])
             self.containeridtoname[containerID] = self.containerinfodict[containerID]['ContainerDescription']
-            self.downloadContainer(join(self.desktopdir,'ContainerMapWorkDir',containerID), containerID)
+            self.provideContainer(containerID)
+        self.updatecontainerbylastframecheck()
         if not os.path.exists(join(self.desktopdir, 'SagaGuiData', self.userdata['current_sectionid'])):
             os.mkdir(join(self.desktopdir, 'SagaGuiData',self.userdata['current_sectionid']))
         return self.containerinfodict
 
+    def provideContainer(self, containerid):
+        if containerid not in self.networkcontainers.keys():
+            containyaml = os.path.join(self.desktopdir, 'ContainerMapWorkDir',containerid, CONTAINERFN)
+            if os.path.exists(containyaml):
+                self.networkcontainers[containerid] = Container.LoadContainerFromYaml(containyaml)
+            else:
+                containerworkingfolder = os.path.join(sagaguimodel.desktopdir, 'ContainerMapWorkDir', containerid)
+                containerworkingfolder, self.networkcontainers[containerid]  = sagaguimodel.downloadContainer(containerworkingfolder,
+                                                                                                containerid)
+        return self.networkcontainers[containerid]
     # def downloadfullframefiles(self, container:Container =None, framerev = 'latest'):
     #     if container is None:
     #         raise('Developers need to add a self.maincontainer for this model')
@@ -167,13 +183,20 @@ class SagaGuiModel():
             return False
 
 
-    def loadContainer(self, containerpath):
+    def loadContainer(self, containerpath, ismaincontainer=False):
         # raise('WRITE THIS GODDAMN Error')
-        self.maincontainer = Container.LoadContainerFromYaml(containerpath, revnum=None, ismaincontainer=True)
+        self.container_reset()
+        print('start of loadcontainer' + datetime.now().isoformat())
+        self.maincontainer = Container.LoadContainerFromYaml(containerpath, revnum=None, ismaincontainer=ismaincontainer)
+        # print('end of loadcontainer' + datetime.now().isoformat())
         # self.histModel = HistoryListModel(self.maincontainer .commithistory())### Attention, this should probalby be init at init
+        # print('histModel.load' + datetime.now().isoformat())
         self.histModel.load(self.maincontainer.commithistory())
+        # print('start of individualfilehistory' + datetime.now().isoformat())
         self.histModel.individualfilehistory(self.maincontainer.commithistorybyfile())
+        # print('start of containerfilemodel.update(' + datetime.now().isoformat())
         self.containerfilemodel.update(self.maincontainer)### Attention,
+        # print('hist and container model end' + datetime.now().isoformat())
         return self.maincontainer, self.histModel, self.containerfilemodel
 
     def initiateNewContainer(self, containerworkingfolder, containername):
@@ -181,7 +204,7 @@ class SagaGuiModel():
         self.maincontainer = Container.InitiateContainer(containerworkingfolder, containername)
         self.containerfilemodel.update(self.maincontainer)#
         self.histModel.load(self.maincontainer.commithistory())
-        return self.containerfilemodel, self.histModel
+        # return self.containerfilemodel, self.histModel
 
 
     def getAvailableSections(self):
@@ -189,13 +212,17 @@ class SagaGuiModel():
         return sectiondict
 
     def shouldModelSwitch(self,containerpath):
-        loadingcontainer = Container.LoadContainerFromYaml(containerpath, revnum=None)
+        loadingcontainer = Container.LoadContainerFromYaml(containerpath, revnum=None, lightload=True)
+        # print('damn loading' + datetime.now().isoformat())
+        if loadingcontainer is None:
+            raise('Could not load container with file ' + containerpath)###Attention feed to gui error box.
         if loadingcontainer.yamlfn == NEWCONTAINERFN:
             return False, self.userdata['current_sectionid'],'This is a new container'
         goswitch, newsectionid, message = self.sagaapicall.shouldModelSwitchCall(loadingcontainer.containerId)
         return goswitch, newsectionid, message
 
     def sectionSwitch(self, newsectionid=None):
+        # print('sectionstart' + datetime.now().isoformat())
         if newsectionid is None:
             if self.userdata['current_sectionid'] is None:
                 return None, None
@@ -203,26 +230,28 @@ class SagaGuiModel():
                 newsectionid = self.userdata['current_sectionid']
         report, usersection = self.sagaapicall.sectionSwitchCall(newsectionid)
         if report['status'] == 'User Current Section successfully changed':
-            self.modelreset()
+            self.container_reset()
             self.mainguihandle.loadSection()
         else:
             print('Error Occured.  Your current section has not change')
         return report , usersection
 
-    def modelreset(self):
+    def container_reset(self):
         self.maincontainer = None
-        self.containeridtoname= {}
+        # self.containeridtoname= {}
         ## Sagatree, Network and Gantt models???
         self.histModel.reset()
         self.containerfilemodel.reset()
+        self.sagasync.reset()
+        # self.networkcontainers={}
 
     def downloadFile(self, filetrack:FileTrack, containerworkingfolder, newfilename=None ):
         fn=self.sagaapicall.downloadFileCall(filetrack, containerworkingfolder, newfilename )
         return fn
 
-    def downloadContainer(self,containerworkingfolder,  dlcontainerid, use = 'NetworkContainer' ):
-        containerworkingfolder, cont = self.sagaapicall.downloadContainerCall(containerworkingfolder,  dlcontainerid, use )
-        if use=='WorkingContainer':
+    def downloadContainer(self,containerworkingfolder,  dlcontainerid, ismaincontainer=False ):
+        containerworkingfolder, cont = self.sagaapicall.downloadContainerCall(containerworkingfolder,  dlcontainerid, ismaincontainer )
+        if ismaincontainer:
             for fileheader, filetrack in cont.workingFrame.filestrack.items():
                 self.downloadFile(filetrack, containerworkingfolder)
         return containerworkingfolder, cont
@@ -251,7 +280,7 @@ class SagaGuiModel():
             self.maincontainer.setContainerForNextframe(yamlframefnfullpath)
             self.maincontainer.yamlfn = TEMPCONTAINERFN
             self.maincontainer.save()
-            # self.maincontainer.memoryframesdict[returnframedict['FrameName'] + '.yaml'] = Frame.LoadFrameFromYaml(yamlframefnfullpath, self.maincontainer.containerworkingfolder)
+            # self.maincontainer.memoryframesdict[returnframedict['FrameName'] + '.yaml'] = Frame.loadRefFramefromYaml(yamlframefnfullpath, self.maincontainer.containerworkingfolder)
             try:
                 os.remove(join(self.maincontainer.containerworkingfolder, NEWCONTAINERFN))
                 os.remove(join(self.maincontainer.containerworkingfolder, 'Main',NEWFRAMEFN))
@@ -288,37 +317,160 @@ class SagaGuiModel():
 ############SyncStatusStuff
 
     def getRefreshPopUpModels(self):
-        return self.sagasync.syncStatusModels()
+        return self.sagasync.syncStatusModels2(self.maincontainer, self.containeridtoname)
 
-    def dealWithUserSelection(self,filelist):
-        self.sagasync.updateContainerWithUserSelection(filelist, self.maincontainer)
+    def dealWithUserSelection(self,combinedactionstate):
+        # self.sagasync.updateContainerWithUserSelection(combinedactionstate, self.maincontainer)
+        wf = self.maincontainer.workingFrame
+        alldownloaded = True
+            # wf.refreshedcheck = True
+        for fileheader, actionlist in combinedactionstate.items():
+            for action in actionlist:
+            ### Main action sets to the working frame
+                change = action['change']
+                try:
+                    file_name = action['filetrack'].file_name
+                    fn = os.path.join(self.maincontainer.containerworkingfolder, action['filetrack'].ctnrootpath,
+                                      file_name)
+                    if os.path.exists(fn) and action['filetype'] != typeInput:
+                        filename, file_extension = os.path.splitext(action['filetrack'].file_name)
+                        copiedfile_name = filename + '_' + action['filetrack'].lastupdated + '+_' + file_extension
+                        copiedfn = os.path.join(self.maincontainer.containerworkingfolder,
+                                                action['filetrack'].ctnrootpath,
+                                                copiedfile_name)
+                        os.rename(fn, copiedfn)
+                except Exception as e:
+                    print( change.fileheader)
+                    print(e)
+                    print(action['filetrack'])
+                if action['main']:
+                    if action['filetracktype']=='wffiletrack':
+                        pass
+                    elif action['filetrack'] is None or action['filetracktype']=='lffiletrack' and (change.reqoutscenariono in [5,4] or change.inputscenariono in [5,4]):
+                        if change.fileheader in self.maincontainer.FileHeaders.keys():
+                            self.maincontainer.removeFileHeader(change.fileheader)
+                    elif action['filetracktype']=='nffiletrack' and (change.reqoutscenariono==3 or change.inputscenariono==3):
+                        self.maincontainer.removeFileHeader(change.fileheader)
+                    else:
+
+                        try:
+                            fn = self.sagaapicall.downloadFileCall(filetrack=action['filetrack'],
+                                                                   containerworkingfolder=self.maincontainer.containerworkingfolder,
+                                                                   newfilename=file_name)
+                        except:
+                            alldownloaded = False
+                        # if mainaction['filetracktype']=='uffiletrack':
+                        if fileheader not in wf.filestrack.keys():
+                            if action['filetracktype']=='uffiletrack':
+                                self.maincontainer.addFileObject(
+                                    {'fileheader': fileheader,
+                                     'filetype': typeInput,
+                                     'containerfileinfo': {'Container': change.upcont.containerId,
+                                                           'type': typeInput},
+                                     'UpstreamContainer': change.upcont,
+                                     'ctnrootpathlist': action['filetrack'].ctnrootpathlist }
+                                )
+                            else:
+                                self.maincontainer.addFileTrack(action['filetrack'])
+
+                        if action['filetype'] == typeInput:
+                            wf.filestrack[fileheader].md5 = action['filetrack'].md5
+                            if action['filetracktype'] == 'uffiletrack':
+                                wf.filestrack[fileheader].connection.Rev = action['filetrack'].lastupdated
+                            else:
+                                wf.filestrack[fileheader].connection.Rev = action['filetrack'].connection.Rev
+                            wf.filestrack[fileheader].lastEdited = action['filetrack'].lastEdited
+                        else:
+                            wf.filestrack[fileheader].md5 = action['filetrack'].md5
+                            wf.filestrack[fileheader].lastupdated = action['filetrack'].lastupdated
+                            wf.filestrack[fileheader].lastEdited = action['filetrack'].lastEdited
+                else:
+
+                    if action['filetracktype']=='wffiletrack':
+                        pass
+                    else:
+
+                        fn, file_extension = os.path.splitext(action['filetrack'].file_name)
+                        file_name = fn + '_' + action['filetrack'].lastupdated + file_extension
+                        fn = self.sagaapicall.downloadFileCall(filetrack=action['filetrack'],
+                                                               containerworkingfolder=self.maincontainer.containerworkingfolder,
+                                                               newfilename=file_name)
+                # if mainaction['filetracktype']=='uffiletrack':
+
+            # if importance == 'main':
+            #     if action['filetracktype'] == 'uffiletrack':
+            #         return 'Saga will download latest upstream version. ' \
+            #                'Going forward, ' + filetrack.lastupdated + ' will be this container''s working copy.\n\n'
+            #     elif action['filetracktype'] == 'nffiletrack':
+            #         if change.reqoutscenariono == 3 or change.inputscenariono == 3:
+            #             return 'Saga will remove this fileheader from your workingframe to be in agreement with Newest Frame'
+            #         else:
+            #             return 'Saga will download the newest frames version and will be this container''s working copy\n\n'
+            #     elif action['filetracktype'] == 'lffiletrack':
+            #         if change.reqoutscenariono in [5, 4, 6, 7] or change.inputscenariono in [5, 4, 6, 7]:
+            #             return 'This effectively will remove this file from this container as the latest commit DOES have this file.'
+            #         else:
+            #             return 'Saga will use the version committed in ' + self.currentrev + ' as the working copy. If youve made local changes, this may count as reverting.\n\n'
+            #     elif action['filetracktype'] == 'wffiletrack':
+            #         return 'Saga will continue to use your editted version as the working copy.  \n\n'
+            # else:
+            #     if action['filetracktype'] == 'uffiletrack':
+            #         return 'Create copy' + filetrack.file_name + '_' + filetrack.lastupdated + ' .\n\n'
+            #     elif action['filetracktype'] == 'nffiletrack':
+            #         return 'Create copy' + filetrack.file_name + '_' + filetrack.lastupdated + ' .\n\n'
+            #     elif action['filetracktype'] == 'lffiletrack':
+            #         return 'Create ' + self.currentrev + ' copy named ' + filetrack.file_name + '_' + filetrack.lastupdated + '.\n\n'
+            #     elif action['filetracktype'] == 'wffiletrack':
+            #         return 'Create your current working file as ' + filetrack.file_name + '_' + self.currentrev + '_edited.\n\n'
+        if not alldownloaded:
+            print('What to do from here?')
+        wf.writeoutFrameYaml()
+        return alldownloaded
+
+    def updatecontainerbylastframecheck(self):
+
+        newestrevnumsinsection = self.sagaapicall.getLatestRevNumCall(self.userdata['current_sectionid'])
+        for containerid, newestdict in newestrevnumsinsection.items():
+            newestframeyaml = join(self.desktopdir, 'ContainerMapWorkDir', containerid,
+                                   'Main','Rev' + str(newestdict['newestrevnum']) + '.yaml')
+            if not os.path.exists(newestframeyaml):
+                workdir, self.networkcontainers[containerid] = self.downloadContainer(join(self.desktopdir,'ContainerMapWorkDir',containerid), containerid)
+
+
+
 
     def getStatus(self):
         # maincontainer = self.maincontainer
         allowcommit = False
-        needtorefresh = False
+        canrefresh = False
         if self.maincontainer is None:
             return '', False, False, {}
         if self.isNewContainer():
             if len(self.maincontainer.FileHeaders.keys())>0:
                 allowcommit = True
             return 'New Container', allowcommit, False, {}
-        self.newestframe, self.newestrevnum = self.sagaapicall.callLatestRevision(self.maincontainer)
+        self.updatecontainerbylastframecheck()
+        # print('after calls updatecontainerbylastframecheck' + datetime.now().isoformat())
+        self.newestframe, self.newestrevnum = self.sagaapicall.getNewestFrame(self.maincontainer, self.userdata['current_sectionid'])
+        ## newestframe for only the maincontainer. And its not saved anywhere. Just exists as a comparison entity.
+        # print('aftercall newestFrame' + datetime.now().isoformat())
         filesupdated, wffilesupdated = self.maincontainer.updateworkframe()
         notlatestrev = False
+        # print('afterworkframeupdate' + datetime.now().isoformat())
         if self.maincontainer.revnum < self.newestrevnum:
             self.sagasync.setNewestFrame(self.newestframe)
         else:
             self.sagasync.setNewestFrame(None)
-        upstreamupdated, statustext, notlatestrev, containerchanged, changeisrelevant, changes =self.sagasync.checkContainerStatus(self.maincontainer, self.newestrevnum)
-
-        if changeisrelevant or containerchanged:
+        # print('checkcontainer status' + datetime.now().isoformat())
+        upstreamupdated, statustext, notlatestrev, containerchanged, changes =self.sagasync.checkContainerStatus(self.maincontainer, self.newestrevnum)
+        # print('checkcontainer status end' + datetime.now().isoformat())
+        if containerchanged and not self.sagasync.inconflict:
             allowcommit=True  ## could be one line but I think this is easier to read
 
         if upstreamupdated or notlatestrev:
-            needtorefresh=True ## could be one line but I think this is easier to read
+            canrefresh=True ## could be one line but I think this is easier to read
 
-        return statustext, allowcommit, needtorefresh ,  changes
+        return statustext, allowcommit, canrefresh ,  changes
 
     def getNewVersionInstaller(self, app):
         # response = requests.get(BASE + 'GENERAL/UpdatedInstallation',
@@ -330,6 +482,21 @@ class SagaGuiModel():
         sys.exit(app.exec_())
 
 
+    def CheckContainerCanDeleteOutput(self,  fileheader):
+        # containerinfodict = self.sagaapicall.getContainerInfoDict()
+        # response = requests.get(BASE + 'CONTAINERS/List',headers={"Authorization": 'Bearer ' + authtoken})
+        # containerinfodict = json.loads(response.content)
+        for containerid in self.containerinfodict.keys():
+            if containerid==self.maincontainer.containerId:
+                continue
+            # if not os.path.exists(
+            #         os.path.join(self.desktopdir, 'ContainerMapWorkDir', containerid, 'containerstate.yaml')):
+            containerworkingfolder = os.path.join(self.desktopdir, 'ContainerMapWorkDir', containerid)
+            containerworkingfolder, downstreamcont = self.downloadContainer(containerworkingfolder,  containerid)
+            if fileheader in downstreamcont.FileHeaders.keys():
+                if downstreamcont.FileHeaders[fileheader]['Container']==self.maincontainer.containerId:
+                    return False, 'Downstream Container ' + downstreamcont.containerName + '  is still linked'
+        return True, 'No downstream Container is linked '
 
 
     # def addressAlteredInput(self):

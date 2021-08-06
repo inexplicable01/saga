@@ -57,11 +57,12 @@ class SagaTreeNode(QAbstractItemModel):
 headers=['FolderView','Incoming','OutGoing']
 
 class SagaTreeModel(QAbstractItemModel):
-    def __init__(self, containerinfodict, desktopdir):
+    def __init__(self, containerinfodict, desktopdir, sagaguimodel):
         QAbstractItemModel.__init__(self)
         self._root = SagaTreeNode(None)
         self.items=[]
         self.desktopdir = desktopdir
+        self.sagaguimodel = sagaguimodel
 
         self.rowmapper = {}
         self.containerrows =[]
@@ -77,9 +78,10 @@ class SagaTreeModel(QAbstractItemModel):
         containers={}
         fullexpandedrow = 0
         for containerid, value in containerinfodict.items():
-            containyaml = os.path.join(self.desktopdir, 'ContainerMapWorkDir',containerid, CONTAINERFN)
-
-            icontainer = Container.LoadContainerFromYaml(containyaml)
+            icontainer = sagaguimodel.provideContainer(containerid)
+            # containyaml = os.path.join(self.desktopdir, 'ContainerMapWorkDir',containerid, CONTAINERFN)
+            #
+            # icontainer = Container.LoadContainerFromYaml(containyaml)
             containers[containerid] = icontainer
             self.items.append(SagaTreeNode([icontainer.containerName, fullexpandedrow, icontainer.containerId]))
 
@@ -187,7 +189,6 @@ class SagaTreeModel(QAbstractItemModel):
                                                                 sortverticalline(tocontainerrow, localfilerow, row)],
                                                              'hexcolor': [outputlinecolor[containerid+ '_' + fileheader]]}
                     opath+=1
-
 
             self.inputconnections[containerid] = inputspaths
             self.outputconnections[containerid] = outputspaths

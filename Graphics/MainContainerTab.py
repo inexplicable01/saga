@@ -34,31 +34,27 @@ from datetime import datetime
 class MainContainerTab():
     def __init__(self, mainguihandle):
         self.commitBttn = mainguihandle.commitBttn
-        # self.resetbutton = mainguihandle.resetbutton
-        # self.rebasebutton = mainguihandle.rebasebutton
         self.revertbttn = mainguihandle.revertbttn
         self.commitmsgEdit = mainguihandle.commitmsgEdit
         self.commithisttable = mainguihandle.commithisttable
-        # self.refreshBttn = mainguihandle.checkChangesBttn
-        # self.downloadUpstreamBttn = mainguihandle.updateInputsBttn
+
         self.refreshcontainerbttn = mainguihandle.refreshcontainerbttn
-        # self.downloadUpstreamBttn.setDisabled(True)
         self.refreshcontainerbttn.setDisabled(True)
         self.framelabel = mainguihandle.framelabel
         self.maincontainerview = mainguihandle.maincontainerview
-        # self.indexView1 = mainguihandle.indexView1
+
         self.menuContainer = mainguihandle.menuContainer
         self.frametextBrowser = mainguihandle.frametextBrowser
         self.containerlabel = mainguihandle.containerlabel
         self.addtocontainerbttn = mainguihandle.addtocontainerbttn
         self.containerstatuslabel = mainguihandle.containerstatuslabel
         self.commitmsglbl_2 = mainguihandle.commitmsglbl_2
-        # self.outputFileButton_2 = mainguihandle.outputFileButton_2
+        self.contstackedwidget = mainguihandle.contstackedwidget
         self.newcontaineredit = mainguihandle.newcontaineredit
+        # self.newcontaineredit = mainguihandle.newcontaineredit
         self.selectedFileHeader = mainguihandle.selectedFileHeader
         # self.editFileButton_2 = mainguihandle.editFileButton_2
         # self.removeFileButton_2 = mainguihandle.removeFileButton_2
-        # self.testbttn= mainguihandle.testbttn
         self.removefilebttn = mainguihandle.removefilebttn
         # self.fileHistoryBttn = mainguihandle.fileHistoryBttn
         # self.fileHistoryBttn.setDisabled(True)
@@ -69,6 +65,7 @@ class MainContainerTab():
 
 
         self.containerfiletable.clicked.connect(self.containerfileselected)
+        self.newcontainerlbl = mainguihandle.newcontainerlbl
         self.commitmsgboxlbl = mainguihandle.commitmsgboxlbl
         self.containerdescriplbl = mainguihandle.containerdescriplbl
         self.container_subtab = mainguihandle.container_subtab
@@ -77,13 +74,18 @@ class MainContainerTab():
         self.container_subtab.setElideMode(Qt.ElideNone)
 
 
-        self.newcontaineredit = mainguihandle.newcontaineredit
+        # self.newcontaineredit = mainguihandle.newcontaineredit
 
         self.index = 1
 
         self.mainguihandle = mainguihandle
 
         self.GuiTab = mainguihandle.ContainerTab
+
+        self.containerfiletable.setModel(sagaguimodel.containerfilemodel)
+        self.containerfiletable.setItemDelegate(ContainerFileDelegate())
+        self.commithisttable.setModel(sagaguimodel.histModel)
+        self.commithisttable.setItemDelegate(HistoryCellDelegate())
 
         # self.maincontainerplot = ContainerPlot(self, self.maincontainerview, container=None)
         # self.openContainerBttn = mainguihandle.openContainerBttn
@@ -95,7 +97,7 @@ class MainContainerTab():
         # self.refreshBttn.clicked.connect(self.checkdelta)
         # self.downloadUpstreamBttn.clicked.connect(self.downloadUpstream)
         self.refreshcontainerbttn.clicked.connect(self.updateToLatestRevision)
-
+        self.allowcommit = False
         self.commitBttn.clicked.connect(self.commit)
         self.sceneObj = {}
         self.revertbttn.clicked.connect(self.revert)
@@ -104,7 +106,7 @@ class MainContainerTab():
         # self.editFileButton_2.setEnabled(False)
         # self.removeFileButton_2.setEnabled(False)
         self.commitmsgEdit.setDisabled(True)
-        self.newcontaineredit.setDisabled(True)
+        # self.newcontaineredit.setDisabled(True)
         ###########History Info####
         self.commithisttable.clicked.connect(self.commithistselected)
         self.commithisttable.horizontalHeader().sectionClicked.connect(self.commithistheaderselected)
@@ -118,27 +120,28 @@ class MainContainerTab():
         self.refreshedcheck = False
         self.fileheadertorevertto=None
         self.commitmsgEdit.textChanged.connect(self.commitmsgeditchange)
+        self.newcontaineredit.textChanged.connect(self.commitmsgeditchange)
 
         setstyleoflabel(colorscheme[typeInput], self.mainguihandle.inputlbl)
         setstyleoflabel(colorscheme[typeOutput], self.mainguihandle.outputlbl)
         setstyleoflabel(colorscheme[typeRequired], self.mainguihandle.requiredlbl)
 
 
+
     def updateToLatestRevision(self):
-        refreshrevnum = str(sagaguimodel.maincontainer.revnum) + '/' + str(sagaguimodel.newestrevnum)
+        # refreshrevnum = str(sagaguimodel.maincontainer.revnum) + '/' + str(sagaguimodel.newestrevnum)
         # need to update above line to add additional / when refreshing multiple container revisions
 
-        conflictlistmodel, addedlistmodel, deletedlistmodel, upstreamlistmodel, changes = sagaguimodel.getRefreshPopUpModels()
-        conflictpopup = refreshContainerPopUp(changes, conflictlistmodel, addedlistmodel,
-                                              deletedlistmodel,  upstreamlistmodel)
-        filelist = conflictpopup.selectFiles()
-        sagaguimodel.dealWithUserSelection(filelist)
-
-        if sagaguimodel.sagasync.iscontainerinsync():
-            sagaguimodel.downloadbranch()
-            self.containerstatuslabel.setText(
-                'Container Refreshed!  This Container now is at a Rev ' + refreshrevnum + '+ state')
-        self.checkdelta()
+        conflictlistmodel2, noticelistmodel = sagaguimodel.getRefreshPopUpModels()
+        conflictpopup = refreshContainerPopUp(conflictlistmodel2, noticelistmodel)
+        combinedactionstate = conflictpopup.selectFiles()
+        if combinedactionstate:
+            alldownloaded = sagaguimodel.dealWithUserSelection(combinedactionstate)
+            if alldownloaded:
+                sagaguimodel.downloadbranch()
+                self.containerstatuslabel.setText(
+                    'Container Refreshed!  This Container now is at a Rev ' + str(sagaguimodel.newestrevnum) + '+ state')
+            self.checkdelta()
         #         TO DO add to commit function check of conflicting files and spit out error message or have user choose which file to commit
         # pass along list of files different to pop up screen
         # populate new pop up screen with list of files different and option for user to overwrite or download a copy
@@ -163,46 +166,50 @@ class MainContainerTab():
 
     def checkdelta(self):
         print('Checking' + datetime.now().isoformat())
+        self.mainguihandle.maintabwidget.setCursor(QCursor(Qt.WaitCursor))
         # allowCommit, changes, fixInput , self.alterfiletracks= sagaguimodel.maincontainer.checkFrame(sagaguimodel.maincontainer.workingFrame)
         if sagaguimodel.maincontainer is None:
             return
-        print('before GetStatus' + datetime.now().isoformat())
-        statustext, allowcommit, needtorefresh,  changes = sagaguimodel.getStatus()
-        print('aft GetStatus' + datetime.now().isoformat())
+        # print('before GetStatus' + datetime.now().isoformat())
+        statustext, self.allowcommit, canrefresh,  changes = sagaguimodel.getStatus()
+        # print('aft GetStatus' + datetime.now().isoformat())
         self.containerstatuslabel.setText(statustext)
-        if allowcommit:
-            self.commitmsgeditchange()
-        self.commitmsgEdit.setDisabled(not allowcommit)
-        self.newcontaineredit.setDisabled(not sagaguimodel.isNewContainer()) # if this is a new container, edit should be enabled.
+        self.commitBttn.setEnabled(self.allowcommit)
+        # if self.allowcommit:
+        #     self.commitmsgeditchange()
+        self.commitmsgEdit.setDisabled(not self.allowcommit)
+        # self.newcontaineredit.setDisabled(not sagaguimodel.isNewContainer()) # if this is a new container, edit should be enabled.
 
-        self.refreshcontainerbttn.setEnabled(needtorefresh)
+        self.refreshcontainerbttn.setEnabled(canrefresh)
         self.frametextBrowser.setText('')
         for fileheader, change in changes.items():
             # chgstr = chgstr + fileheader + '\t' + ', '.join(change['reason']) + '\n'
-            text = '<b>'+fileheader + '</b>   :  '
-            for reason in change['reason']:
-                hexcolor = QColor(colorscheme[reason]).name()
-                text = text + '<span style = "color:' + hexcolor + '"> '+reason+'</span>, '
-            self.frametextBrowser.append(text)
+            if not change.worthNoting():
+                continue
+            self.frametextBrowser.append(change.writeHTMLStatus())
+        # print('before filetableupdate GetStatus' + datetime.now().isoformat())
         self.containerfiletable.model().update()
-        width = self.containerfiletable.width()
+        # width = self.containerfiletable.width()
         self.containerfiletable.setColumnWidth(0, 140)
         self.containerfiletable.setColumnWidth(3, 250)
         print('Check Done ' + datetime.now().isoformat())
+        self.mainguihandle.maintabwidget.setCursor(QCursor(Qt.ArrowCursor))
 
     def commitmsgeditchange(self):
         canpresscommit = False
         if sagaguimodel.isNewContainer():
-            if len(self.commitmsgEdit.toPlainText()) >7 and len(self.newcontaineredit.toPlainText()) >7 :
+            if len(self.commitmsgEdit.toPlainText()) >7 and len(self.newcontaineredit.text()) >7 :
                 canpresscommit = True
             if len(self.commitmsgEdit.toPlainText()) <= 7:
                 commitmsgboxtext = 'Commit Message : Needs to be longer than 7 characters'
             else:
                 commitmsgboxtext = 'Commit Message'
-            if len(self.newcontaineredit.toPlainText()) <= 7:
+            if len(self.newcontaineredit.text()) <= 7:
                 containerdescriptext = 'Container Description Message : Needs to be longer than 7 characters'
             else:
                 containerdescriptext = 'Container Description'
+            sagaguimodel.maincontainer.description = self.newcontaineredit.text()
+            self.newcontainerlbl.setText(containerdescriptext)
         else:
             containerdescriptext = 'Container Description'
             if len(self.commitmsgEdit.toPlainText()) > 7:
@@ -211,32 +218,31 @@ class MainContainerTab():
             else:
                 canpresscommit = False
                 commitmsgboxtext = 'Commit Message : Needs to be longer than 7 characters'
-        self.commitBttn.setEnabled(canpresscommit)
+        if canpresscommit:
+            self.commitBttn.setEnabled(self.allowcommit)
         self.commitmsgboxlbl.setText(commitmsgboxtext)
-        self.containerdescriplbl.setText(containerdescriptext)
-
 
     def commit(self):
         error_dialog = QErrorMessage()
-
+        self.checkdelta()
+        if not self.allowcommit:
+            print('not allowed to commit')
         if sagaguimodel.isNewContainer():
             ## opportunity to show way more information for Commit Dialog
-            commitCheck = commitDialog(sagaguimodel.maincontainer.containerName, self.newcontaineredit.toPlainText(),
+            commitCheck = commitDialog(sagaguimodel.maincontainer.containerName, self.newcontaineredit.text(),
                                        self.commitmsgEdit.toPlainText())
             confirmcommit = commitCheck.commit()
             if confirmcommit:
                 success = sagaguimodel.commitNewContainer(commitmessage = self.commitmsgEdit.toPlainText())
                 if success:
-                    # self.newContainerStatus = False
                     containeryaml = os.path.join(sagaguimodel.maincontainer.containerworkingfolder, TEMPCONTAINERFN)
-                    self.mainguihandle.maincontainertab.readcontainer(containeryaml)
-                    self.mainguihandle.maintabwidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
+                    self.readcontainer(containeryaml)
+                    self.mainguihandle.maintabwidget.setCurrentIndex(self.index)
                     self.mainguihandle.loadSection()
                     # self.mainguihandle.maptab.updateContainerMap()
                     self.newcontaineredit.setDisabled(True)
                 else:
                     print('Commit failed, need to adjust the gui to show failure')
-
         else:
             commitreport = sagaguimodel.checkAllowedtoCommit()
             if commitreport['commitstatus']=='UserDenied':
@@ -264,17 +270,18 @@ class MainContainerTab():
                 error_dialog.showMessage(message)
                 error_dialog.exec_()
 
-
     def reset(self):
-        sagaguimodel.modelreset()
+        sagaguimodel.container_reset()
         self.containerlabel.setText('')
+        self.frametextBrowser.setText('')
         # self.commithisttable.setModel(self.histModel)
         # self.maincontainerplot.reset()
 
     def readcontainer(self, containerpath):
         # path = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
-
+        # print('start of readcontainer' + datetime.now().isoformat())
         goswitch, newsectionid , shouldmodelswitchmessage= sagaguimodel.shouldModelSwitch(containerpath)
+        # print('end of call' + datetime.now().isoformat())
         msg = QMessageBox()
         msg.setStandardButtons(QMessageBox.Ok)
         if newsectionid is None:
@@ -293,49 +300,49 @@ class MainContainerTab():
             msg.exec_()
 
         print('Loading ' + containerpath)
-        sagaguimodel.modelreset()# In case there is no section switch
-        cont, histModel, containerfilemodel = sagaguimodel.loadContainer(containerpath)
-
+        # sagaguimodel.container_reset()# In case there is no section switch
+        # print('start of loadcontainer' + datetime.now().isoformat())
+        cont, histModel, containerfilemodel = sagaguimodel.loadContainer(containerpath, ismaincontainer=True)
+        print('end of loadcontainer' + datetime.now().isoformat())
         # [self.workingdir, file_name] = os.path.split(containerpath)  ## working dir should be app level
         self.containerlabel.setText('Container Name : ' + cont.containerName)
+        self.containerdescriplbl.setText(sagaguimodel.maincontainer.description)
         self.framelabel.setText(cont.workingFrame.FrameName)
-
-        self.commithisttable.setModel(histModel)
-        self.commithisttable.setItemDelegate(HistoryCellDelegate())
-        # self.maincontainerplot.setContainer(curContainer = sagaguimodel.maincontainer)
-        # self.maincontainerplot.plot(sagaguimodel.changes)
-
-        self.containerfiletable.setModel(containerfilemodel)
-        self.containerfiletable.setItemDelegate(ContainerFileDelegate())
-        self.checkdelta()
-
-
         self.setTab(True)
-        self.containerLoaded = True
         if sagaguimodel.isNewContainer():
             self.commitBttn.setText('Commit New Container')
+            self.contstackedwidget.setCurrentIndex(1)## index 1 is new container description edit.
         else:
             self.commitBttn.setText('Commit')
+            self.contstackedwidget.setCurrentIndex(0)## index 0 is container description
         ## Enable Permission button since Main Container
         self.mainguihandle.setPermissionsEnable()
+        # print('end of read container' + datetime.now().isoformat())
         self.checkdelta()
 
-    def FileViewItemRectFeedback(self, type, view, fileheader, curContainer):
-        self.curfileheader = fileheader
-        self.curfiletype = type
-        self.selectedFileHeader.setText(fileheader)
-        self.histModel.edithighlight(fileheader, type)
-        # self.histModel.dataChanged()
-        self.histModel.layoutChanged.emit()
+    # def addwidget(self):
+    #     print('add widget')
+    #     if self.contstackedwidget.currentIndex()==0:
+    #         self.contstackedwidget.setCurrentIndex(1)
+    #     else:
+    #         self.contstackedwidget.setCurrentIndex(0)
 
-        if fileheader in sagaguimodel.maincontainer.filestomonitor().keys():
-            self.removeFileButton_2.setEnabled(True)
-        else:
-            self.removeFileButton_2.setEnabled(False)
+    # def FileViewItemRectFeedback(self, type, view, fileheader, curContainer):
+    #     self.curfileheader = fileheader
+    #     self.curfiletype = type
+    #     self.selectedFileHeader.setText(fileheader)
+    #     self.histModel.edithighlight(fileheader, type)
+    #     # self.histModel.dataChanged()
+    #     self.histModel.layoutChanged.emit()
+    #
+    #     if fileheader in sagaguimodel.maincontainer.filestomonitor().keys():
+    #         self.removeFileButton_2.setEnabled(True)
+    #     else:
+    #         self.removeFileButton_2.setEnabled(False)
 
     def addToContainer(self):
         addfilegui = AddFileToContainerPopUp(containerworkdir=sagaguimodel.maincontainer.containerworkingfolder,
-                                             containerinfodict = sagaguimodel.sagaapicall.getContainerInfoDict(),
+                                             containerinfodict=sagaguimodel.containerinfodict,
                                              maincontainer=sagaguimodel.maincontainer
                                              )
         fileinfo = addfilegui.getInputs()
@@ -347,11 +354,9 @@ class MainContainerTab():
 
     def removeFileInfo(self):
         # remove fileheader from current main container
-        wmap = WorldMap(sagaguimodel.desktopdir)
-        candelete, candeletemesssage = wmap.CheckContainerCanDeleteOutput(curcontainerid=sagaguimodel.maincontainer.containerId,
-                                                                          fileheader=self.curfileheader,
-                                                                          desktopdir=sagaguimodel.desktopdir,
-                                                                          authtoken=sagaguimodel.authtoken)
+        # wmap = WorldMap(sagaguimodel.desktopdir)
+        candelete, candeletemesssage = sagaguimodel.CheckContainerCanDeleteOutput(self.curfileheader)
+
         fileDialog = removeFileDialog(self.curfileheader, candelete,
                                       candeletemesssage)  # Dialog to confirm deleting container
         remove = fileDialog.removeFile()
@@ -391,12 +396,9 @@ class MainContainerTab():
     def initiate(self, inputs):
         containerworkingfolder = inputs['dir']
         containername = inputs['containername']
-        containerfilemodel,histModel = sagaguimodel.initiateNewContainer(containerworkingfolder, containername)
+        sagaguimodel.initiateNewContainer(containerworkingfolder, containername)
         self.containerlabel.setText(containername)
-        self.containerfiletable.setModel(containerfilemodel)
-        self.containerfiletable.setItemDelegate(ContainerFileDelegate())
-        self.commithisttable.setModel(histModel)
-        self.commithisttable.setItemDelegate(HistoryCellDelegate())
+        self.contstackedwidget.setCurrentIndex(1)  ## index 1 is new container description edit.
         self.framelabel.setText('Revision 0 (New Container)')
         self.newcontaineredit.setEnabled(True)
         self.setTab(True)

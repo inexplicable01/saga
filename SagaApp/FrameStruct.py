@@ -7,72 +7,58 @@ from SagaApp.FileObjects import FileTrack
 from SagaApp.Connection import FileConnection, ConnectionTypes
 import time
 import json
+import re
 
 from SagaApp.SagaUtil import getFramePathbyRevnum,ensureFolderExist, makefilehidden,unhidefile
 # from Config import typeInput,typeOutput,typeRequired, sagaGuiDir
-from Config import  CONTAINERFN, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN
+from Config import  CONTAINERFN, TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN, NEEDSDOCTOR, TOBECOMMITTED
 
 blankFrame = {'parentcontainerid':"",'FrameName': NEWFRAMEFN, 'FrameInstanceId': "",'commitMessage': "",'inlinks': "",'outlinks': "",'AttachedFiles': "", 'commitUTCdatetime': "",'filestrack': ""}
 import shutil
 
 class Frame:
 
-    @classmethod
-    def LoadCurrentFrame(cls, containerworkingfolder,containfn):
-        CONTAINERLIST = [TEMPCONTAINERFN, CONTAINERFN]
-        if containfn in CONTAINERLIST:
-            workingyamlfn = TEMPFRAMEFN
-        else:
-            workingyamlfn = NEWFRAMEFN
-        # workingyamlfn = TEMPFRAMEFN if containfn==TEMPCONTAINERFN else NEWFRAMEFN
-        # if containfn==TEMPCONTAINERFN:
-        #     workingyamlfn = TEMPFRAMEFN
-        # elif containfn==NEWCONTAINERFN:
-        #     workingyamlfn = NEWFRAMEFN
-        # elif containfn=='containerstate.yaml':
-        #     workingyamlfn = TEMPFRAMEFN
+    # @classmethod
+    # def LoadCurrentFrame(cls, containerworkingfolder,containfn):
+    #
+    #
+    #
+    #     with open(framefullpath,'r') as file:
+    #         framedict = yaml.load(file, Loader=yaml.FullLoader)
+    #
+    #     cframe = cls(parentcontainerid=framedict['parentcontainerid'],
+    #                  FrameName=framedict['FrameName'],
+    #                  FrameInstanceId=framedict['FrameInstanceId'],
+    #                  commitMessage=framedict['commitMessage'],
+    #                  inlinks=framedict['inlinks'],
+    #                  outlinks=framedict['outlinks'],
+    #                  AttachedFiles=framedict['AttachedFiles'],
+    #                  commitUTCdatetime=framedict['commitUTCdatetime'],
+    #                  containerworkingfolder=containerworkingfolder,
+    #                  filestracklist=framedict['filestrack'],
+    #                  workingyamlfn=workingyamlfn)
+    #     return cframe
 
-        framefullpath = os.path.join(containerworkingfolder, 'Main', workingyamlfn)
-        if not os.path.exists(framefullpath):
-            framefullpath, revnum = getFramePathbyRevnum(os.path.join(containerworkingfolder, 'Main'), None)
-            shutil.copy(framefullpath,os.path.join(containerworkingfolder, 'Main',TEMPFRAMEFN))
-
-        with open(framefullpath,'r') as file:
-            framedict = yaml.load(file, Loader=yaml.FullLoader)
-
-        cframe = cls(parentcontainerid=framedict['parentcontainerid'],
-                     FrameName=framedict['FrameName'],
-                     FrameInstanceId=framedict['FrameInstanceId'],
-                     commitMessage=framedict['commitMessage'],
-                     inlinks=framedict['inlinks'],
-                     outlinks=framedict['outlinks'],
-                     AttachedFiles=framedict['AttachedFiles'],
-                     commitUTCdatetime=framedict['commitUTCdatetime'],
-                     containerworkingfolder=containerworkingfolder,
-                     filestracklist=framedict['filestrack'],
-                     workingyamlfn=workingyamlfn)
-        return cframe
-
-    @classmethod
-    def LoadFrameFromYaml(cls, frameyamlfullpath, containerworkingfolder):
-        frameyaml = os.path.basename(frameyamlfullpath)
-        with open(frameyamlfullpath,'r') as file:
-            framedict = yaml.load(file, Loader=yaml.FullLoader)
-
-        cframe = cls(parentcontainerid=framedict['parentcontainerid'],
-                     FrameName=framedict['FrameName'],
-                     FrameInstanceId=framedict['FrameInstanceId'],
-                     commitMessage=framedict['commitMessage'],
-                     inlinks=framedict['inlinks'],
-                     outlinks=framedict['outlinks'],
-                     AttachedFiles=framedict['AttachedFiles'],
-                     commitUTCdatetime=framedict['commitUTCdatetime'],
-                     containerworkingfolder=containerworkingfolder,
-                     filestracklist=framedict['filestrack'],
-                     workingyamlfn=frameyaml)
-        return cframe
-
-    ### Makes zero sense thare are two ways to load frames from yaml
+    # @classmethod
+    # def LoadFrameFromYaml(cls, frameyamlfullpath, containerworkingfolder):
+    #     frameyaml = os.path.basename(frameyamlfullpath)
+    #     with open(frameyamlfullpath,'r') as file:
+    #         framedict = yaml.load(file, Loader=yaml.FullLoader)
+    #
+    #     cframe = cls(parentcontainerid=framedict['parentcontainerid'],
+    #                  FrameName=framedict['FrameName'],
+    #                  FrameInstanceId=framedict['FrameInstanceId'],
+    #                  commitMessage=framedict['commitMessage'],
+    #                  inlinks=framedict['inlinks'],
+    #                  outlinks=framedict['outlinks'],
+    #                  AttachedFiles=framedict['AttachedFiles'],
+    #                  commitUTCdatetime=framedict['commitUTCdatetime'],
+    #                  containerworkingfolder=containerworkingfolder,
+    #                  filestracklist=framedict['filestrack'],
+    #                  workingyamlfn=frameyaml)
+    #     return cframe
+    #
+    # ### Makes zero sense thare are two ways to load frames from yaml
     @classmethod
     def loadRefFramefromYaml(cls, refframefullpath,containerworkingfolder):
         path , workingyamlfn = os.path.split(refframefullpath)
@@ -120,7 +106,7 @@ class Frame:
 
     def __init__(self,parentcontainerid=None,parentcontainername=None, FrameName=None, FrameInstanceId=None,commitMessage=None,
                  inlinks=None,outlinks=None,AttachedFiles=None,commitUTCdatetime=None,containerworkingfolder=None,filestracklist={},
-                 workingyamlfn = TEMPFRAMEFN, branch='Main'
+                 lastupdated = 'Needs Doctor', workingyamlfn = TEMPFRAMEFN, branch='Main'
                  ):
         self.parentcontainerid = parentcontainerid
         self.parentcontainername=parentcontainername
@@ -148,6 +134,8 @@ class Frame:
                     connectionType=ftrack['connection']['connectionType'],
                                          branch=ftrack['connection']['branch'],
                                          Rev=ftrack['connection']['Rev'])
+            if 'lastupdated' not in ftrack.keys():
+                ftrack['lastupdated'] = NEEDSDOCTOR
             self.filestrack[FileHeader] = FileTrack(FileHeader=ftrack['FileHeader'],
                                                      file_name=ftrack['file_name'],
                                                      containerworkingfolder=containerworkingfolder,
@@ -158,7 +146,9 @@ class Frame:
                                                      lastEdited=ftrack['lastEdited'],
                                                      connection=conn,
                                                      ctnrootpathlist=ctnrootpathlist,
-                                                     persist=True)
+                                                     persist=True,
+                                                    lastupdated = ftrack['lastupdated']
+            )
 
     # def dealwithalteredInput(self, alterinputfileinfo, refframefullpath):
     #     # self.filestrack[]
@@ -204,7 +194,8 @@ class Frame:
                                         containerworkingfolder=path,
                                         style=fileType,
                                         lastEdited=os.path.getmtime(filefullpath),
-                                        ctnrootpathlist=ctnrootpathlist)
+                                        ctnrootpathlist=ctnrootpathlist,
+                                        lastupdated=TOBECOMMITTED)
             self.filestrack[fileheader] = newfiletrackobj
             self.writeoutFrameYaml()
         else:
@@ -228,7 +219,8 @@ class Frame:
                                     commitUTCdatetime=reffiletrack.commitUTCdatetime,
                                     connection=conn,
                                     containerworkingfolder=containerworkingfolder,
-                                    lastEdited=reffiletrack.lastEdited)
+                                    lastEdited=reffiletrack.lastEdited,
+                                    lastupdated=TOBECOMMITTED)
         self.filestrack[fileheader] = newfiletrackobj
         self.writeoutFrameYaml()
 
@@ -248,11 +240,14 @@ class Frame:
                 dictout[key] = value
         return dictout
 
-    def writeoutFrameYaml(self, fn=None):
+    def writeoutFrameYaml(self, fn=None, authorized = False):
         if fn:
             fullfilepath = os.path.join(self.containerworkingfolder,'Main',fn)
         else:
             fullfilepath = os.path.join(self.containerworkingfolder,'Main',self.workingyamlfn)
+        yamlfn = os.path.basename(fullfilepath)
+        if numofRev(yamlfn)!=0 and not authorized:
+            raise('Authorized Writing of RevX.yaml file')
         unhidefile(fullfilepath)
         with open(fullfilepath, 'w') as outyaml:
             yaml.dump(self.dictify(), outyaml)
@@ -262,6 +257,13 @@ class Frame:
 
     def __repr__(self):
         return json.dumps(self.dictify())
+
+def numofRev(rev):
+    m = re.search('Rev(\d+)', rev)
+    if m:
+        return int(m.group(1))
+    else:
+        return 0
 
 
 

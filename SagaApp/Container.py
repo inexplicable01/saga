@@ -11,11 +11,13 @@ import warnings
 import re
 import uuid
 from Config import BASE,LOCALFILEHEADERADDED, MD5CHANGED,DATECHANGED , LOCALFILEHEADERREMOVED,\
-    typeInput,typeOutput,typeRequired,  TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN,CONTAINERFN
+    typeInput,typeOutput,typeRequired,  TEMPCONTAINERFN, TEMPFRAMEFN, NEWCONTAINERFN, NEWFRAMEFN,CONTAINERFN,NEEDSDOCTOR
 # from hackpatch import workingdir
 from SagaApp.SagaUtil import getFramePathbyRevnum,makefilehidden, unhidefile
 from datetime import datetime
+from SagaApp.FileObjects import FileTrack
 import ctypes
+import shutil
 from os.path import join
 # from SagaGuiModel import sagaguimodel
 
@@ -28,8 +30,8 @@ blankcontainer = {'containerName':"" ,'containerId':"",'FileHeaders': {} ,'allow
 
 class Container:
     def __init__(self, containerworkingfolder,containerName,containerid,
-                 FileHeaders,allowedUser,readingUsers,currentbranch,revnum,refframefullpath,
-                 workingFrame: Frame, yamlfn=TEMPCONTAINERFN, ismaincontainer=False):
+                 FileHeaders,allowedUser,readingUsers,currentbranch,revnum,refframefullpath,description,
+                 workingFrame: Frame,lightload,  yamlfn=TEMPCONTAINERFN, ):
         self.containerworkingfolder = containerworkingfolder
         self.containerName = containerName
         self.containerId = containerid
@@ -39,12 +41,16 @@ class Container:
         self.currentbranch = currentbranch
         self.revnum =revnum
         self.refframefullpath =refframefullpath
+        try: ### ATTENTION
+            self.refframe = Frame.loadRefFramefromYaml(refframefullpath, self.containerworkingfolder)
+        except:
+            self.refframe = None
         self.workingFrame= workingFrame
         self.updatedInputs = False
         self.yamlfn = yamlfn
         self.memoryframesdict={}
-
-        if ismaincontainer==True:
+        self.description = description
+        if not lightload:
             self.updatememorydict()
 
 
@@ -53,10 +59,26 @@ class Container:
         for yamlfn in yamllist:
             revyaml = os.path.basename(yamlfn)
             if revyaml not in self.memoryframesdict.keys():
-                pastframe = Frame.LoadFrameFromYaml(yamlfn, self.containerworkingfolder)
+                pastframe = Frame.loadRefFramefromYaml(yamlfn, self.containerworkingfolder)
                 self.memoryframesdict[revyaml] = pastframe
 
-
+    def commithistory(self):
+        historydict = {}
+        # glob.glob() +'/'+ Rev + revnum + ".yaml"
+        # yamllist = glob.glob(join(self.containerworkingfolder, self.currentbranch , 'Rev*.yaml'))
+        # m = re.search('Rev(\d+).yaml', fn)
+        # if m:
+        #     if int(m.group(1)) > revnum:
+        #         revnum = int(m.group(1))
+        #         latestrev = fn
+        for revyaml, pastframe in self.memoryframesdict.items():
+            m = re.search('(Rev\d+).yaml', revyaml)
+            revx = m.group(1)
+            # pastframe = Frame.loadRefFramefromYaml(yamlframefn, self.containerworkingfolder)
+            historydict[revx] = {'commitmessage':pastframe.commitMessage,
+                                               'timestamp':pastframe.commitUTCdatetime,
+                                                'frame':pastframe}
+        return historydict
 
     @classmethod
     def InitiateContainer(cls, containerworkingfolder,containerName = '', currentbranch='Main'):
@@ -72,7 +94,8 @@ class Container:
                                                               parentcontainername=containerName,
                                                               containerworkingfolder=containerworkingfolder),
                            yamlfn = NEWCONTAINERFN,
-                           ismaincontainer= True
+                           description='',
+                           lightload = False
                            )
         newcontainer.save()
         return newcontainer
@@ -86,12 +109,21 @@ class Container:
                               environ='FrontEnd', sectionid='',ismaincontainer= False ):
         FileHeaders = containerdict['FileHeaders']
         refframefullpath, revnum = getFramePathbyRevnum(os.path.join(containerworkingfolder, currentbranch), revnum)
-        try:
-            workingFrame = Frame.LoadFrameFromYaml(refframefullpath,containerworkingfolder)
-        except Exception as e:
-            workingFrame = Frame.InitiateFrame(parentcontainerid=containerdict['containerId'],
-                                               parentcontainername=containerdict['containerName'],
-                                               containerworkingfolder= containerworkingfolder)
+        if ismaincontainer:
+            framefullpath = os.path.join(containerworkingfolder, 'Main', TEMPFRAMEFN)# since container is downloaded as containers won't be in dict unless its that.
+            if not os.path.exists(framefullpath):
+                shutil.copy(refframefullpath, os.path.join(containerworkingfolder, 'Main', TEMPFRAMEFN))## is temp doesn't exist, use the latest rev found in main folder
+                framefullpath = os.path.join(containerworkingfolder, 'Main', TEMPFRAMEFN)
+            try:
+                workingFrame = Frame.loadRefFramefromYaml(framefullpath,containerworkingfolder)
+            except Exception as e:
+                workingFrame = Frame.InitiateFrame(parentcontainerid=containerdict['containerId'],
+                                                   parentcontainername=containerdict['containerName'],
+                                                   containerworkingfolder= containerworkingfolder)
+        else:
+            workingFrame =None
+        if 'description' not in containerdict.keys():
+            containerdict['description'] = 'Need Description'
         container = cls(containerworkingfolder=containerworkingfolder,
                            containerName=containerdict['containerName'],
                             yamlfn=containeryamlfn,
@@ -100,15 +132,21 @@ class Container:
                            FileHeaders=FileHeaders,
                            allowedUser=containerdict['allowedUser'],
                            currentbranch=currentbranch, revnum=revnum,
-                           refframefullpath=refframefullpath, workingFrame=workingFrame, ismaincontainer=ismaincontainer)
+                           refframefullpath=refframefullpath,
+                        workingFrame=workingFrame,
+                    lightload = False,
+                        description=containerdict['description'])
+        container.FixConnections()
         return container
 
 
 
     @classmethod
-    def LoadContainerFromYaml(cls, containerfnfullpath, currentbranch='Main',revnum=None,  ismaincontainer=False):
+    def LoadContainerFromYaml(cls, containerfnfullpath, currentbranch='Main',revnum=None,  ismaincontainer=False , lightload=False):
         containerworkingfolder = os.path.dirname(containerfnfullpath)
         containeryamlfn = os.path.basename(containerfnfullpath)
+        if os.path.exists(join(containerworkingfolder,TEMPCONTAINERFN)):
+            containerfnfullpath = join(containerworkingfolder,TEMPCONTAINERFN)
         try:
             with open(containerfnfullpath, 'r') as file:
                 containeryaml = yaml.load(file, Loader=yaml.FullLoader)
@@ -124,8 +162,19 @@ class Container:
             FileHeaders[fileheader] = fileinfo
         if 'readingUsers' not in containeryaml.keys():
             containeryaml['readingUsers']=[]
+
         if ismaincontainer:
-            workingFrame = Frame.LoadCurrentFrame(containerworkingfolder=containerworkingfolder, containfn=containeryamlfn)
+            CONTAINERLIST = [TEMPCONTAINERFN, CONTAINERFN]
+            if containeryamlfn in CONTAINERLIST:
+                workingyamlfn = TEMPFRAMEFN
+            else:
+                workingyamlfn = NEWFRAMEFN
+            framefullpath = os.path.join(containerworkingfolder, 'Main', workingyamlfn)
+            if not os.path.exists(framefullpath):
+                framefullpath, revnum = getFramePathbyRevnum(os.path.join(containerworkingfolder, 'Main'), None)
+                shutil.copy(framefullpath, os.path.join(containerworkingfolder, 'Main', TEMPFRAMEFN))
+            workingFrame = Frame.loadRefFramefromYaml(refframefullpath=framefullpath,
+                                                      containerworkingfolder=containerworkingfolder)
         else:
             workingFrame = None
 
@@ -133,7 +182,9 @@ class Container:
             refframefullpath, revnum = join(containerworkingfolder,currentbranch, NEWFRAMEFN), 0
         else:
             refframefullpath, revnum = getFramePathbyRevnum(join(containerworkingfolder, currentbranch), revnum)
-
+        if 'description' not in containeryaml.keys():
+            containeryaml['description'] = 'Need Description'
+        # print('Beginnign of frame iters ' + containeryaml['containerName']+ '__' + datetime.now().isoformat())
         container = cls(containerworkingfolder=containerworkingfolder,
                            containerName=containeryaml['containerName'],
                            containerid=containeryaml['containerId'],
@@ -142,7 +193,13 @@ class Container:
                            readingUsers=containeryaml['readingUsers'],
                            currentbranch=currentbranch, revnum=revnum,
                            refframefullpath=refframefullpath, workingFrame=workingFrame,
-                            yamlfn=containeryamlfn, ismaincontainer=ismaincontainer)
+                            yamlfn=containeryamlfn,
+                        description=containeryaml['description'],
+                        lightload=lightload,
+                        )
+        # print('End of Frame iters' + datetime.now().isoformat())
+        if not lightload:
+            container.FixConnections()
         if container.yamlfn == CONTAINERFN:
             container.yamlfn == TEMPFRAMEFN
             container.save()
@@ -151,17 +208,90 @@ class Container:
     def updateworkframe(self):
         wf = self.workingFrame
         wffilesupdated = []
+        filesupdated = False
         for fileheader in wf.filestrack.keys():
-            filefullpath = os.path.join(self.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
-                                    wf.filestrack[fileheader].file_name)
-            fileb = open(filefullpath, 'rb')
-            readmd5 = hashlib.md5(fileb.read()).hexdigest()
-            filesupdated = False
-            if wf.filestrack[fileheader].md5!=readmd5:
-                wf.filestrack[fileheader].md5 = readmd5
-                filesupdated = True
-                wffilesupdated.append((fileheader, filefullpath))
+            if wf.filestrack[fileheader].connection.connectionType.name in [typeOutput, typeRequired]:
+                filefullpath = os.path.join(self.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+                                        wf.filestrack[fileheader].file_name)
+                fileb = open(filefullpath, 'rb')
+                readmd5 = hashlib.md5(fileb.read()).hexdigest()
+                if wf.filestrack[fileheader].md5!=readmd5:
+                    wf.filestrack[fileheader].md5 = readmd5
+                    filesupdated = True
+                    wffilesupdated.append((fileheader, filefullpath))
+                    wf.filestrack[fileheader].lastEdited = os.path.getmtime(filefullpath)
+        if filesupdated:
+            wf.writeoutFrameYaml()
         return filesupdated, wffilesupdated
+
+    def FixConnections(self):
+        revnum = 1
+        filemd5={}
+        filemd5history={}
+        while revnum<100:
+            REVSTR= 'Rev' + str(revnum)
+            revyaml = 'Rev' + str(revnum) + '.yaml'
+            yamlfn = os.path.join(self.containerworkingfolder, 'Main', 'Rev'+str(revnum)+'.yaml')
+            if os.path.exists(yamlfn):
+                try:
+                    if revyaml in self.memoryframesdict.keys():
+                        pastframe = self.memoryframesdict[revyaml]
+                    else:
+                        Frame.loadRefFramefromYaml(yamlfn, self.containerworkingfolder)
+                except:
+                    print('Rev'+str(revnum)+'.yaml doesnt exist')
+                    revnum+=1
+                    continue
+                for fileheader, filetrack in pastframe.filestrack.items():
+                    # if filetrack.lastupdated == NEEDSDOCTOR:
+                    if fileheader in filemd5.keys():
+                        if filemd5[fileheader]['md5'] == filetrack.md5:
+                            filetrack.lastupdated = filemd5[fileheader]['latestrev']
+                        else:
+                            filetrack.lastupdated = REVSTR
+                            filemd5[fileheader] = {'latestrev': REVSTR, 'md5': filetrack.md5}
+                        if filetrack.md5 not in filemd5history[fileheader].keys():
+                            filemd5history[fileheader][filetrack.md5]= REVSTR
+                    else:
+                        filemd5history[fileheader] = {filetrack.md5:REVSTR}
+                        filemd5[fileheader] = {'latestrev': REVSTR, 'md5': filetrack.md5}
+                        filetrack.lastupdated = REVSTR
+                    # if filetrack.connection.connectionType.name==typeOutput:
+                    #         print(self.containerId + ' ID with name ' + self.containerName + ' and ' + revnum + ' has ' + fileheader +' has broken Input rev ')
+
+                #     if filetrack.connection.connectionType.name==typeInput:
+                #
+                #         pastrevnum=1
+                #         found = False
+                #         while pastrevnum<100:
+                #             sectionfolder = os.path.dirname(self.containerworkingfolder)
+                #             frameyaml = os.path.join(sectionfolder,filetrack.connection.refContainerId, 'Main','Rev' + str(pastrevnum)+'.yaml')
+                #             if os.path.exists(frameyaml):
+                #                 upstreampastframe = Frame.loadFramefromYaml(frameyaml, None)
+                #                 if fileheader in upstreampastframe.filestrack.keys():
+                #                     if upstreampastframe.filestrack[fileheader].md5 == filetrack.md5:
+                #                         print(self.containerId + ' ID with name ' + self.containerName + ' and ' + str(
+                #                             revnum) + ' has ' + fileheader + ' has broken Input but found it at ' + filetrack.connection.refContainerId+ ' at rev ' +upstreampastframe.FrameName )
+                #                         if filetrack.connection.Rev is None:
+                #                             filetrack.connection.Rev = upstreampastframe.FrameName
+                #                         else:
+                #                             if filetrack.connection.Rev !=upstreampastframe.FrameName:
+                #                                 print(filetrack.connection.Rev, upstreampastframe.FrameName)
+                #                                 filetrack.connection.Rev = upstreampastframe.FrameName
+                #                         found = True
+                #                         break
+                #             else:
+                #                 pass
+                #             pastrevnum+=1
+                #         if not found:
+                #             print(self.containerId + ' ID with name ' + self.containerName + ' and ' + str(
+                #                 revnum) + ' has ' + fileheader + ' has broken Input and cannot match to upstream md5')
+                #
+                #     # pastframe.writeoutFrameYaml(yamlfn = yamlfn)
+                # pastframe.writeoutFrameYaml(fn = 'Rev'+str(revnum)+'.yaml', authorized=True)
+            revnum+=1
+        self.filemd5history = filemd5history
+
 
 
     def compareToRefFrame(self, changes):
@@ -208,8 +338,8 @@ class Container:
 
 
     def getRefFrame(self):
-        frameRef= Frame.loadRefFramefromYaml(self.refframefullpath, self.containerworkingfolder)
-        return frameRef
+        # frameRef= Frame.loadRefFramefromYaml(self.refframefullpath, self.containerworkingfolder)
+        return self.refframe
 
     def prepareCommitCall(self):
          # = Frame.loadRefFramefromYaml(self.refframefullpath, self.containerworkingfolder)
@@ -227,11 +357,11 @@ class Container:
                 inputsupdated = True
             filepath = join(self.containerworkingfolder,filetrack.ctnrootpath, filetrack.file_name)
             # Should file be committed?
-            commit_file, md5 = self.CheckCommit(filetrack, filepath, frameRef)
+            # commit_file =
             if fileheader not in self.FileHeaders.keys():
                 warnings.warn('We need to make sure all the tracked files are adequatedly traced', Warning)
                 return
-            if commit_file:
+            if self.CheckCommit(filetrack, frameRef):
                 # new file needs to be committed as the new local file is not the same as previous md5
                 filesToUpload[fileheader] = open(filepath,'rb')
                 updateinfo[fileheader] = {
@@ -247,6 +377,17 @@ class Container:
 
         return containerdictjson,framedictjson, updateinfojson, filesToUpload
 
+    def CheckCommit(self, filetrack:FileTrack, frameRef):
+        if filetrack.FileHeader not in frameRef.filestrack.keys():
+            return True
+        if filetrack.md5 != frameRef.filestrack[filetrack.FileHeader].md5:
+            return True
+        # if filetrack.lastEdited != os.path.getmtime(filepath):
+        #
+        #     return True, md5
+        return False
+        # Make new Yaml file  some meta data sohould exit in Yaml file
+
     def setContainerForNextframe(self,yamlframefnfullpath):
         yamlframefn = os.path.basename(yamlframefnfullpath)
         self.workingFrame = Frame.loadRefFramefromYaml(yamlframefnfullpath, self.containerworkingfolder)
@@ -254,6 +395,7 @@ class Container:
         self.save(fn=CONTAINERFN, commitprocess=True)
         # self.workingFrame.writeoutFrameYaml()
         self.workingFrame.writeoutFrameYaml(fn=TEMPFRAMEFN)
+        self.workingFrame.workingyamlfn=TEMPFRAMEFN
         m = re.search('Rev(\d+).yaml', yamlframefn)
         if m:
             self.revnum = int(m.group(1))
@@ -268,6 +410,7 @@ class Container:
         commitFrame = self.workingFrame.dictify()
 
         payload = {'containerdictjson': json.dumps(commitContainer), 'framedictjson': json.dumps(commitFrame)}
+        # refframe = self.getRefFrame()
 
         filesToUpload={}
         for fileheader, filetrack in self.workingFrame.filestrack.items():
@@ -323,30 +466,9 @@ class Container:
 
 
 
-    def CheckCommit(self, filetrack, filepath, frameRef):
-        fileb = open(filepath, 'rb')
-        md5hash = hashlib.md5(fileb.read())
-        md5 = md5hash.hexdigest()
-        if filetrack.FileHeader not in frameRef.filestrack.keys():
-            return True, md5
-        if (md5 != frameRef.filestrack[filetrack.FileHeader].md5):
-            return True, md5
-        if frameRef.filestrack[filetrack.FileHeader].lastEdited != os.path.getmtime(filepath):
-            frameRef.filestrack[filetrack.FileHeader].lastEdited = os.path.getmtime(filepath)
-            return True, md5
-        return False, md5
-        # Make new Yaml file  some meta data sohould exit in Yaml file
 
-    def commithistory(self):
-        historydict = {}
-        # glob.glob() +'/'+ Rev + revnum + ".yaml"
-        yamllist = glob.glob(join(self.containerworkingfolder, self.currentbranch , 'Rev*.yaml'))
-        for yamlframefn in yamllist:
-            pastframe = Frame.loadRefFramefromYaml(yamlframefn, self.containerworkingfolder)
-            historydict[pastframe.FrameName] = {'commitmessage':pastframe.commitMessage,
-                                               'timestamp':pastframe.commitUTCdatetime,
-                                                'frame':pastframe}
-        return historydict
+
+
 
     def commithistorybyfile(self):
         changesbyfile = {}
@@ -355,9 +477,9 @@ class Container:
             changesbyfile[fileheader] =[]
         containerframes={}
         # glob.glob() +'/'+ Rev + revnum + ".yaml"
-        yamllist = glob.glob(join(self.containerworkingfolder, self.currentbranch , 'Rev*.yaml'))
-        for yamlframefn in yamllist:
-            pastframe = Frame.loadRefFramefromYaml(yamlframefn, self.containerworkingfolder)
+        # yamllist = glob.glob(join(self.containerworkingfolder, self.currentbranch , 'Rev*.yaml'))
+        for revyaml, pastframe in self.memoryframesdict.items():
+            # pastframe = Frame.loadRefFramefromYaml(yamlframefn, self.containerworkingfolder)
             containerframes[pastframe.commitUTCdatetime]= pastframe
         for revi, timestamp in enumerate(sorted(containerframes)):
             pastframe = containerframes[timestamp]
@@ -416,6 +538,37 @@ class Container:
         self.workingFrame.writeoutFrameYaml()
         self.save()
 
+
+    def addFileTrack(self, filetrack:FileTrack):
+        filetype = filetrack.connection.connectionType.name
+        # filetype = fileinfo['filetype']
+        fileheader = filetrack.FileHeader
+        downloadfile = None
+        filepath = os.path.join( self.containerworkingfolder, filetrack.ctnrootpath, filetrack.file_name)
+        if filetype ==typeInput:
+            # self.FileHeaders[fileheader] =
+            # upstreamcontainer = fileinfo['UpstreamContainer']
+            # upstreamfiletrack = upstreamcontainer.getRefFrame().filestrack[fileheader]
+            #
+            # # destintationfilepath  = join( self.containerworkingfolder, upstreamfiletrack.ctnrootpath, upstreamfiletrack.file_name)
+            self.FileHeaders[fileheader] = {'Container': filetrack.connection.refContainerId, 'type': filetype}
+            self.workingFrame.addfromOutputtoInputFileTotrack(fileheader=fileheader,
+                                                              style=typeInput,
+                                                              reffiletrack=filetrack,
+                                                              containerworkingfolder=self.containerworkingfolder,
+                                                              refContainerId=filetrack.connection.refContainerId,
+                                                              rev=filetrack.connection.Rev)
+        elif filetype == typeRequired:
+            self.FileHeaders[fileheader] = {'Container': 'here', 'type': filetype}
+            self.workingFrame.addFileTotrack(fileheader, filepath,filetype,filetrack.rootpathlist())
+        elif filetype == typeOutput:
+            self.FileHeaders[fileheader] = {'Container': '[]', 'type': filetype}
+            self.workingFrame.addFileTotrack(fileheader, filepath,filetype,filetrack.rootpathlist())
+        else:
+            raise ('Doesnt recognize filetype.')
+        self.workingFrame.writeoutFrameYaml()
+        self.save()
+    #     if filetype ==typeInput:
     # def addInputFileObject(self, fileheader,reffiletrack, fullpath,refContainerId,branch,rev):
     def addFileObject(self, fileinfo):
         # fileheader, containerfileinfo, filepath, filetype: str, ctnrootpathlist, rev=None):
@@ -456,7 +609,7 @@ class Container:
 
     def dictify(self):
         dictout = {}
-        keytosave = ['containerName', 'containerId', 'FileHeaders','allowedUser']
+        keytosave = ['containerName', 'containerId', 'FileHeaders','allowedUser', 'description']
         for key, value in vars(self).items():
             if key in keytosave:
                 dictout[key] = value

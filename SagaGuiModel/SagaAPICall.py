@@ -9,6 +9,7 @@ from SagaApp.FileObjects import FileTrack
 import json
 from Graphics.Dialogs import downloadProgressBar
 from PyQt5.QtGui import QGuiApplication
+from datetime import datetime
 
 class SagaAPICall():
     def __init__(self, authtoken = None):
@@ -21,7 +22,7 @@ class SagaAPICall():
         response = requests.post(BASE + 'auth/login',data=payload)
         signinresp = response.json()
 
-        print('usertoken[status] ' + signinresp['status'])
+        print('usertoken[status] ' + signinresp['status'] + datetime.now().isoformat())
         if signinresp['status']=='success':
             status = 'success'
             self.authtoken = signinresp['auth_token']
@@ -91,20 +92,22 @@ class SagaAPICall():
         currentsection = resp['currentsection']
         return sectioninfo, currentsection
 
-    def downloadContainerCall(self, containerworkingfolder, containerId, use):
+    def downloadContainerCall(self, containerworkingfolder, containerId, ismaincontainer=False):
+        # print()
+        print('start of downloadcall'+ datetime.now().isoformat())
         headers = {'Authorization': 'Bearer ' + self.authtoken}
         response = requests.get(BASE + 'CONTAINERS/containerID', headers=headers, data={'containerID': containerId})
-        ensureFolderExist(join(containerworkingfolder, 'Main', 'Rev1.yaml'))## Hack 'File name is needed but not used.'
+        ensureFolderExist(join(containerworkingfolder, 'Main', 'Rev1.yaml'))## Hack 'File name is needed but not used.'ATTENTION
         dlcontent = json.loads(response.content.decode('utf-8'))
         requestfailed = False
         if requestfailed:
             return
         for yamlfn, framedict in dlcontent['fullframelist'].items():
             frame = Frame.LoadFrameFromDict(framedict, containerworkingfolder, yamlfn)
-            frame.writeoutFrameYaml()
-        cont = Container.LoadContainerFromDict(dlcontent['containerdict'],containerworkingfolder, CONTAINERFN)
+            frame.writeoutFrameYaml(authorized=True)
+        cont = Container.LoadContainerFromDict(dlcontent['containerdict'],containerworkingfolder, CONTAINERFN, ismaincontainer=ismaincontainer)
         cont.save()
-        if use=='WorkingContainer':
+        if ismaincontainer:
             cont.save(TEMPCONTAINERFN)
             cont.yamlfn = TEMPCONTAINERFN
         # # if exists(join(containerworkingfolder, 'containerstate.yaml')):
@@ -112,6 +115,7 @@ class SagaAPICall():
         # # open(join(newcontparentdirpath, containerId, 'containerstate.yaml'), 'wb').write(response.content)
         # makefilehidden(join(newcontparentdirpath, containerId, 'containerstate.yaml'))
         # self.downloadFrame(newcontparentdirpath, authtoken, containerId, BASE)
+        print('end of downloadcall' + datetime.now().isoformat())
         return containerworkingfolder, cont
 
     @classmethod
@@ -143,13 +147,13 @@ class SagaAPICall():
                                       'file_name': filetrack.file_name})
         # Loops through the filestrack in curframe and request files listed in the frame
         # ATTENTION, MOST OF THE STUFF BELOW DOES NOT BELOW IN THIS CLASS
-        if newfilename is None:
-            fn = os.path.join(containerworkingfolder,filetrack.ctnrootpath, response.headers['file_name'])
-        else:
-            fn = os.path.join(containerworkingfolder, filetrack.ctnrootpath, newfilename)
-        if not filetrack.ctnrootpath == '.':
-            ensureFolderExist(fn)
         if response.headers['status']=='Success':
+            if newfilename is None:
+                fn = os.path.join(containerworkingfolder, filetrack.ctnrootpath, filetrack.file_name)
+            else:
+                fn = os.path.join(containerworkingfolder, filetrack.ctnrootpath, newfilename)
+            if not filetrack.ctnrootpath == '.':
+                ensureFolderExist(fn)
             progress = downloadProgressBar(response.headers['file_name'])
             dataDownloaded = 0
             progress.updateProgress(dataDownloaded)
@@ -162,6 +166,7 @@ class SagaAPICall():
                     QGuiApplication.processEvents()
         else:
             # open(fn,'w').write('Terrible quick bug fix')
+            ####ATTENTION
             # # There should be a like a nuclear warning here is this imples something went wrong with the server and the frame bookkeeping system
             # # This might be okay meanwhile as this is okay to break during dev but not during production.
             raise('could not find file ' + filetrack.md5 + ' on server')
@@ -173,7 +178,6 @@ class SagaAPICall():
 
 
     def downloadbranch(self,containerworkingfolder, cont:Container, branch='Main'):
-
         payload = {'containerID': cont.containerId,
                    'branch': branch}
         headers = {
@@ -249,8 +253,6 @@ class SagaAPICall():
         return permissionsresponse
 
     def shouldModelSwitchCall(self,containerId):
-
-
         payload = {'containerid': containerId}
         headers = {'Authorization': 'Bearer ' + self.authtoken}
 
@@ -263,20 +265,35 @@ class SagaAPICall():
         message =permissionsresponse.headers['message']
         return goswitch, newsectionid, message
 
-    def callLatestRevision(self, maincontainer:Container):
+    def getNewestFrame(self, maincontainer:Container, sectionid):
         ## This is the only place that knows of a later revision.
         notlatestrev = False
-        payload = {'containerID': maincontainer.containerId}
+        payload = {'containerID': maincontainer.containerId, 'sectionid':sectionid}
 
         headers = {
             'Authorization': 'Bearer ' + self.authtoken
         }
-
-        response = requests.get(BASE + 'CONTAINERS/newestrevnum', headers=headers, data=payload)
+        # print('1' + datetime.now().isoformat())
+        response = requests.get(BASE + 'CONTAINERS/newestframeofcontainer', headers=headers, data=payload)
+        # print('2' + datetime.now().isoformat())
         resp = json.loads(response.content)
         newestframe = Frame.LoadFrameFromDict(resp['framedict'])
         newestrevnum = resp['newestrevnum']
         return newestframe,newestrevnum
+
+    def getLatestRevNumCall(self, sectionid):
+        ## This is the only place that knows of a later revision.
+        notlatestrev = False
+        payload = { 'sectionid':sectionid}
+
+        headers = {
+            'Authorization': 'Bearer ' + self.authtoken
+        }
+        response = requests.get(BASE + 'CONTAINERS/newestrevnum', headers=headers, data=payload)
+        resp = json.loads(response.content)
+
+        newestrevnumsinsection = resp
+        return newestrevnumsinsection
 
     def getNewVersionCall(self, installPath):
         response = requests.get(BASE + 'GENERAL/UpdatedInstallation',
