@@ -15,12 +15,14 @@ def weekstrfromtimestamp(commitUTCdatetime):
     return 'week -' + str(weeksago), weeksago
 
 class GanttListModel(QAbstractTableModel):
-    def __init__(self,containerinfodict , desktopdir, weekstocheck = 10):
+    def __init__(self,containerinfodict , sagaguimodel, weekstocheck = 10):
         super(GanttListModel, self).__init__()
         containerids = containerinfodict.keys()
         self.containerheaders = []
         self.historydict={}
         self.datecommits={}
+        self.sagaguimodel = sagaguimodel
+
 
         self.commitmessagedict={}
         self.weeksdict={}
@@ -32,6 +34,7 @@ class GanttListModel(QAbstractTableModel):
             self.containerheaders.append(containerinfodict[containerid]['ContainerDescription'])
             self.containeridtoname[containerid]=containerinfodict[containerid]['ContainerDescription']
             self.containernametoid[containerinfodict[containerid]['ContainerDescription']] = containerid
+
 
         for i in range(-weekstocheck,1):
             initdict = {}
@@ -57,13 +60,12 @@ class GanttListModel(QAbstractTableModel):
         containerframes = {}
         workingnotes=[]
         for containerid in containerids:
-            # contyaml = os.path.join(desktopdir, 'ContainerMapWorkDir', containerid, 'containerstate.yaml')
-            # curcont = Container.LoadContainerFromYaml(contyaml)
-            # print(containerid)
-            yamllist = glob.glob(os.path.join(desktopdir, 'ContainerMapWorkDir', containerid, 'Main', 'Rev*.yaml'))
+
+            # yamllist = glob.glob(os.path.join(desktopdir, 'ContainerMapWorkDir', containerid, 'Main', 'Rev*.yaml'))
             containerframes[containerid]={}
-            for yamlfn in yamllist:
-                pastframe = Frame.loadRefFramefromYaml(yamlfn,os.path.join(desktopdir, 'ContainerMapWorkDir', containerid))
+            icontainer = self.sagaguimodel.provideContainer(containerid)
+            for revyaml, pastframe  in icontainer.memoryframesdict.items():
+                # pastframe = Frame.loadRefFramefromYaml(yamlfn,os.path.join(desktopdir, 'ContainerMapWorkDir', containerid))
                 weekstr, weeksago = weekstrfromtimestamp(pastframe.commitUTCdatetime)
                 if weeksago < weekstocheck:
                     containerframes[containerid][pastframe.commitUTCdatetime]= pastframe
@@ -174,6 +176,7 @@ class GanttListModel(QAbstractTableModel):
             # print(pair)
         self.weeksdictlist = list(self.weeksdict)
         self.transferpair = transferpair
+
 
     def data(self, index, role):
         # print(role)

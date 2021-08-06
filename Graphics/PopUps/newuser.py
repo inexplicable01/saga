@@ -15,13 +15,15 @@ import random
 import string
 from SagaApp.Section import Section
 from SagaGuiModel import sagaguimodel
-
+from os.path import join
+from Config import sourcecodedirfromconfig
 
 class newUserDialog(QDialog):
     ## This might have duplicated the Sign up dialog.
     def __init__(self, mainguihandle):
         super().__init__()
-        uic.loadUi("Graphics/UI/newUser.ui", self)
+
+        uic.loadUi(join(sourcecodedirfromconfig, "Graphics", "UI", "newUser.ui"), self)
         # self.advicelabel.setText(advice)
         # self.advicelabel.setWordWrap(True)
         self.dir=''

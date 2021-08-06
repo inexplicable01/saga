@@ -17,6 +17,7 @@ from Graphics.QAbstract.GanttListModel import GanttListModel, GanttListDelegate
     # GanttListDelegate
 from SagaApp.Container import Container
 from SagaGuiModel import sagaguimodel
+from datetime import datetime
 
 def makeganttchartlegend(view):
     scene = QGraphicsScene()
@@ -177,23 +178,29 @@ class MapTab():
     #         self.exec()
 
     def generateContainerMap(self,containerinfodict):
+        # print('generateContainerMap start ' + datetime.now().isoformat())
         self.containerlisttable.setModel(ContainerListModel(containerinfodict))
         self.containermap.reset()
         if 'EMPTY' in containerinfodict.keys():
             self.containermap.plot()
         else:
+            # print('generateContainerMap loadcontstart ' + datetime.now().isoformat())
             for containerID in containerinfodict.keys():
-                self.containermap.addActiveContainers(
-                    Container.LoadContainerFromYaml(os.path.join(sagaguimodel.desktopdir, 'ContainerMapWorkDir', containerID , 'containerstate.yaml'))
-                )
+                self.containermap.addActiveContainers(sagaguimodel.provideContainer(containerID))
+            # print('generateContainerMap loadcont end  ' + datetime.now().isoformat())
             self.containermap.editcontainerConnections()
+            # print('1  ' + datetime.now().isoformat())
             self.containermap.plot()
+            # print('2  ' + datetime.now().isoformat())
             self.detailedmap.passobj(self.containermap)
-            self.gantttable.setModel(GanttListModel(containerinfodict, sagaguimodel.desktopdir))
+            # print('3  ' + datetime.now().isoformat())
+            self.gantttable.setModel(GanttListModel(containerinfodict, sagaguimodel))
+        # print('generateContainerMap end ' + datetime.now().isoformat())
 
 
     def generateSagaTree(self, containerinfodict):
-        self.sagatreeview.setModel(SagaTreeModel(containerinfodict, sagaguimodel.desktopdir))
+        # print('SagaTree start ' + datetime.now().isoformat())
+        self.sagatreeview.setModel(SagaTreeModel(containerinfodict, sagaguimodel.desktopdir, sagaguimodel))
         self.sagatreeview.setItemDelegate(SagaTreeDelegate())
         self.sagatreeview.clicked.connect(self.sagatreeclicked)
         if not self.sagatreeviewcolumnmoved:
@@ -201,6 +208,7 @@ class MapTab():
             self.sagatreeviewcolumnmoved = True
         # print(self.sagatreeview.header())
         self.sagatreeview.setItemsExpandable(True)
+        # print('SagaTree end ' + datetime.now().isoformat())
 
     def sagatreeclicked(self, index):
         # print(index.row(), index.column(), index.internalPointer().data(0))
@@ -239,7 +247,7 @@ class MapTab():
             containerworkingdir = os.path.join(newcontparentdirpath, self.dlcontainername)
             if not os.path.exists(containerworkingdir):
                 os.mkdir(containerworkingdir)###ATTENTION, Needs better error capture.
-                containerworkingfolder, sagaguimodel.maincontainer = sagaguimodel.downloadContainer(containerworkingdir, self.dlcontainerid, 'WorkingContainer')##ATTENTION
+                containerworkingfolder, sagaguimodel.maincontainer = sagaguimodel.downloadContainer(containerworkingdir, self.dlcontainerid, ismaincontainer=True)##ATTENTION
                 self.mainguihandle.maincontainertab.readcontainer(os.path.join(containerworkingdir,TEMPCONTAINERFN))  ###ATTENTION Should be calling Model and Gui ReSet
                 self.mainguihandle.maintabwidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
             else:

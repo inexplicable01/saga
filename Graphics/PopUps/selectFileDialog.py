@@ -11,6 +11,7 @@ from Config import typeInput,typeRequired,typeOutput
 from os.path import join, normpath
 import os
 from shutil import copyfile
+from Config import sourcecodedirfromconfig
 
 class selectFileDialog(QDialog):
     def __init__(self, fileType:str, containerworkdir, containerlist=None):
@@ -18,11 +19,13 @@ class selectFileDialog(QDialog):
         self.fileType = fileType
         self.ctnrootpathlist = []
         if self.fileType == typeRequired:
-            uic.loadUi("Graphics/UI/file_info.ui", self)
+
+            uic.loadUi(join(sourcecodedirfromconfig, "Graphics", "UI", "file_info.ui"), self)
             self.ownerEdit.setText('OwnerRequired')
             self.descriptionEdit.setText('DescrtiptionRequired')
         elif self.fileType == typeOutput:
-            uic.loadUi("Graphics/UI/file_info_outputs.ui", self)
+
+            uic.loadUi(join(sourcecodedirfromconfig, "Graphics", "UI", "file_info_outputs.ui"), self)
             self.ownerEdit.setText('Owneroutput')
             self.descriptionEdit.setText('Descrtiptionoutpu')
             # for container in containerlist:

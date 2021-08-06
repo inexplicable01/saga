@@ -7,6 +7,7 @@ from SagaApp.FileObjects import FileTrack
 from SagaApp.Connection import FileConnection, ConnectionTypes
 import time
 import json
+import re
 
 from SagaApp.SagaUtil import getFramePathbyRevnum,ensureFolderExist, makefilehidden,unhidefile
 # from Config import typeInput,typeOutput,typeRequired, sagaGuiDir
@@ -239,11 +240,14 @@ class Frame:
                 dictout[key] = value
         return dictout
 
-    def writeoutFrameYaml(self, fn=None):
+    def writeoutFrameYaml(self, fn=None, authorized = False):
         if fn:
             fullfilepath = os.path.join(self.containerworkingfolder,'Main',fn)
         else:
             fullfilepath = os.path.join(self.containerworkingfolder,'Main',self.workingyamlfn)
+        yamlfn = os.path.basename(fullfilepath)
+        if numofRev(yamlfn)!=0 and not authorized:
+            raise('Authorized Writing of RevX.yaml file')
         unhidefile(fullfilepath)
         with open(fullfilepath, 'w') as outyaml:
             yaml.dump(self.dictify(), outyaml)
@@ -253,6 +257,13 @@ class Frame:
 
     def __repr__(self):
         return json.dumps(self.dictify())
+
+def numofRev(rev):
+    m = re.search('Rev(\d+)', rev)
+    if m:
+        return int(m.group(1))
+    else:
+        return 0
 
 
 

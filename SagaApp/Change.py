@@ -1,10 +1,19 @@
 from Config import typeOutput,typeRequired, typeInput, colorscheme
 from SagaGuiModel.SyncScenario import *
 from SagaApp.FileObjects import FileTrack
+from SagaApp.Container import Container
 from PyQt5.QtGui import *
+import re
+
+def numofRev(rev):
+    m = re.search('Rev(\d+)', rev)
+    if m:
+        return int(m.group(1))
+    else:
+        return 0
 
 class Change():
-    def __init__(self, fileheader, filetype):
+    def __init__(self, fileheader, filetype, thiscontainer:Container):
         self.fileheader = fileheader
         self.filetype = filetype
         self.reason = []
@@ -14,82 +23,184 @@ class Change():
         self.wffiletrack:FileTrack = None
 
         self.uffiletrack:FileTrack = None
+        self.upcont:Container= None
+
         self.newerframeexists = False
         self.md5changed = None
+
         self.alterinput = False
+        self.missinginput = False
 
         self.inputscenariono = None
         self.reqoutscenariono = None
-        self.conflict = None
 
-    def writeStatus(self):
-        if self.newerframeexists:
-            if self.filetype==typeInput:
-                return str(self.inputscenariono) + '  '  + input_nf_scen[self.inputscenariono]
+        self.needresolve = False
+        self.conflict = False
+        self.noteworthy = False
+
+    def md5comparison_LF_WF_NF(self):
+        if self.lffiletrack.md5 == self.wffiletrack.md5:
+            if self.wffiletrack.md5 == self.nffiletrack.md5:
+                return 'Everything is in sync'
             else:
-                return str(self.reqoutscenariono) + '  '  +regoutnewframescen[self.reqoutscenariono]
+                self.conflict = True
+                return 'Newest version of {} has been updated.  Need to Resolve'
         else:
-            if self.filetype==typeInput:
-                if self.alterinput:
-                    return 'Saga currently does not support Input editing.  Please save your edited input as a working/output file.'
-                else:
-                    if self.inputscenariono==7:
-                        status =''
-                        if self.uffiletrack.lastupdated==self.wffiletrack.connection.Rev:
-                            status = status + 'Current version of input file synced to upstream.'
-                        else:
-                            status = status + 'Current input is using ' + self.wffiletrack.connection.Rev + ' ' \
-                                    'and upstream input file was last updated in ' + self.uffiletrack.lastupdated
-                        if self.lffiletrack.connection.Rev!=self.wffiletrack.connection.Rev:
-                            status= status + ' Your Input rev has been updated since the last commit of this container'
-                        else:
-                            status = status + '.  Your Input Rev has not changed since the last commit of this container.'
-                        return status
-                    elif self.inputscenariono==6:
-                        return  input_local_scen.format(self.fileheader)
-                    elif self.inputscenariono==5:
-                        status = ''
-                        if self.uffiletrack.lastupdated==self.wffiletrack.connection.Rev:
-                            status = status + 'Current version of input file synced to upstream.'
-                        else:
-                            status = status + 'Current input is using ' + self.wffiletrack.connection.Rev + ' ' \
-                                    'and upstream input file was last updated in ' + self.uffiletrack.lastupdated
-                    else:
-                        return 'Upstream is missing an output for this container.  Requires techncial assistance.'
-
-
-
+            if self.wffiletrack.md5 == self.nffiletrack.md5:## local frame
+                return 'Current version of {} is identical to Updated Newest Frame. No Conflict.'
             else:
-                if self.reqoutscenariono==3:
-                    if self.md5changed:
-                        return self.fileheader + ' edited locally.'
+                if self.lffiletrack.md5 != self.nffiletrack.md5:
+                    self.conflict = True
+                    return 'Newest frame of {} has been updated, while you have also update.  Need to Resolve Conflict.'
+                else:
+                    self.conflict = True
+                    return 'Newest frame of {} has not taken into account your changes.   Need to Resolve Conflict.'
+
+    def SyncInputFiletrack(self):
+        # UF Rev,WF Rev, NF Rev)
+        # upstreamupdated = False
+        wfuprevnum = numofRev(self.wffiletrack.connection.Rev)
+        ufrevnum = numofRev(self.uffiletrack.lastupdated)
+        if self.newerframeexists:
+            if self.nffiletrack:
+                nfuprevnum = numofRev(self.nffiletrack.connection.Rev)
+                if wfuprevnum == ufrevnum:
+                    if wfuprevnum == nfuprevnum:  # tri1
+                        return THREEINPUT_SCENA.format(self.fileheader)
+                    else:  # NF is out of sync although wrking frame is in sync.
+                        self.needresolve=True
+                        return THREEINPUT_SCENB.format(self.fileheader)
+                else:  # wfuprevnum != ufrevnum:
+                    # upstreamupdated = True
+                    if wfuprevnum==nfuprevnum:
+                        self.needresolve=True
+                        return THREEINPUT_SCENC.format(self.fileheader)
+                        # pass  # WF and NF are at the same frame but not the same with upstream, no conflict.  Does WF want to update?
+                    elif ufrevnum == nfuprevnum:# WF not eual to UF and NF same as UF means that NEwest frame is updated.   most likely newest frame has updated sync.
+                        self.conflict = True
+                        return THREEINPUT_SCEND.format(self.fileheader)
                     else:
-                        return self.fileheader + ' unchanged'
-                elif self.reqoutscenariono==2:
-                    return regoutlocalscren[self.reqoutscenariono].format(self.fileheader)
-                elif self.reqoutscenariono==1:
-                    return regoutlocalscren[self.reqoutscenariono]
+                        self.conflict=True
+                        return THREEINPUT_SCENE.format(self.fileheader)
+            else:
+                if wfuprevnum == ufrevnum:
+                    return 'Input working frame reference in sync with upstream frame'
+                else:
+                    self.needresolve= True
+                    return 'Input frame not in sync with upstream frame'
 
 
-                return str(self.reqoutscenariono) + '  '  +regoutlocalscren[self.reqoutscenariono]
+    def analysisState(self):
+        if self.filetype==typeInput:
+            if self.alterinput:
+                self.description ='Saga currently does not support Input editing.  Please save your edited input as a working/output file.'
+            else:
+                if self.inputscenariono==10:
+                    status =''
+                    if self.uffiletrack.lastupdated==self.wffiletrack.connection.Rev:
+                        status = status + 'Current version of input file synced to upstream.'
+                    else:
+                        self.needresolve = True
+                        status = status + 'Current input is using ' + self.wffiletrack.connection.Rev + ' ' \
+                                'and upstream input file was last updated in ' + self.uffiletrack.lastupdated
+                    if self.lffiletrack.connection.Rev!=self.wffiletrack.connection.Rev:
+                        self.needresolve = True
+                        status= status + ' Your Input rev has been updated since the last commit of this container'
+                    else:
+                        status = status + 'Your Input Rev has not changed since the last commit of this container.'
+                    self.description=  status
+                elif self.inputscenariono==9:
+                    self.noteworthy = True
+                    self.description= '{} removed from working frame'.format(self.fileheader)
+                elif self.inputscenariono==8:
+                    status = ''
+                    if self.uffiletrack.lastupdated==self.wffiletrack.connection.Rev:
+                        status = status + 'Current version of input file synced to upstream.'
+                    else:
+                        self.needresolve = True
+                        status = status + 'Current input is using ' + self.wffiletrack.connection.Rev + ' ' \
+                                'and upstream input file was last updated in ' + self.uffiletrack.lastupdated
+                    self.description=  status
+                elif self.inputscenariono==7:
+                    self.description=  INPUT_NEWFRAME_SCENARIO7.format(self.fileheader) + self.SyncInputFiletrack()
+                elif self.inputscenariono==6:
+                    self.conflict = True
+                    self.description=  INPUT_NEWFRAME_SCENARIO6.format(self.fileheader)
+                elif self.inputscenariono==5:
+                    self.conflict = True
+                    self.description=  INPUT_NEWFRAME_SCENARIO5.format(self.fileheader) + self.SyncInputFiletrack()
+                elif self.inputscenariono==4:
+                    self.needresolve = True
+                    self.description=  INPUT_NEWFRAME_SCENARIO4.format(self.fileheader)
+                elif self.inputscenariono==3:
+                    self.conflict = True
+                    self.description=   self.SyncInputFiletrack() + INPUT_NEWFRAME_SCENARIO3
+                elif self.inputscenariono==2:
+                    self.description=  INPUT_NEWFRAME_SCENARIO2.format(self.fileheader)
+                elif self.inputscenariono==1:
+                    self.description=  self.SyncInputFiletrack() + INPUT_NEWFRAME_SCENARIO1
+                else:
+                    self.description = 'Upstream is missing an output for this fileheader.  Requires techincial assistance.'
+
+        else:
+            if self.reqoutscenariono==10:
+                if self.md5changed:
+                    self.noteworthy = True
+                    self.description=  self.fileheader + ' edited locally.'
+                else:
+                    self.description=  self.fileheader + ' unchanged'
+            elif self.reqoutscenariono==9:
+                self.noteworthy = True
+                self.description=  regoutscen[self.reqoutscenariono].format(self.fileheader)
+            elif self.reqoutscenariono==8:
+                self.noteworthy = True
+                self.description= regoutscen[self.reqoutscenariono]
+            elif self.reqoutscenariono==7:#### nf, lf, wf all exist.
+                self.description=  self.md5comparison_LF_WF_NF()
+            elif self.reqoutscenariono==6:
+                self.conflict = True
+                self.description=  'Local {} has been removed but Newest Frame still exist.  Need to Resolve Conflict'
+            elif self.reqoutscenariono==5:
+                if self.wffiletrack.md5 == self.nffiletrack.md5:  ## local frame
+                    self.description=  'This Local frame and the newest frame both added identical {} since ##RefFrameName.'
+                else:
+                    self.conflict = True
+                    self.description=  'This Local frame and the newest frame both added fileheader {} since ##RefFrameName but with different files. Need to Resolve Conflict.'
+            elif self.reqoutscenariono==4:
+                self.conflict= True
+                self.description=  'Newest Frame added fileheader {} .  Need to resolve.'
+            elif self.reqoutscenariono==3:
+                self.conflict = True
+                self.description=  'Newest Frame deleted fileheader {}. Need to resolve.'
+            elif self.reqoutscenariono==2:
+                self.noteworthy = True
+                self.description=  'Both this working Frame and Newest Frame deleted fileheader {}.'
+            elif self.reqoutscenariono==1:
+                self.noteworthy = True
+                self.description=  'This Working Frame added this fileheader {}'
+
+
 
     def worthNoting(self):
         # worthNoting=False
-        if self.md5changed:
+        if self.conflict or self.needresolve or self.noteworthy or self.md5changed:
             return True
         return False
 
     def writeHTMLStatus(self):
-        text = ''
-        # text = text + '<span style = "color:white"> ' + change.writeStatus() + '</span>, '
 
-        if self.md5changed:
-            text = text + '<span style = "color:white"> ' + self.writeStatus() + '</span>,  '
-        # for reason in self.reason:
-        #     hexcolor = QColor(colorscheme[reason]).name()
-        #     text = text + '<span style = "color:' + hexcolor + '"> ' + reason + '</span>, '
+        color = 'white'
+        if self.conflict:
+            color = 'red'
+        elif self.needresolve or self.md5changed:
+            color = 'Yellow'
+        elif self.noteworthy:
+            color = 'cyan'
+
+        text = '<span style = "color:' +  color + '"> <b>'+self.fileheader + '</b>   :   '+ self.description + '</span> '
 
         return text
+
 
 
 

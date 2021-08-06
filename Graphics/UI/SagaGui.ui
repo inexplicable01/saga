@@ -47,8 +47,8 @@
 
 </string>
    </property>
-   <layout class="QGridLayout" name="gridLayout_2">
-    <item row="0" column="0">
+   <layout class="QHBoxLayout" name="horizontalLayout_8">
+    <item>
      <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
       <item>
        <widget class="QTabWidget" name="maintabwidget">
@@ -97,7 +97,7 @@
           <item>
            <widget class="QTabWidget" name="networktabwidget">
             <property name="currentIndex">
-             <number>1</number>
+             <number>2</number>
             </property>
             <widget class="QWidget" name="networkmaptab">
              <attribute name="title">
@@ -259,28 +259,43 @@ QPushButton::enabled {
                </widget>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="8,1">
+               <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0">
                 <item>
-                 <widget class="QLabel" name="containerdescriplbl">
-                  <property name="maximumSize">
-                   <size>
-                    <width>431</width>
-                    <height>19</height>
-                   </size>
+                 <widget class="QStackedWidget" name="contstackedwidget">
+                  <property name="currentIndex">
+                   <number>1</number>
                   </property>
-                  <property name="text">
-                   <string>Container Description</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QTextEdit" name="newcontaineredit">
-                  <property name="maximumSize">
-                   <size>
-                    <width>431</width>
-                    <height>54</height>
-                   </size>
-                  </property>
+                  <widget class="QWidget" name="committedcontainer">
+                   <layout class="QHBoxLayout" name="horizontalLayout_10">
+                    <item>
+                     <widget class="QLabel" name="containerdescriplbl">
+                      <property name="maximumSize">
+                       <size>
+                        <width>9000</width>
+                        <height>500</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string>Container Description</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                  <widget class="QWidget" name="newcontainer">
+                   <layout class="QHBoxLayout" name="horizontalLayout_9">
+                    <item>
+                     <widget class="QLabel" name="newcontainerlbl">
+                      <property name="text">
+                       <string>Create description for new container</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLineEdit" name="newcontaineredit"/>
+                    </item>
+                   </layout>
+                  </widget>
                  </widget>
                 </item>
                </layout>

@@ -227,7 +227,8 @@ class containerRect(QGraphicsRectItem):
         painter.setBrush(QBrush(Qt.transparent))
         # painter.drawRect(textRect)
         # Draw Picture
-        qpic = QImage('Graphics/FileIcons/Container.png')
+
+        qpic = QImage(join(sourcecodedirfromconfig, "Graphics", "FileIcons", "Container.png"))
         # print(contRect)
         painter.drawImage(contRect, qpic)
 

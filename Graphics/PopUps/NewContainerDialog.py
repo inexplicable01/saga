@@ -3,11 +3,15 @@ from PyQt5 import uic
 import random
 import string
 import os
+from os.path import join
+from Config import sourcecodedirfromconfig
+# uic.loadUi(join(sourcecodedirfromconfig, "Graphics","UI","newContainer.ui"), self)
 
 class newContainerDialog(QDialog):
     def __init__(self, path):
         super().__init__()
-        uic.loadUi("Graphics/UI/newContainer.ui", self)
+
+        uic.loadUi(join(sourcecodedirfromconfig, "Graphics","UI","newContainer.ui"), self)
         self.containerpathlbl.setText(path)
         self.dir=''
         self.openDirButton.clicked.connect(self.openDirectory)

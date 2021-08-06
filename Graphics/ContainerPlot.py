@@ -3,8 +3,9 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
-from Config import typeInput,typeOutput,typeRequired, colorscheme, UPDATEDUPSTREAM, MD5CHANGED, DATECHANGED
+from Config import typeInput,typeOutput,typeRequired, colorscheme, UPDATEDUPSTREAM, MD5CHANGED, DATECHANGED, sourcecodedirfromconfig
 import os
+from os.path import join
 
 containerBoxHeight = 50
 containerBoxWidth = 50
@@ -128,22 +129,22 @@ class FileViewItemRect(QGraphicsRectItem):
         file_name, file_extension = os.path.splitext(self.filetrack.file_name)
 
         if file_extension in ['.docx','.doc']:
-            qpic = QImage('Graphics/FileIcons/Word.png')
+            qpic = QImage(join(sourcecodedirfromconfig, "Graphics", "FileIcons", "Word.png"))
         elif file_extension in ['.pptx','.ppt']:
-            qpic = QImage('Graphics/FileIcons/ppticon.png')
+            qpic = QImage(join(sourcecodedirfromconfig, "Graphics", "FileIcons", "ppticon.png"))
         elif file_extension in ['.xls','.xlsx']:
-            qpic = QImage('Graphics/FileIcons/excelicon.png')
+            qpic = QImage(join(sourcecodedirfromconfig, "Graphics", "FileIcons", "excelicon.png"))
         elif file_extension in ['.mp4']:
-            qpic = QImage('Graphics/FileIcons/mp4icon.png')
+            qpic = QImage(join(sourcecodedirfromconfig, "Graphics", "FileIcons", "mp4icon.png"))
         elif file_extension in ['.txt']:
-            qpic = QImage('Graphics/FileIcons/txticon.png')
+            qpic = QImage(join(sourcecodedirfromconfig, "Graphics", "FileIcons", "txticon.png"))
         elif file_extension in ['.pdf']:
-            qpic = QImage('Graphics/FileIcons/pdficon.png')
+            qpic = QImage(join(sourcecodedirfromconfig, "Graphics", "FileIcons", "pdficon.png"))
         else:
-            qpic= QImage('Graphics/FileIcons/genericfile.png')
+            qpic= QImage(join(sourcecodedirfromconfig, "Graphics", "FileIcons", "genericfile.png"))
 
         if not self.filetrack.ctnrootpath == '.':
-            qpic = QImage('Graphics/FileIcons/foldericon.png')
+            qpic = QImage(join(sourcecodedirfromconfig, "Graphics", "FileIcons", "foldericon.png"))
         painter.drawImage(picRect, qpic)
 
 

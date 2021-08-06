@@ -5,11 +5,11 @@ from SagaApp.SagaUtil import makefilehidden, ensureFolderExist, unhidefile
 from SagaApp.FrameStruct import Frame
 from SagaApp.Container import Container
 from SagaApp.Change import Change
-import re
+import warnings
 from SagaApp.FileObjects import FileTrack
 import json
 import hashlib
-from Graphics.QAbstract.ConflictListModel import ConflictListModel, AddedListModel, DeletedListModel, UpstreamListModel
+from Graphics.QAbstract.ConflictListModel import SyncListModel
 from Config import BASE, mapdetailstxt, CONTAINERFN, typeInput,typeOutput,typeRequired,NEWCONTAINERFN,SERVERNEWREVISION,\
     SERVERFILEADDED, SERVERFILEDELETED,UPDATEDUPSTREAM, \
     TEMPFRAMEFN, TEMPCONTAINERFN, NEWFRAMEFN,NOTINSYNCREASONSET, \
@@ -19,14 +19,22 @@ from SagaGuiModel.SyncScenario import *
 
 
 class SagaSync():
-    def __init__(self, sagaapicall, desktopdir):
+    def __init__(self, sagaguimodel, desktopdir):
         self.changes = {}
-        self.sagaapicall:SagaAPICall=sagaapicall
+        self.sagaguimodel = sagaguimodel
+        self.sagaapicall:SagaAPICall=sagaguimodel.sagaapicall
         self.newestframe:Frame  = None# this is the latest Server frame committed for this container.
         self.workingframe:Frame =None
         self.upstreamframe:Frame =None
         self.localframe:Frame = None
         self.desktopdir = desktopdir
+
+    def reset(self):
+        self.newestframe: Frame = None  # this is the latest Server frame committed for this container.
+        self.workingframe: Frame = None
+        self.upstreamframe: Frame = None
+        self.localframe: Frame = None
+        self.changes = {}
 
     def setUpstreamFrame(self, upstreamframe:Frame):
         self.upstreamframe = upstreamframe
@@ -53,7 +61,7 @@ class SagaSync():
                     #                                                join(self.desktopdir, 'ContainerMapWorkDir', containerID, CONTAINERFN))
                     # if upstreamcont is None:
                     containerworkingfolder, upstreamcont = self.sagaapicall.downloadContainerCall(join(self.desktopdir, 'ContainerMapWorkDir', containerID),
-                                                                                                   containerID, 'NetworkContainer')
+                                                                                                   containerID, ismaincontainer=False)
                     upstreamframe = upstreamcont.getRefFrame()
                     # Is it necessary that we get the existing file's md5.   Why does checking upstream require knowledge the change in the current md5?
                     # This should really have two parts, one is to simply compare the last commit Rev of Downstream container to the last committed Rev of the Upstream container.
@@ -85,13 +93,22 @@ class SagaSync():
                         upstreamupdated=True
         return  upstreamupdated
 
-    def syncStatusModels(self):
-        self.conflictlistmodel = ConflictListModel(self.changes, self.newestframe)
-        self.addedlistmodel = AddedListModel(self.changes, self.newestframe)
-        self.deletedlistmodel = DeletedListModel(self.changes, self.newestframe,
-                                                 self.workingframe)
-        self.upstreamlistmodel = UpstreamListModel(self.changes)
-        return self.conflictlistmodel, self.addedlistmodel, self.deletedlistmodel, self.upstreamlistmodel, self.changes
+    # def syncStatusModels(self):
+    #     self.conflictlistmodel = ConflictListModel(self.changes, self.newestframe)
+    #     self.addedlistmodel = AddedListModel(self.changes, self.newestframe)
+    #     self.deletedlistmodel = DeletedListModel(self.changes, self.newestframe,
+    #                                              self.workingframe)
+    #     self.upstreamlistmodel = UpstreamListModel(self.changes)
+    #     return self.conflictlistmodel, self.addedlistmodel, self.deletedlistmodel, self.upstreamlistmodel, self.changes
+
+    def syncStatusModels2(self, maincontainer:Container, containeridtoname):
+        self.conflictlistmodel = SyncListModel(self.changes, self.newestframe, maincontainer, containeridtoname, option='conflict')
+        self.noticelistmodel = SyncListModel(self.changes, self.newestframe, maincontainer, containeridtoname, option='notice')
+        # self.attentionmodel= AttentionModel(self.changes, self.newestframe)
+        # self.deletedlistmodel = DeletedListModel(self.changes, self.newestframe,
+        #                                          self.workingframe)
+        # self.upstreamlistmodel = UpstreamListModel(self.changes)
+        return self.conflictlistmodel, self.noticelistmodel
 
     def checkLatestRevision(self, maincontainer:Container, newestrevnum):
         ## This is the only place that knows of a later revision.
@@ -131,11 +148,11 @@ class SagaSync():
             statustext='This is the latest revision'
         return statustext , notlatestrev
 
-    def checkContainerChanged(self, maincontainer:Container):
-        refContainer = Container.LoadContainerFromYaml(maincontainer.yamlpath())
-        identical, diff = Container.compare(refContainer, maincontainer)
-        containerchanged = not identical ## just for readablity
-        return containerchanged
+    # def checkContainerChanged(self, maincontainer:Container):
+    #     refContainer = Container.LoadContainerFromYaml(maincontainer.yamlpath())
+    #     identical, diff = Container.compare(refContainer, maincontainer)
+    #     containerchanged = not identical ## just for readablity
+    #     return containerchanged
 
     def checkChangeIsRelevant(self,maincontainer:Container):
         changeisrelevant=False
@@ -160,7 +177,7 @@ class SagaSync():
     #     return upstreamupdated, statustext, notlatestrev, containerchanged ,changeisrelevant, self.changes
 
     def checkContainerStatus(self, container:Container, newestrevnum):
-
+        self.inconflict = False
 
         upstreamupdated = False
         containerchanged = False
@@ -179,9 +196,9 @@ class SagaSync():
             newestframefileheaders = set(nf.filestrack.keys())
 
         wffileheaders = set(wf.filestrack.keys())
-        localframefileheaders = set(lf.filestrack.keys())
-        combinedheaders = localframefileheaders.union(wffileheaders)
-        combinedheaders.union(newestframefileheaders)
+        combinedheaders = set(lf.filestrack.keys())
+        combinedheaders.update(wffileheaders)
+        combinedheaders.update(newestframefileheaders)
         for fileheader in combinedheaders:
             inlf = fileheader in lf.filestrack.keys()
             inwf = fileheader in wf.filestrack.keys()
@@ -201,7 +218,7 @@ class SagaSync():
 
             #Assumes users doesn't change filetype on you.
             ## ATTENTION PUT CHECKER IN TO make sure all 3 file types are the same
-            c = Change(fileheader, filetype)
+            c = Change(fileheader, filetype, container)
 
             if inlf:
                 c.lffiletrack = lf.filestrack[fileheader]
@@ -233,15 +250,20 @@ class SagaSync():
                     c.needtoregardnewest = True
 
             if c.filetype==typeInput:
-                containerID = wf.filestrack[fileheader].connection.refContainerId
-                containerworkingfolder, upstreamcont = self.sagaapicall.downloadContainerCall(
-                    join(self.desktopdir, 'ContainerMapWorkDir', containerID),
-                    containerID, 'NetworkContainer')
+                if fileheader=='AnaylsisReport':
+                    b= 4
+                # containerID =
+                # upstreamcontyaml = join(self.desktopdir, 'ContainerMapWorkDir', containerID, CONTAINERFN)
+                # # containerworkingfolder, upstreamcont = self.sagaapicall.downloadContainerCall(
+                # #     join(self.desktopdir, 'ContainerMapWorkDir', containerID),
+                # #     containerID, ismaincontainer=False)
+                upstreamcont = self.sagaguimodel.provideContainer(wf.filestrack[fileheader].connection.refContainerId)
                 uf = upstreamcont.getRefFrame()
+                c.upcont = upstreamcont
                 upstreamframefileheaderset = set(uf.filestrack.keys())
                 if fileheader not in upstreamframefileheaderset:
-                    raise('Somethings broken.  Upstream frame should have this fileheader. ')
-                    c.alterinput=True## in uf?
+                    warnings.warn('Somethings broken.  Upstream frame should have this fileheader. ')
+                    c.missinginput=True## in uf?
                     # if wf.filestrack[fileheader].md5 in upstreamcont.filemd5history[fileheader].keys():
                     #     uf.filestrack[fileheader].lastupdated
                     #     c.wffiletrack = wf.filestrack[fileheader]
@@ -251,36 +273,27 @@ class SagaSync():
                     #     c.needdecisionfromuser = True
                     #     c.description(USERCREATEDALTEREDINPUT)
                 else:
-                    inuf=True
-
-                if inwf:
-                    if wf.filestrack[fileheader].md5 in upstreamcont.filemd5history[fileheader].keys():
-                        if innf:
-                            c, upstreamupdated = self.SyncInputFiletrack(upstreamupdated, wf.filestrack[fileheader], uf.filestrack[fileheader],
-                                                        upstreamcont, c, nf.filestrack[fileheader])
-                        else:
-                            c, upstreamupdated = self.SyncInputFiletrack(upstreamupdated, wf.filestrack[fileheader], uf.filestrack[fileheader],
-                                                        upstreamcont, c)
+                    if wf.filestrack[fileheader].md5 not in upstreamcont.filemd5history[fileheader].keys():
+                        c.alterinput = True  ## in uf?
                     else:
-                        c.needdecisionfromuser = True
-                        c.alterinput = True
-                        c.description(USERCREATEDALTEREDINPUT)
-
-                # Check if Newest fileheader added
+                        c.uffiletrack = uf.filestrack[fileheader]
+                        if c.uffiletrack.lastupdated!= wf.filestrack[fileheader].lastupdated:
+                            upstreamupdated=True
+                    inuf=True
+                if c.newerframeexists:
+                    c.inputscenariono = 4 * innf + 2 * inlf + inwf
+                else:
+                    c.inputscenariono = 2 * inlf + inwf + 7
 
                 # if container.revnum < newestrevnum:## Need to sync, lf, wf, nf, uf
                 #     c.newerframeexists = True
                 #  # if 7,6,5 and 15,14,13,12
-                if c.newerframeexists:
-                    c.inputscenariono = 8 * innf + 4 * inuf + 2 * inlf + inwf
-                else:
-                    c.inputscenariono = 4 * inuf + 2 * inlf + inwf
+
+
+            if c.newerframeexists:
+                c.reqoutscenariono = 4*innf + 2*inlf + inwf
             else:
-                ## Required/Output
-                if c.newerframeexists:
-                    c.reqoutscenariono = 4*innf + 2*inlf + inwf
-                else:
-                    c.reqoutscenariono =  2 * inlf + inwf
+                c.reqoutscenariono =  2 * inlf + inwf + 7
                 # Check if Newest fileheader added
             # refframefileheaders = list(lf.filestrack.keys())
             # for fileheader in wf.FileHeaders.keys():
@@ -289,54 +302,57 @@ class SagaSync():
                 # if fileheader not in refframe.filestrack.keys() and fileheader not in wf.filestrack.keys():
                 #     # check if fileheader is in neither refframe or current frame,
                 #     raise ('somehow Container needs to track ' + fileheader + 'but its not in ref frame or current frame')
+            c.analysisState()
+            if c.conflict:
+                self.inconflict = True## If any change is in conflict
             changes[fileheader] = c
         self.changes = changes
-        return upstreamupdated, statustext, notlatestrev, containerchanged ,containerchanged, self.changes
+        return upstreamupdated, statustext, notlatestrev, containerchanged, self.changes
         # refframe = Frame.loadRefFramefromYaml(self.refframefullpath,self.containerworkingfolder)
 
-    def SyncInputFiletrack(self, upstreamupdated, wfft:FileTrack, ufft:FileTrack, upcont:Container, c:Change, nfft:FileTrack = None, newestexist=False):
-        # UF Rev,WF Rev, NF Rev)
-        # upstreamupdated = False
-        wfuprevnum = numofRev(wfft.lastupdated)
-
-        latestframe = numofRev(upcont.getRefFrame().FrameName)
-        ufrevnum = numofRev(ufft.lastupdated)
-        if nfft:
-            nfuprevnum = numofRev(nfft.lastupdated)
-            if wfuprevnum == ufrevnum:
-                if wfuprevnum == nfuprevnum:  # tri1
-                    c.needrefresh = False
-                    c.description = INPUT_NEWFRAME_SCENARIO15A
-                    # c.nffiletrack = nfft   No Conflict
-                else:  # NF is out of sync although wrking frame is in sync.
-                    c.needrefresh = False
-                    c.description = INPUT_NEWFRAME_SCENARIO15B
-
-            else:  # wfuprevnum != ufrevnum:
-                upstreamupdated = True
-                if wfuprevnum==nfuprevnum:
-                    c.reason.append('NFFILEHEADEROUTDATED')
-                    c.description = INPUT_NEWFRAME_SCENARIO15C
-                    c.needdecisionfromuser = True
-                    pass  # WF and NF are at the same frame but not the same with upstream, no conflict.  Does WF want to update?
-                elif ufrevnum == nfuprevnum:# WF not eual to UF and NF same as UF means that NEwest frame is updated.   most likely newest frame has updated sync.
-                    c.needdecisionfromuser = True
-                    c.reason.append('NFFILEHEADEROUTDATED')
-                    c.description = INPUT_NEWFRAME_SCENARIO15D
-                else:
-                    c.needdecisionfromuser = True
-                    c.description = INPUT_NEWFRAME_SCENARIO15E
-                    # c.reason.append('NFFILEHEADEROUTDATED')
-        # else:
-        #     if wfuprevnum == ufrevnum:
-        #         c.needdecisionfromuser = False
-        #         c.description = INPUT_NEWFRAME_SCENARIO7A if newestexist else INPUT_LOCALFRAME_SCENARIO7A
-        #     else:
-        #         upstreamupdated = True
-        #         c.needdecisionfromuser = True
-        #         c.description = INPUT_NEWFRAME_SCENARIO7B if newestexist else INPUT_LOCALFRAME_SCENARIO7B
-        return c , upstreamupdated
+    # def SyncInputFiletrack(self, upstreamupdated, wfft:FileTrack, ufft:FileTrack, upcont:Container, c:Change, nfft:FileTrack = None, newestexist=False):
+    #     # UF Rev,WF Rev, NF Rev)
+    #     # upstreamupdated = False
+    #     wfuprevnum = numofRev(wfft.lastupdated)
     #
+    #     latestframe = numofRev(upcont.getRefFrame().FrameName)
+    #     ufrevnum = numofRev(ufft.lastupdated)
+    #     if nfft:
+    #         nfuprevnum = numofRev(nfft.lastupdated)
+    #         if wfuprevnum == ufrevnum:
+    #             if wfuprevnum == nfuprevnum:  # tri1
+    #                 c.needrefresh = False
+    #                 c.description = INPUT_NEWFRAME_SCENARIO15A
+    #                 # c.nffiletrack = nfft   No Conflict
+    #             else:  # NF is out of sync although wrking frame is in sync.
+    #                 c.needrefresh = False
+    #                 c.description = INPUT_NEWFRAME_SCENARIO15B
+    #
+    #         else:  # wfuprevnum != ufrevnum:
+    #             upstreamupdated = True
+    #             if wfuprevnum==nfuprevnum:
+    #                 c.reason.append('NFFILEHEADEROUTDATED')
+    #                 c.description = INPUT_NEWFRAME_SCENARIO15C
+    #                 c.needdecisionfromuser = True
+    #                 pass  # WF and NF are at the same frame but not the same with upstream, no conflict.  Does WF want to update?
+    #             elif ufrevnum == nfuprevnum:# WF not eual to UF and NF same as UF means that NEwest frame is updated.   most likely newest frame has updated sync.
+    #                 c.needdecisionfromuser = True
+    #                 c.reason.append('NFFILEHEADEROUTDATED')
+    #                 c.description = INPUT_NEWFRAME_SCENARIO15D
+    #             else:
+    #                 c.needdecisionfromuser = True
+    #                 c.description = INPUT_NEWFRAME_SCENARIO15E
+    #                 # c.reason.append('NFFILEHEADEROUTDATED')
+    #     # else:
+    #     #     if wfuprevnum == ufrevnum:
+    #     #         c.needdecisionfromuser = False
+    #     #         c.description = INPUT_NEWFRAME_SCENARIO7A if newestexist else INPUT_LOCALFRAME_SCENARIO7A
+    #     #     else:
+    #     #         upstreamupdated = True
+    #     #         c.needdecisionfromuser = True
+    #     #         c.description = INPUT_NEWFRAME_SCENARIO7B if newestexist else INPUT_LOCALFRAME_SCENARIO7B
+    #     return c , upstreamupdated
+    # #
     # def md5comparison(self):
     #     if c.lffiletrack.md5 == c.wffiletrack.md5:
     #         if c.wffiletrack.md5 == c.nffiletrack.md5:
@@ -381,70 +397,78 @@ class SagaSync():
     #     #
     #     # return upstreamupdated, statustext, notlatestrev, containerchanged ,changeisrelevant, self.changes
 
-    def updateContainerWithUserSelection(self,filelist, container:Container):
+    def updateContainerWithUserSelection(self,combinedactionstate, container:Container):
         wf = container.workingFrame
         nf = self.newestframe
-        if filelist:
-            wf.refreshedcheck = True
-            for fileheader in filelist.keys():
-                if filelist[fileheader] == 'Overwrite':
-                    fn = self.sagaapicall.downloadFileCall(filetrack=nf.filestrack[fileheader],
-                                                   containerworkingfolder=container.containerworkingfolder)
-                    wf.filestrack[fileheader].md5 = nf.filestrack[fileheader].md5
-                    wf.filestrack[fileheader].lastEdited = nf.filestrack[fileheader].lastEdited
+        # if combinedactionstate:
+        #     wf.refreshedcheck = True
+        #     for fileheader, actionlist in combinedactionstate.items():
+        #         copies = []
+        #         for action in self.actionstate[fileheader]:
+        #             if action['main']:
+        #                 mainaction = action
+        #             else:
+        #                 copies.append(action)
+        #
+        #         ### Main action sets to the working frame
+        #         fn = self.sagaapicall.downloadFileCall(filetrack=nf.filestrack[fileheader],
+        #                                        containerworkingfolder=container.containerworkingfolder)
+        #         wf.filestrack[fileheader].md5 = nf.filestrack[fileheader].md5
+        #         wf.filestrack[fileheader].lastEdited = nf.filestrack[fileheader].lastEdited
 
-                elif filelist[fileheader] == 'Download Copy':
-                    filename, ext = os.path.splitext(wf.filestrack[fileheader].file_name)
-                    filecopy_name = filename + '_' + nf.FrameName + 'Copy' + \
-                                    ext
-                    fn = self.sagaapicall.downloadFileCall(nf.filestrack[fileheader],
-                                                   wf.containerworkingfolder, filecopy_name)
-                    print('No changes to Frame')
-                elif filelist[fileheader] == 'Download':
-                    fn = self.sagaapicall.downloadFileCall(nf.filestrack[fileheader],
-                                                   wf.containerworkingfolder)
-                    ft = nf.filestrack[fileheader]
-                    if ft.connection.connectionType.name in [typeRequired, typeOutput]:
-                        wf.filestrack[fileheader] = nf.filestrack[fileheader]
-                    else:
-                        raise ('Under Construction')
-                    # sagaguimodel.maincontainer.addFileObject(fileinfo=newfileobj)
-                elif filelist[fileheader] == 'Delete':
-                    filePath = os.path.join(
-                        wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
-                        wf.filestrack[fileheader].file_name)
-                    if os.path.exists(filePath):
-                        os.remove(filePath)
-                        container.removeFileHeader(fileheader)
-                    else:
-                        print("The file does not exist")
-                elif filelist[fileheader] == 'ReplaceInput':
-                    upstreamframe = self.changes[fileheader]['upstreamframe']
-                    fileEditPath = self.sagaapicall.downloadFileCall(upstreamframe.filestrack[fileheader],
-                                                             wf.containerworkingfolder)
-                    fileb = open(fileEditPath, 'rb')
-                    upstreammd5 = hashlib.md5(fileb.read()).hexdigest()  ## md5 shouldn't need to be reread
-                    if upstreammd5 != upstreamframe.filestrack[fileheader].md5:
-                        raise (
-                            'Saga Error: upstream md5 and downloaded md5 file does not match')  # sanity check for now
-                    wf.filestrack[fileheader].md5 = upstreammd5  ### IS this really necessary?
-                    wf.filestrack[fileheader].connection.Rev = self.changes[fileheader]['revision']
 
-            wf.writeoutFrameYaml()
+                # if actions == 'Overwrite':
+                #     fn = self.sagaapicall.downloadFileCall(filetrack=nf.filestrack[fileheader],
+                #                                    containerworkingfolder=container.containerworkingfolder)
+                #     wf.filestrack[fileheader].md5 = nf.filestrack[fileheader].md5
+                #     wf.filestrack[fileheader].lastEdited = nf.filestrack[fileheader].lastEdited
+                #
+                # elif filelist[fileheader] == 'Download Copy':
+                #     filename, ext = os.path.splitext(wf.filestrack[fileheader].file_name)
+                #     filecopy_name = filename + '_' + nf.FrameName + 'Copy' + \
+                #                     ext
+                #     fn = self.sagaapicall.downloadFileCall(nf.filestrack[fileheader],
+                #                                    wf.containerworkingfolder, filecopy_name)
+                #     print('No changes to Frame')
+                # elif filelist[fileheader] == 'Download':
+                #     fn = self.sagaapicall.downloadFileCall(nf.filestrack[fileheader],
+                #                                    wf.containerworkingfolder)
+                #     ft = nf.filestrack[fileheader]
+                #     if ft.connection.connectionType.name in [typeRequired, typeOutput]:
+                #         wf.filestrack[fileheader] = nf.filestrack[fileheader]
+                #     else:
+                #         raise ('Under Construction')
+                #     # sagaguimodel.maincontainer.addFileObject(fileinfo=newfileobj)
+                # elif filelist[fileheader] == 'Delete':
+                #     filePath = os.path.join(
+                #         wf.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+                #         wf.filestrack[fileheader].file_name)
+                #     if os.path.exists(filePath):
+                #         os.remove(filePath)
+                #         container.removeFileHeader(fileheader)
+                #     else:
+                #         print("The file does not exist")
+                # elif filelist[fileheader] == 'ReplaceInput':
+                #     upstreamframe = self.changes[fileheader]['upstreamframe']
+                #     fileEditPath = self.sagaapicall.downloadFileCall(upstreamframe.filestrack[fileheader],
+                #                                              wf.containerworkingfolder)
+                #     fileb = open(fileEditPath, 'rb')
+                #     upstreammd5 = hashlib.md5(fileb.read()).hexdigest()  ## md5 shouldn't need to be reread
+                #     if upstreammd5 != upstreamframe.filestrack[fileheader].md5:
+                #         raise (
+                #             'Saga Error: upstream md5 and downloaded md5 file does not match')  # sanity check for now
+                #     wf.filestrack[fileheader].md5 = upstreammd5  ### IS this really necessary?
+                #     wf.filestrack[fileheader].connection.Rev = self.changes[fileheader]['revision']
+            #
+            # wf.writeoutFrameYaml()
 
     def iscontainerinsync(self):
         iscontainerinsync = True
         for fileheader, change in self.changes.items():
-            if len(set(change['reason']).intersection(NOTINSYNCREASONSET))>0:
+            if change.conflict or change.needresolve:
                 iscontainerinsync= False
 
         return iscontainerinsync
 
 
-def numofRev(rev):
-    m = re.search('Rev(\d+)', rev)
-    if m:
-        return int(m.group(1))
-    else:
-        return 0
 

@@ -14,7 +14,8 @@ import json
 from Config import BASE
 
 # from PyQtTesting import BASE
-
+from os.path import join
+from Config import sourcecodedirfromconfig
 import random
 import string
 from SagaApp.Section import Section
@@ -23,7 +24,8 @@ class newSectionDialog(QDialog):
     def __init__(self, mainguihandle, advice):
         super().__init__()
         self.mainguihandle=mainguihandle
-        uic.loadUi("Graphics/UI/newSection.ui", self)
+
+        uic.loadUi(join(sourcecodedirfromconfig, "Graphics", "UI", "newSection.ui"), self)
 
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:

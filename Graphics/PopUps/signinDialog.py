@@ -39,16 +39,17 @@ class SigninDialog(QDialog):
         self.password.setText(testerlogin['password'])
         self.signedin=False
 
-        buttonBox = QDialogButtonBox(self)
-        signinbttn = buttonBox.addButton('Sign In', QDialogButtonBox.ActionRole)
+        buttonBox = QDialogButtonBox(QDialogButtonBox.Cancel)
+        signinbttn = buttonBox.addButton('Sign In', QDialogButtonBox.AcceptRole)
+        # cancelbttn = buttonBox.addButton('Cancel', )
         # genbttn = buttonBox.addButton('Generate new User', QDialogButtonBox.ActionRole)
         # signupbttn = buttonBox.addButton('Sign Up', QDialogButtonBox.ActionRole)
-        cancelbttn = buttonBox.addButton('Cancel', QDialogButtonBox.AcceptRole)
+
 
         # genbttn.clicked.connect(self.gen)
-        cancelbttn.clicked.connect(self.close)
-        # signupbttn.clicked.connect(self.signup)
         signinbttn.clicked.connect(self.signin)
+        # signupbttn.clicked.connect(self.signup)
+        buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.close)
 
 
 

@@ -15,16 +15,18 @@ import sys
 import requests
 import json
 from Config import BASE
-
+from os.path import join
+from Config import sourcecodedirfromconfig
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
 from SagaGuiModel import sagaguimodel
 
 class AddFileToContainerPopUp(QDialog):
     def __init__(self, containerworkdir,containerinfodict,maincontainer:Container,filetype=typeInput):
         super().__init__()
-        uic.loadUi("Graphics/UI/AddFileToContainer.ui", self)
+
+        uic.loadUi(join(sourcecodedirfromconfig, "Graphics", "UI", "AddFileToContainer.ui"), self)
         # self.containerpathlbl.setText(path)
-        containerinfodict = sagaguimodel.sagaapicall.getContainerInfoDict()
+        containerinfodict = sagaguimodel.containerinfodict
 
         if maincontainer.containerId in containerinfodict: del containerinfodict[maincontainer.containerId]### self container should not show up in input.
 
@@ -119,12 +121,13 @@ class AddFileToContainerPopUp(QDialog):
         containerName = containerListindex.model().data(index, 0)
         containerId=containerListindex.model().containernametoid[containerName]
 
-        refcontainerpath = os.path.join(sagaguimodel.desktopdir, 'ContainerMapWorkDir', containerId , CONTAINERFN)
-        if os.path.exists(refcontainerpath):
-            self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
-        else:
-            containerworkingfolder = os.path.join(sagaguimodel.desktopdir,'ContainerMapWorkDir', containerId)
-            containerworkingfolder, self.selectedContainer=sagaguimodel.downloadContainer(containerworkingfolder, containerId)
+        # refcontainerpath = os.path.join(sagaguimodel.desktopdir, 'ContainerMapWorkDir', containerId , CONTAINERFN)
+        # if os.path.exists(refcontainerpath):
+        #     self.selectedContainer = Container.LoadContainerFromYaml(refcontainerpath)
+        # else:
+        #
+        #     containerworkingfolder, self.selectedContainer=sagaguimodel.downloadContainer(containerworkingfolder, containerId)
+        self.selectedContainer = sagaguimodel.provideContainer(containerId)
         # self.tester.setText(self.selectedContainer.containerName)
         self.refContainerPlot.setContainer(self.selectedContainer)
         self.refContainerPlot.plot({})

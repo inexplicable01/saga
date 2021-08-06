@@ -14,8 +14,8 @@ import requests
 regex = '^(\w|\.|\_|\-)+[@](\w|\_|\-|\.)+[.]\w{2,3}$'
 from SagaGuiModel import sagaguimodel
 from Config import BASE
-# Define a function for
-# for validating an Email
+from os.path import join
+from Config import sourcecodedirfromconfig
 
 
 def check(email):
@@ -30,7 +30,8 @@ def check(email):
 class permissionsDialog(QDialog):
     def __init__(self, mainContainer:Container, mainguihandle):
         super().__init__()
-        uic.loadUi("Graphics/UI/permissionsDialog.ui", self)
+
+        uic.loadUi(join(sourcecodedirfromconfig, "Graphics", "UI", "permissionsDialog.ui"), self)
         self.mainguihandle= mainguihandle
         self.mainContainer = mainContainer
         response = requests.get(BASE + 'PERMISSIONS/getByContainer',
