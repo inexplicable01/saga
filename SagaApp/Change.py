@@ -114,6 +114,7 @@ class Change():
     def analysisState(self):
         if self.filetype==typeInput:
             if self.alterinput:
+                self.conflict = True
                 self.description ='Saga currently does not support Input editing.  Please save your edited input as a working/output file.'
             else:
                 if self.inputscenariono==10:

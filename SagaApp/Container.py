@@ -60,8 +60,6 @@ class Container:
 
     def updatememorydict(self):
         yamllist = glob.glob(os.path.join(self.containerworkingfolder, 'Main', 'Rev*.yaml'))
-
-
         for yamlfn in yamllist:
             revyaml = os.path.basename(yamlfn)
             if revyaml not in self.memoryframesdict.keys():
@@ -216,16 +214,16 @@ class Container:
         wffilesupdated = []
         filesupdated = False
         for fileheader in wf.filestrack.keys():
-            if wf.filestrack[fileheader].connection.connectionType.name in [typeOutput, typeRequired]:
-                filefullpath = os.path.join(self.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
-                                        wf.filestrack[fileheader].file_name)
-                fileb = open(filefullpath, 'rb')
-                readmd5 = hashlib.md5(fileb.read()).hexdigest()
-                if wf.filestrack[fileheader].md5!=readmd5:
-                    wf.filestrack[fileheader].md5 = readmd5
-                    filesupdated = True
-                    wffilesupdated.append((fileheader, filefullpath))
-                    wf.filestrack[fileheader].lastEdited = os.path.getmtime(filefullpath)
+            # if wf.filestrack[fileheader].connection.connectionType.name in [typeOutput, typeRequired]:
+            filefullpath = os.path.join(self.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+                                    wf.filestrack[fileheader].file_name)
+            fileb = open(filefullpath, 'rb')
+            readmd5 = hashlib.md5(fileb.read()).hexdigest()
+            if wf.filestrack[fileheader].md5!=readmd5:
+                wf.filestrack[fileheader].md5 = readmd5
+                filesupdated = True
+                wffilesupdated.append((fileheader, filefullpath))
+                wf.filestrack[fileheader].lastEdited = os.path.getmtime(filefullpath)
         if filesupdated:
             wf.writeoutFrameYaml()
         return filesupdated, wffilesupdated

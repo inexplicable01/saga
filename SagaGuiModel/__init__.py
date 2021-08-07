@@ -333,22 +333,38 @@ class SagaGuiModel():
         alldownloaded = True
             # wf.refreshedcheck = True
 
-        def makesurenotoverwrite(ft:FileTrack, containerworkingfolder, lastupdated):
+        def makesurenotoverwrite(ft:FileTrack, containerworkingfolder, append):
 
             filefullpath = join(containerworkingfolder, ft.ctnrootpath,ft.file_name)
             filename, file_extension = os.path.splitext(ft.file_name)
             # edited = '_wk'
             newfilename = filefullpath
             while os.path.exists(newfilename):
-                newfile_name = filename + lastupdated + file_extension
+                newfile_name = filename + append + file_extension
                 newfilename = join(containerworkingfolder, ft.ctnrootpath,newfile_name)
-                edited = edited + '+'
+                append = append + '+'
             shutil.copyfile(filefullpath, newfilename)
+            return newfilename
 
         for fileheader, actionlist in combinedactionstate.items():
             for action in actionlist:       ### Main action sets to the working frame
                 change = action['change']
                 if action['main']:
+                    if change.alterinput:
+                        newfilename = makesurenotoverwrite(action['filetrack'], self.maincontainer.containerworkingfolder, 'altered_'+change.wffiletrack.connection.Rev)
+                        self.maincontainer.addFileTrack(action['filetrack'])
+                        newfileheader = action['newfileheader']
+                        self.maincontainer.FileHeaders[newfileheader] = {'Container': 'here', 'type': typeRequired}
+                        # filepath =
+                        self.maincontainer.workingFrame.addFileTotrack(newfileheader, newfilename, typeRequired,
+                                                         action['filetrack'].rootpathlist())
+                        # revyaml = change.wffiletrack.connection.Rev + '.yaml'
+                        # pastframe = change.upcont.memoryframesdict[revyaml]
+                        referencefiletrack = self.maincontainer.getRefFrame().filestrack[change.fileheader]
+                        self.maincontainer.workingFrame.filestrack[change.fileheader] = self.maincontainer.getRefFrame().filestrack[change.fileheader]
+                        self.sagaapicall.downloadFileCall(filetrack=referencefiletrack,
+                                                          containerworkingfolder=self.maincontainer.containerworkingfolder)
+
                     if change.filetype == typeInput:
                         ## what are the choices  There are 3
                         ## If user selected Local  It might mean

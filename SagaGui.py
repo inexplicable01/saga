@@ -30,7 +30,7 @@ import logging
 import traceback
 import yaml
 import warnings
-from Config import BASE,mapdetailstxt, testerlogin, TEMPCONTAINERFN, sourcecodedirfromconfig
+from Config import BASE,mapdetailstxt, testerlogin, TEMPCONTAINERFN, sourcecodedirfromconfig, CONTAINERFN
 import sys
 from datetime import datetime
 from os.path import join
@@ -124,7 +124,7 @@ class UI(QMainWindow):
                 self.adjustGuiByUserStatusChange()
                 self.guireset()
                 self.loadSection()
-            containerexample = 'C:/Users/waich/LocalGitProjects/testcontainers_saga/FormationDesignGroup/Engineering/'+TEMPCONTAINERFN
+            containerexample = 'C:/Users/waich/LocalGitProjects/testcontainers_saga/FormationDesignGroup/ConflictsTester/'+CONTAINERFN
             self.maincontainertab.readcontainer(containerexample)
         self.show()
 

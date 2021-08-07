@@ -90,8 +90,13 @@ class refreshContainerPopUp(QDialog):
             checkboxindex = model.index(r, checkboxcol)
             if model.checkState(QPersistentModelIndex(checkboxindex)):
                 rowchecked = True
+            if change.alterinput:
+                if len(model.actionstate[change.fileheader])>0:
+                    if len(model.actionstate[change.fileheader][0]['newfileheader'])>4:
+                        rowchecked= True
 
-        self.rowschecked[fileheader] = rowchecked
+        if fileheader in self.rowschecked.keys():## this is to ensure the notice headers don't get counted also.
+            self.rowschecked[fileheader] = rowchecked
         # for colno in model.checkcolumns:
         #     if model.checkState(QPersistentModelIndex(index)):
         #     else:

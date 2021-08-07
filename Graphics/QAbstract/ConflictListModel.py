@@ -93,8 +93,20 @@ class SyncListModel(QAbstractTableModel):
 
         if not index.isValid():
             return False
+        if role ==Qt.EditRole:
+            row = index.row()
+            col = index.column()
+            change = self.changearray[row]
+            print('goes through here as edit?')
+            self.actionstate[change.fileheader]=[{'main': True,
+                                                        'newfileheader': value,
+                                                        'filetrack': change.wffiletrack,
+                                                        'filetracktype': filetracktypes[col],
+                                                        'filetype': change.filetype,
+                                                        'change': change
+                                                        }]
         if role == Qt.CheckStateRole:
-            # print('goes through here right?')
+            print('goes through here right?')
             row = index.row()
             col = index.column()
             change = self.changearray[row]
@@ -137,12 +149,14 @@ class SyncListModel(QAbstractTableModel):
         col = index.column()
         change = self.changearray[row]
         if index.column() in self.checkcolumns:
-            if self.headers[col] == CURRENT:
-                if change.md5changed:
-                    fl |= Qt.ItemIsUserCheckable#Qt.ItemIsEditable
-            elif self.headers[col] == self.CURRENTREVX:
+            # if self.headers[col] == CURRENT:
+            #     if change.md5changed:
+            #         fl |= Qt.ItemIsUserCheckable#Qt.ItemIsEditable
+            if self.headers[col] == self.CURRENTREVX:
                 if change.lffiletrack or change.inputscenariono==4 or change.reqoutscenariono==4:
                     fl |= Qt.ItemIsUserCheckable#Qt.ItemIsEditable
+                if change.alterinput:
+                    fl |= Qt.ItemIsEditable
             elif self.headers[col] == self.NEWESTREVX:
                 # fl |= Qt.ItemIsUserCheckable
                 if change.nffiletrack or change.inputscenariono==3 or change.reqoutscenariono==3:
@@ -170,6 +184,9 @@ class SyncListModel(QAbstractTableModel):
 
             elif self.headers[col]==self.CURRENTREVX:
                 if change.conflict:
+                    if change.alterinput:
+                        if len(self.actionstate[change.fileheader])>0:
+                            return self.actionstate[change.fileheader][0]['newfileheader']
                     if change.filetype==typeInput:
                         if change.inputscenariono==3:
                             return 'Keep File Added'
@@ -268,7 +285,10 @@ class SyncListModel(QAbstractTableModel):
                 #         # if change.md5changed or change.inputscenariono == 1 or change.reqoutscenariono == 1:
                 #         return self.checkState(QPersistentModelIndex(index))
                 if self.headers[col] == self.CURRENTREVX:
-                    return self.checkState(QPersistentModelIndex(index))
+                    if change.alterinput:
+                        pass
+                    else:
+                        return self.checkState(QPersistentModelIndex(index))
                 elif self.headers[col] == self.NEWESTREVX:
                     # if change.nffiletrack or change.inputscenariono==3 or change.reqoutscenariono==3:
                     if not change.wf_synced_nf and not change.nf_synced_uf:
@@ -312,6 +332,9 @@ class SyncListModel(QAbstractTableModel):
         #     checkboxindex = self.index(row, col)
         #     if self.checkState(QPersistentModelIndex(checkboxindex)):
         #         self.actionstate[fileheader]
+        if change.alterinput:
+            return 'Please type into the Current Rev cell a new fileheader name for the altered input as a working file.'
+
         if len(self.actionstate[fileheader])==0:
             if change.inputscenariono in [1,3,4] or change.reqoutscenariono in [1,3,4]:
                 return 'Please select only one option'
