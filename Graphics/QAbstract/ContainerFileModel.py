@@ -293,7 +293,7 @@ class ContainerFileDelegate(QStyledItemDelegate):
                     painter.setPen(QPen(QBrush(Qt.red), 1))
                     painter.setBrush(QBrush(Qt.red))
                     painter.drawEllipse(QRectF(tl, br))
-                elif change.needresolve or change.md5changed:
+                elif change.noteworthy or change.md5changed:
                     midpoint = QPointF(option.rect.left() + width * 2 / 4, option.rect.center().y())
                     tl = midpoint + QPointF(0.3 * height, 0.3 * height)
                     br = midpoint + QPointF(-0.3 * height, -0.3 * height)

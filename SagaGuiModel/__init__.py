@@ -6,6 +6,7 @@ from SagaApp.SagaUtil import makefilehidden, ensureFolderExist, unhidefile
 from Config import sourcecodedirfromconfig,BASE, mapdetailstxt, CONTAINERFN, typeInput,typeOutput,typeRequired,NEWCONTAINERFN,SERVERNEWREVISION,SERVERFILEADDED, SERVERFILEDELETED,UPDATEDUPSTREAM, TEMPFRAMEFN, TEMPCONTAINERFN, NEWFRAMEFN
 import yaml
 import json
+import shutil
 
 from SagaApp.Container import Container
 from SagaApp.FrameStruct import Frame
@@ -265,6 +266,7 @@ class SagaGuiModel():
     def downloadbranch(self, branch='Main'):
         self.sagaapicall.downloadbranch(self.maincontainer.containerworkingfolder, self.maincontainer, branch )
         self.maincontainer.updatememorydict()
+        self.maincontainer.updateRevNum()
 
     def addUserToContainer(self,emailtoadd):
         permissionsresponse = self.sagaapicall.addUserToContainerCall(self.userdata,emailtoadd,self.userdata['current_sectionid'],self.maincontainer.containerId)
@@ -330,55 +332,86 @@ class SagaGuiModel():
         wf = self.maincontainer.workingFrame
         alldownloaded = True
             # wf.refreshedcheck = True
+
+        def makesurenotoverwrite(ft:FileTrack, containerworkingfolder, lastupdated):
+
+            filefullpath = join(containerworkingfolder, ft.ctnrootpath,ft.file_name)
+            filename, file_extension = os.path.splitext(ft.file_name)
+            # edited = '_wk'
+            newfilename = filefullpath
+            while os.path.exists(newfilename):
+                newfile_name = filename + lastupdated + file_extension
+                newfilename = join(containerworkingfolder, ft.ctnrootpath,newfile_name)
+                edited = edited + '+'
+            shutil.copyfile(filefullpath, newfilename)
+
         for fileheader, actionlist in combinedactionstate.items():
-            for action in actionlist:
-            ### Main action sets to the working frame
+            for action in actionlist:       ### Main action sets to the working frame
                 change = action['change']
-                try:
-                    file_name = action['filetrack'].file_name
-                    fn = os.path.join(self.maincontainer.containerworkingfolder, action['filetrack'].ctnrootpath,
-                                      file_name)
-                    if os.path.exists(fn) and action['filetype'] != typeInput:
-                        filename, file_extension = os.path.splitext(action['filetrack'].file_name)
-                        copiedfile_name = filename + '_' + action['filetrack'].lastupdated + '+_' + file_extension
-                        copiedfn = os.path.join(self.maincontainer.containerworkingfolder,
-                                                action['filetrack'].ctnrootpath,
-                                                copiedfile_name)
-                        os.rename(fn, copiedfn)
-                except Exception as e:
-                    print( change.fileheader)
-                    print(e)
-                    print(action['filetrack'])
                 if action['main']:
+                    if change.filetype == typeInput:
+                        ## what are the choices  There are 3
+                        ## If user selected Local  It might mean
+                        if action['filetracktype']=='wffiletrack':
+                            if change.wffiletrack:
+                                pass
+                            else:
+                                self.maincontainer.removeFileHeader(change.fileheader)
+                        elif action['filetracktype']=='nffiletrack':
+                            if change.nffiletrack:
+                                try:
+                                    # makesurenotoverwrite(action['filetrack'], self.maincontainer.containerworkingfolder)
+                                    fn = self.sagaapicall.downloadFileCall(filetrack=action['filetrack'],
+                                                                           containerworkingfolder=self.maincontainer.containerworkingfolder)
+                                except:
+
+                                    alldownloaded = False
+                            else:
+                                self.maincontainer.removeFileHeader(change.fileheader)
+                            ## use newesttrack
+                            ## download newest
+                        elif action['filetracktype']=='uffiletrack':
+                            ## download upstream
+                            try:
+                                # makesurenotoverwrite(action['filetrack'], self.maincontainer.containerworkingfolder)
+                                fn = self.sagaapicall.downloadFileCall(filetrack=action['filetrack'],
+                                                                       containerworkingfolder=self.maincontainer.containerworkingfolder)
+                            except:
+                                alldownloaded = False
+                    elif change.filetype in  [typeOutput, typeRequired]:
+                        if action['filetracktype']=='wffiletrack':
+                            if change.wffiletrack:
+                                pass
+                            else:
+                                self.maincontainer.removeFileHeader(change.fileheader)
+                        elif action['filetracktype']=='nffiletrack':
+                            if change.nffiletrack:
+                                try:
+                                    if change.md5changed:
+                                        makesurenotoverwrite(action['filetrack'], self.maincontainer.containerworkingfolder, action['filetrack'].lastupdated )
+                                    fn = self.sagaapicall.downloadFileCall(filetrack=action['filetrack'],
+                                                                           containerworkingfolder=self.maincontainer.containerworkingfolder)
+                                except:
+                                    alldownloaded = False
+                            else:
+                                self.maincontainer.removeFileHeader(change.fileheader)
+
+                    if fileheader not in wf.filestrack.keys():
+                        if action['filetracktype'] == 'uffiletrack':
+                            self.maincontainer.addFileObject(
+                                {'fileheader': fileheader,
+                                 'filetype': typeInput,
+                                 'containerfileinfo': {'Container': change.upcont.containerId,
+                                                       'type': typeInput},
+                                 'UpstreamContainer': change.upcont,
+                                 'ctnrootpathlist': action['filetrack'].ctnrootpathlist}
+                            )
+                        else:
+                            self.maincontainer.addFileTrack(action['filetrack'])
+
                     if action['filetracktype']=='wffiletrack':
                         pass
-                    elif action['filetrack'] is None or action['filetracktype']=='lffiletrack' and (change.reqoutscenariono in [5,4] or change.inputscenariono in [5,4]):
-                        if change.fileheader in self.maincontainer.FileHeaders.keys():
-                            self.maincontainer.removeFileHeader(change.fileheader)
-                    elif action['filetracktype']=='nffiletrack' and (change.reqoutscenariono==3 or change.inputscenariono==3):
-                        self.maincontainer.removeFileHeader(change.fileheader)
                     else:
-
-                        try:
-                            fn = self.sagaapicall.downloadFileCall(filetrack=action['filetrack'],
-                                                                   containerworkingfolder=self.maincontainer.containerworkingfolder,
-                                                                   newfilename=file_name)
-                        except:
-                            alldownloaded = False
-                        # if mainaction['filetracktype']=='uffiletrack':
-                        if fileheader not in wf.filestrack.keys():
-                            if action['filetracktype']=='uffiletrack':
-                                self.maincontainer.addFileObject(
-                                    {'fileheader': fileheader,
-                                     'filetype': typeInput,
-                                     'containerfileinfo': {'Container': change.upcont.containerId,
-                                                           'type': typeInput},
-                                     'UpstreamContainer': change.upcont,
-                                     'ctnrootpathlist': action['filetrack'].ctnrootpathlist }
-                                )
-                            else:
-                                self.maincontainer.addFileTrack(action['filetrack'])
-
                         if action['filetype'] == typeInput:
                             wf.filestrack[fileheader].md5 = action['filetrack'].md5
                             if action['filetracktype'] == 'uffiletrack':
@@ -391,16 +424,44 @@ class SagaGuiModel():
                             wf.filestrack[fileheader].lastupdated = action['filetrack'].lastupdated
                             wf.filestrack[fileheader].lastEdited = action['filetrack'].lastEdited
                 else:
-
                     if action['filetracktype']=='wffiletrack':
-                        pass
+                        makesurenotoverwrite(action['filetrack'], self.maincontainer.containerworkingfolder)
                     else:
-
                         fn, file_extension = os.path.splitext(action['filetrack'].file_name)
                         file_name = fn + '_' + action['filetrack'].lastupdated + file_extension
                         fn = self.sagaapicall.downloadFileCall(filetrack=action['filetrack'],
                                                                containerworkingfolder=self.maincontainer.containerworkingfolder,
                                                                newfilename=file_name)
+                # if mainaction['filetracktype']=='uffiletrack':
+
+                # S1. Keep Fileheader
+                ## S2. Remove File header
+                ## S3 conflict, Keep Input, reject File removal
+                ## S4 Ignore new input, reject File Adding
+                ## S5 Local would mean use local Connection, Newest would mean use newest Connection, UpStream would mean use upstream
+                ## S6 L would mean keep removal.  N would mean se newest connection.  Upstream would download latest Rev.
+                ## S7 identical to S5.
+                ## S8, L or U,
+                ## S9, L or U
+                ## S10, L or U
+
+                #
+                # try:
+                #     file_name = action['filetrack'].file_name
+                #     fn = os.path.join(self.maincontainer.containerworkingfolder, action['filetrack'].ctnrootpath,
+                #                       file_name)
+                #     if os.path.exists(fn) and action['filetype'] != typeInput:
+                #         filename, file_extension = os.path.splitext(action['filetrack'].file_name)
+                #         copiedfile_name = filename + '_' + action['filetrack'].lastupdated + '+_' + file_extension
+                #         copiedfn = os.path.join(self.maincontainer.containerworkingfolder,
+                #                                 action['filetrack'].ctnrootpath,
+                #                                 copiedfile_name)
+                #         os.rename(fn, copiedfn)
+                # except Exception as e:
+                #     print( change.fileheader)
+                #     print(e)
+                #     print(action['filetrack'])
+
                 # if mainaction['filetracktype']=='uffiletrack':
 
             # if importance == 'main':
@@ -428,6 +489,7 @@ class SagaGuiModel():
             #         return 'Create ' + self.currentrev + ' copy named ' + filetrack.file_name + '_' + filetrack.lastupdated + '.\n\n'
             #     elif action['filetracktype'] == 'wffiletrack':
             #         return 'Create your current working file as ' + filetrack.file_name + '_' + self.currentrev + '_edited.\n\n'
+        wf.FrameName=self.newestframe.FrameName
         if not alldownloaded:
             print('What to do from here?')
         wf.writeoutFrameYaml()

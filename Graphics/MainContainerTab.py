@@ -3,29 +3,19 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Graphics.GuiUtil import setstyleoflabel
-from Graphics.QAbstract.HistoryListModel import HistoryListModel
 
 from Graphics.QAbstract.ContainerFileModel import ContainerFileModel, ContainerFileDelegate
 from Graphics.QAbstract.historycelldelegate import HistoryCellDelegate
 
 # from Graphics.Dialogs import alteredinputFileDialog
 # from Graphics.ContainerPlot import ContainerPlot
+from Graphics.Dialogs import ErrorMessage, removeFileDialog, commitDialog, alteredinputFileDialog\
+    , downloadProgressBar, commitConflictCheck
+from Graphics.PopUps.refreshContainerPopUp import refreshContainerPopUp
 
-
-from Graphics.Dialogs import alteredinputFileDialog
-from Graphics.ContainerPlot import ContainerPlot
-from Graphics.Dialogs import ErrorMessage, removeFileDialog, commitDialog, alteredinputFileDialog, \
-    refreshContainerPopUp, downloadProgressBar, commitConflictCheck
-
-from functools import partial
-from Graphics.PopUps.selectFileDialog import selectFileDialog
-
-import requests
 import os
 from Config import BASE, SERVERNEWREVISION, SERVERFILEADDED, SERVERFILEDELETED, NEWCONTAINERFN, TEMPCONTAINERFN, \
     LOCALFILEHEADERADDED, TEMPFRAMEFN, colorscheme, typeOutput, typeInput, typeRequired, UPDATEDUPSTREAM
-from SagaApp.WorldMap import WorldMap
-from Graphics.GuiUtil import AddIndexToView
 from Graphics.PopUps.AddFileToContainerPopUp import AddFileToContainerPopUp
 from SagaGuiModel import sagaguimodel
 from datetime import datetime
@@ -51,20 +41,13 @@ class MainContainerTab():
         self.commitmsglbl_2 = mainguihandle.commitmsglbl_2
         self.contstackedwidget = mainguihandle.contstackedwidget
         self.newcontaineredit = mainguihandle.newcontaineredit
-        # self.newcontaineredit = mainguihandle.newcontaineredit
         self.selectedFileHeader = mainguihandle.selectedFileHeader
-        # self.editFileButton_2 = mainguihandle.editFileButton_2
-        # self.removeFileButton_2 = mainguihandle.removeFileButton_2
         self.removefilebttn = mainguihandle.removefilebttn
-        # self.fileHistoryBttn = mainguihandle.fileHistoryBttn
-        # self.fileHistoryBttn.setDisabled(True)
+
         self.containerfiletable = mainguihandle.containerfiletable
-        # self.containerfiletable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
         self.containerfiletable.horizontalHeader().setStretchLastSection(True)
-
-
         self.containerfiletable.clicked.connect(self.containerfileselected)
+
         self.newcontainerlbl = mainguihandle.newcontainerlbl
         self.commitmsgboxlbl = mainguihandle.commitmsgboxlbl
         self.containerdescriplbl = mainguihandle.containerdescriplbl
@@ -139,15 +122,13 @@ class MainContainerTab():
             alldownloaded = sagaguimodel.dealWithUserSelection(combinedactionstate)
             if alldownloaded:
                 sagaguimodel.downloadbranch()
+            self.checkdelta()
+            if alldownloaded:
                 self.containerstatuslabel.setText(
                     'Container Refreshed!  This Container now is at a Rev ' + str(sagaguimodel.newestrevnum) + '+ state')
-            self.checkdelta()
+                # self.commit()
+
         #         TO DO add to commit function check of conflicting files and spit out error message or have user choose which file to commit
-        # pass along list of files different to pop up screen
-        # populate new pop up screen with list of files different and option for user to overwrite or download a copy
-        # return user selections
-        # download files from newest frame
-        # loop through changed files to overwrite or write a new copy
         # add functionality to commit to prevent commit if conflict exists
         #
         #     download container

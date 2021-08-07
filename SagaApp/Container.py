@@ -54,8 +54,14 @@ class Container:
             self.updatememorydict()
 
 
+    def updateRevNum(self):
+        refframefullpath, revnum = getFramePathbyRevnum(os.path.join(self.containerworkingfolder, 'Main'), 0)
+        self.revnum = revnum
+
     def updatememorydict(self):
         yamllist = glob.glob(os.path.join(self.containerworkingfolder, 'Main', 'Rev*.yaml'))
+
+
         for yamlfn in yamllist:
             revyaml = os.path.basename(yamlfn)
             if revyaml not in self.memoryframesdict.keys():
@@ -391,15 +397,17 @@ class Container:
     def setContainerForNextframe(self,yamlframefnfullpath):
         yamlframefn = os.path.basename(yamlframefnfullpath)
         self.workingFrame = Frame.loadRefFramefromYaml(yamlframefnfullpath, self.containerworkingfolder)
+        self.refframe = Frame.loadRefFramefromYaml(yamlframefnfullpath, self.containerworkingfolder)
         self.refframefullpath = yamlframefnfullpath
         self.save(fn=CONTAINERFN, commitprocess=True)
         # self.workingFrame.writeoutFrameYaml()
         self.workingFrame.writeoutFrameYaml(fn=TEMPFRAMEFN)
         self.workingFrame.workingyamlfn=TEMPFRAMEFN
-        m = re.search('Rev(\d+).yaml', yamlframefn)
-        if m:
-            self.revnum = int(m.group(1))
+        # m = re.search('Rev(\d+).yaml', yamlframefn)
+        # if m:
+        #     self.revnum = int(m.group(1))
         self.memoryframesdict[yamlframefn] = Frame.loadRefFramefromYaml(yamlframefnfullpath, self.containerworkingfolder)
+        self.updateRevNum()
 
     def prepareNewCommitCall(self, commitmessage):
 
