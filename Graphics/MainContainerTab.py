@@ -3,29 +3,19 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from Graphics.GuiUtil import setstyleoflabel
-from Graphics.QAbstract.HistoryListModel import HistoryListModel
 
 from Graphics.QAbstract.ContainerFileModel import ContainerFileModel, ContainerFileDelegate
 from Graphics.QAbstract.historycelldelegate import HistoryCellDelegate
 
 # from Graphics.Dialogs import alteredinputFileDialog
 # from Graphics.ContainerPlot import ContainerPlot
+from Graphics.Dialogs import ErrorMessage, removeFileDialog, commitDialog, alteredinputFileDialog\
+    , downloadProgressBar, commitConflictCheck
+from Graphics.PopUps.refreshContainerPopUp import refreshContainerPopUp
 
-
-from Graphics.Dialogs import alteredinputFileDialog
-from Graphics.ContainerPlot import ContainerPlot
-from Graphics.Dialogs import ErrorMessage, removeFileDialog, commitDialog, alteredinputFileDialog, \
-    refreshContainerPopUp, downloadProgressBar, commitConflictCheck
-
-from functools import partial
-from Graphics.PopUps.selectFileDialog import selectFileDialog
-
-import requests
 import os
 from Config import BASE, SERVERNEWREVISION, SERVERFILEADDED, SERVERFILEDELETED, NEWCONTAINERFN, TEMPCONTAINERFN, \
     LOCALFILEHEADERADDED, TEMPFRAMEFN, colorscheme, typeOutput, typeInput, typeRequired, UPDATEDUPSTREAM
-from SagaApp.WorldMap import WorldMap
-from Graphics.GuiUtil import AddIndexToView
 from Graphics.PopUps.AddFileToContainerPopUp import AddFileToContainerPopUp
 from SagaGuiModel import sagaguimodel
 from datetime import datetime
@@ -51,20 +41,13 @@ class MainContainerTab():
         self.commitmsglbl_2 = mainguihandle.commitmsglbl_2
         self.contstackedwidget = mainguihandle.contstackedwidget
         self.newcontaineredit = mainguihandle.newcontaineredit
-        # self.newcontaineredit = mainguihandle.newcontaineredit
         self.selectedFileHeader = mainguihandle.selectedFileHeader
-        # self.editFileButton_2 = mainguihandle.editFileButton_2
-        # self.removeFileButton_2 = mainguihandle.removeFileButton_2
         self.removefilebttn = mainguihandle.removefilebttn
-        # self.fileHistoryBttn = mainguihandle.fileHistoryBttn
-        # self.fileHistoryBttn.setDisabled(True)
+
         self.containerfiletable = mainguihandle.containerfiletable
-        # self.containerfiletable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
         self.containerfiletable.horizontalHeader().setStretchLastSection(True)
-
-
         self.containerfiletable.clicked.connect(self.containerfileselected)
+
         self.newcontainerlbl = mainguihandle.newcontainerlbl
         self.commitmsgboxlbl = mainguihandle.commitmsgboxlbl
         self.containerdescriplbl = mainguihandle.containerdescriplbl
@@ -139,15 +122,13 @@ class MainContainerTab():
             alldownloaded = sagaguimodel.dealWithUserSelection(combinedactionstate)
             if alldownloaded:
                 sagaguimodel.downloadbranch()
+            self.checkdelta()
+            if alldownloaded:
                 self.containerstatuslabel.setText(
                     'Container Refreshed!  This Container now is at a Rev ' + str(sagaguimodel.newestrevnum) + '+ state')
-            self.checkdelta()
+                # self.commit()
+
         #         TO DO add to commit function check of conflicting files and spit out error message or have user choose which file to commit
-        # pass along list of files different to pop up screen
-        # populate new pop up screen with list of files different and option for user to overwrite or download a copy
-        # return user selections
-        # download files from newest frame
-        # loop through changed files to overwrite or write a new copy
         # add functionality to commit to prevent commit if conflict exists
         #
         #     download container
@@ -280,31 +261,11 @@ class MainContainerTab():
     def readcontainer(self, containerpath):
         # path = 'C:/Users/waich/LocalGitProjects/saga/ContainerC/containerstate.yaml'
         # print('start of readcontainer' + datetime.now().isoformat())
-        goswitch, newsectionid , shouldmodelswitchmessage= sagaguimodel.shouldModelSwitch(containerpath)
-        # print('end of call' + datetime.now().isoformat())
-        msg = QMessageBox()
-        msg.setStandardButtons(QMessageBox.Ok)
-        if newsectionid is None:
-            print('shouldModelSwitch call produced some sort of error')
-            msg.setText(shouldmodelswitchmessage)
-            msg.exec_()
-
-        if goswitch:
-            report, usersection = sagaguimodel.sectionSwitch(newsectionid)
-            msg.setText(report['status'])
-            if report['status']== 'User Current Section successfully changed':
-                msg.setIcon(QMessageBox.Information)
-            else:
-                msg.setIcon(QMessageBox.Critical)
-                ## if we arrived here, then that means either
-            msg.exec_()
-
         print('Loading ' + containerpath)
         # sagaguimodel.container_reset()# In case there is no section switch
-        # print('start of loadcontainer' + datetime.now().isoformat())
-        cont, histModel, containerfilemodel = sagaguimodel.loadContainer(containerpath, ismaincontainer=True)
+
+        cont = sagaguimodel.loadContainer(containerpath, ismaincontainer=True)
         print('end of loadcontainer' + datetime.now().isoformat())
-        # [self.workingdir, file_name] = os.path.split(containerpath)  ## working dir should be app level
         self.containerlabel.setText('Container Name : ' + cont.containerName)
         self.containerdescriplbl.setText(sagaguimodel.maincontainer.description)
         self.framelabel.setText(cont.workingFrame.FrameName)
@@ -317,15 +278,7 @@ class MainContainerTab():
             self.contstackedwidget.setCurrentIndex(0)## index 0 is container description
         ## Enable Permission button since Main Container
         self.mainguihandle.setPermissionsEnable()
-        # print('end of read container' + datetime.now().isoformat())
         self.checkdelta()
-
-    # def addwidget(self):
-    #     print('add widget')
-    #     if self.contstackedwidget.currentIndex()==0:
-    #         self.contstackedwidget.setCurrentIndex(1)
-    #     else:
-    #         self.contstackedwidget.setCurrentIndex(0)
 
     # def FileViewItemRectFeedback(self, type, view, fileheader, curContainer):
     #     self.curfileheader = fileheader

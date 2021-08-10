@@ -54,6 +54,10 @@ class Container:
             self.updatememorydict()
 
 
+    def updateRevNum(self):
+        refframefullpath, revnum = getFramePathbyRevnum(os.path.join(self.containerworkingfolder, 'Main'), 0)
+        self.revnum = revnum
+
     def updatememorydict(self):
         yamllist = glob.glob(os.path.join(self.containerworkingfolder, 'Main', 'Rev*.yaml'))
         for yamlfn in yamllist:
@@ -210,16 +214,16 @@ class Container:
         wffilesupdated = []
         filesupdated = False
         for fileheader in wf.filestrack.keys():
-            if wf.filestrack[fileheader].connection.connectionType.name in [typeOutput, typeRequired]:
-                filefullpath = os.path.join(self.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
-                                        wf.filestrack[fileheader].file_name)
-                fileb = open(filefullpath, 'rb')
-                readmd5 = hashlib.md5(fileb.read()).hexdigest()
-                if wf.filestrack[fileheader].md5!=readmd5:
-                    wf.filestrack[fileheader].md5 = readmd5
-                    filesupdated = True
-                    wffilesupdated.append((fileheader, filefullpath))
-                    wf.filestrack[fileheader].lastEdited = os.path.getmtime(filefullpath)
+            # if wf.filestrack[fileheader].connection.connectionType.name in [typeOutput, typeRequired]:
+            filefullpath = os.path.join(self.containerworkingfolder, wf.filestrack[fileheader].ctnrootpath,
+                                    wf.filestrack[fileheader].file_name)
+            fileb = open(filefullpath, 'rb')
+            readmd5 = hashlib.md5(fileb.read()).hexdigest()
+            if wf.filestrack[fileheader].md5!=readmd5:
+                wf.filestrack[fileheader].md5 = readmd5
+                filesupdated = True
+                wffilesupdated.append((fileheader, filefullpath))
+                wf.filestrack[fileheader].lastEdited = os.path.getmtime(filefullpath)
         if filesupdated:
             wf.writeoutFrameYaml()
         return filesupdated, wffilesupdated
@@ -391,15 +395,17 @@ class Container:
     def setContainerForNextframe(self,yamlframefnfullpath):
         yamlframefn = os.path.basename(yamlframefnfullpath)
         self.workingFrame = Frame.loadRefFramefromYaml(yamlframefnfullpath, self.containerworkingfolder)
+        self.refframe = Frame.loadRefFramefromYaml(yamlframefnfullpath, self.containerworkingfolder)
         self.refframefullpath = yamlframefnfullpath
         self.save(fn=CONTAINERFN, commitprocess=True)
         # self.workingFrame.writeoutFrameYaml()
         self.workingFrame.writeoutFrameYaml(fn=TEMPFRAMEFN)
         self.workingFrame.workingyamlfn=TEMPFRAMEFN
-        m = re.search('Rev(\d+).yaml', yamlframefn)
-        if m:
-            self.revnum = int(m.group(1))
+        # m = re.search('Rev(\d+).yaml', yamlframefn)
+        # if m:
+        #     self.revnum = int(m.group(1))
         self.memoryframesdict[yamlframefn] = Frame.loadRefFramefromYaml(yamlframefnfullpath, self.containerworkingfolder)
+        self.updateRevNum()
 
     def prepareNewCommitCall(self, commitmessage):
 

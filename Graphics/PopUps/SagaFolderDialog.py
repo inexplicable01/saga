@@ -2,11 +2,6 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from Graphics.QAbstract.ContainerListModel import ContainerListModel
-import yaml
-# from SagaApp.FrameStruct import Frame
-# from SagaApp.Container import Container
-from SagaApp.FileObjects import FileTrack
 from Config import typeInput,typeRequired,typeOutput, CONTAINERFN
 from os.path import join, normpath
 import os

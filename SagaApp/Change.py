@@ -34,25 +34,35 @@ class Change():
         self.inputscenariono = None
         self.reqoutscenariono = None
 
-        self.needresolve = False
+        self.wf_synced_uf = None
+        self.nf_synced_uf = None
+        self.wf_synced_nf = None
+        # self.action = {'main':None}
+
+        # self.needresolve = False
         self.conflict = False
         self.noteworthy = False
 
     def md5comparison_LF_WF_NF(self):
         if self.lffiletrack.md5 == self.wffiletrack.md5:
             if self.wffiletrack.md5 == self.nffiletrack.md5:
+                self.wf_synced_nf=True
                 return 'Everything is in sync'
             else:
+                self.wf_synced_nf = False
                 self.conflict = True
                 return 'Newest version of {} has been updated.  Need to Resolve'
         else:
             if self.wffiletrack.md5 == self.nffiletrack.md5:## local frame
+                self.wf_synced_nf = True
                 return 'Current version of {} is identical to Updated Newest Frame. No Conflict.'
             else:
                 if self.lffiletrack.md5 != self.nffiletrack.md5:
                     self.conflict = True
+                    self.wf_synced_nf = False
                     return 'Newest frame of {} has been updated, while you have also update.  Need to Resolve Conflict.'
                 else:
+                    self.wf_synced_nf = False
                     self.conflict = True
                     return 'Newest frame of {} has not taken into account your changes.   Need to Resolve Conflict.'
 
@@ -65,34 +75,46 @@ class Change():
             if self.nffiletrack:
                 nfuprevnum = numofRev(self.nffiletrack.connection.Rev)
                 if wfuprevnum == ufrevnum:
+                    self.wf_synced_uf = True
                     if wfuprevnum == nfuprevnum:  # tri1
                         return THREEINPUT_SCENA.format(self.fileheader)
                     else:  # NF is out of sync although wrking frame is in sync.
-                        self.needresolve=True
+                        self.noteworthy=True
+                        self.nf_synced_uf = True
                         return THREEINPUT_SCENB.format(self.fileheader)
                 else:  # wfuprevnum != ufrevnum:
                     # upstreamupdated = True
+                    self.wf_synced_uf = False
                     if wfuprevnum==nfuprevnum:
-                        self.needresolve=True
+                        self.noteworthy=True
+                        self.nf_synced_uf = False
+                        self.wf_synced_nf = True
                         return THREEINPUT_SCENC.format(self.fileheader)
                         # pass  # WF and NF are at the same frame but not the same with upstream, no conflict.  Does WF want to update?
                     elif ufrevnum == nfuprevnum:# WF not eual to UF and NF same as UF means that NEwest frame is updated.   most likely newest frame has updated sync.
                         self.conflict = True
+                        self.nf_synced_uf = True
+                        self.wf_synced_nf = False
                         return THREEINPUT_SCEND.format(self.fileheader)
                     else:
                         self.conflict=True
+                        self.nf_synced_uf = False
+                        self.wf_synced_nf = False
                         return THREEINPUT_SCENE.format(self.fileheader)
             else:
                 if wfuprevnum == ufrevnum:
+                    self.wf_synced_uf = True
                     return 'Input working frame reference in sync with upstream frame'
                 else:
-                    self.needresolve= True
+                    self.wf_synced_uf = False
+                    self.noteworthy= True
                     return 'Input frame not in sync with upstream frame'
 
 
     def analysisState(self):
         if self.filetype==typeInput:
             if self.alterinput:
+                self.conflict = True
                 self.description ='Saga currently does not support Input editing.  Please save your edited input as a working/output file.'
             else:
                 if self.inputscenariono==10:
@@ -100,11 +122,12 @@ class Change():
                     if self.uffiletrack.lastupdated==self.wffiletrack.connection.Rev:
                         status = status + 'Current version of input file synced to upstream.'
                     else:
-                        self.needresolve = True
+                        self.noteworthy = True
                         status = status + 'Current input is using ' + self.wffiletrack.connection.Rev + ' ' \
                                 'and upstream input file was last updated in ' + self.uffiletrack.lastupdated
+
                     if self.lffiletrack.connection.Rev!=self.wffiletrack.connection.Rev:
-                        self.needresolve = True
+                        self.noteworthy = True
                         status= status + ' Your Input rev has been updated since the last commit of this container'
                     else:
                         status = status + 'Your Input Rev has not changed since the last commit of this container.'
@@ -117,7 +140,7 @@ class Change():
                     if self.uffiletrack.lastupdated==self.wffiletrack.connection.Rev:
                         status = status + 'Current version of input file synced to upstream.'
                     else:
-                        self.needresolve = True
+                        self.noteworthy = True
                         status = status + 'Current input is using ' + self.wffiletrack.connection.Rev + ' ' \
                                 'and upstream input file was last updated in ' + self.uffiletrack.lastupdated
                     self.description=  status
@@ -130,14 +153,16 @@ class Change():
                     self.conflict = True
                     self.description=  INPUT_NEWFRAME_SCENARIO5.format(self.fileheader) + self.SyncInputFiletrack()
                 elif self.inputscenariono==4:
-                    self.needresolve = True
+                    self.noteworthy = True
                     self.description=  INPUT_NEWFRAME_SCENARIO4.format(self.fileheader)
                 elif self.inputscenariono==3:
                     self.conflict = True
                     self.description=   self.SyncInputFiletrack() + INPUT_NEWFRAME_SCENARIO3
                 elif self.inputscenariono==2:
+                    self.noteworthy = True
                     self.description=  INPUT_NEWFRAME_SCENARIO2.format(self.fileheader)
                 elif self.inputscenariono==1:
+                    self.noteworthy = True
                     self.description=  self.SyncInputFiletrack() + INPUT_NEWFRAME_SCENARIO1
                 else:
                     self.description = 'Upstream is missing an output for this fileheader.  Requires techincial assistance.'
@@ -163,11 +188,12 @@ class Change():
             elif self.reqoutscenariono==5:
                 if self.wffiletrack.md5 == self.nffiletrack.md5:  ## local frame
                     self.description=  'This Local frame and the newest frame both added identical {} since ##RefFrameName.'
+                    self.noteworthy = True
                 else:
                     self.conflict = True
                     self.description=  'This Local frame and the newest frame both added fileheader {} since ##RefFrameName but with different files. Need to Resolve Conflict.'
             elif self.reqoutscenariono==4:
-                self.conflict= True
+                self.noteworthy= True
                 self.description=  'Newest Frame added fileheader {} .  Need to resolve.'
             elif self.reqoutscenariono==3:
                 self.conflict = True
@@ -183,7 +209,7 @@ class Change():
 
     def worthNoting(self):
         # worthNoting=False
-        if self.conflict or self.needresolve or self.noteworthy or self.md5changed:
+        if self.conflict or self.noteworthy or self.md5changed:
             return True
         return False
 
@@ -192,7 +218,7 @@ class Change():
         color = 'white'
         if self.conflict:
             color = 'red'
-        elif self.needresolve or self.md5changed:
+        elif self.noteworthy or self.md5changed:
             color = 'Yellow'
         elif self.noteworthy:
             color = 'cyan'

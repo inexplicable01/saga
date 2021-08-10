@@ -12,6 +12,7 @@ from Config import BASE,testerlogin
 from Graphics.PopUps.NewContainerDialog import newContainerDialog
 # from PyQtTesting import BASE
 from SagaGuiModel import sagaguimodel
+from datetime import datetime
 
 import random
 import string
@@ -85,11 +86,13 @@ class SigninDialog(QDialog):
 
     def signin(self):
         # print(self.email.text())
-        signinstatus = sagaguimodel.sagaapicall.signInCall(self.email.text(), self.password.text(), sagaguimodel.tokenfile)
+        signinstatus = sagaguimodel.signIn(self.email.text(), self.password.text())
 
         # self.mainguihandle.checkUserStatus()
         if signinstatus['status']=='success':
             self.signedin = True
             self.accept()
+
+            print('usertoken[status] ' + signinstatus['status'] + datetime.now().isoformat())
         else:
             print('ATTENTION: Need View code to deal with sign in failure')
