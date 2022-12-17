@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
+    <width>1071</width>
     <height>826</height>
    </rect>
   </property>
@@ -22,13 +22,15 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Saga Gui</string>
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget
-{	background-color: #333333;
-	color: white;
-}</string>
+{	background-color: white;
+	color: black;
+}
+
+</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
@@ -41,14 +43,10 @@
     <cursorShape>IBeamCursor</cursorShape>
    </property>
    <property name="styleSheet">
-    <string notr="true">QMainWindow
-
-
-
-</string>
+    <string notr="true"/>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_8">
-    <item>
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="0">
      <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
       <item>
        <widget class="QTabWidget" name="maintabwidget">
@@ -62,20 +60,15 @@
           <kerning>true</kerning>
          </font>
         </property>
-        <property name="styleSheet">
-         <string notr="true">QTabBar::Tab {
-    background: rgb(61, 61, 61);\n	color: White;\n	border: 1px solid rgb(20, 20, 20);\n	border-radius: 3px;\n	padding: 3px;\n\n}\n\nQTabWidget::pane &gt; QWidget { /* The tab widget frame */\n    background: rgb(61, 61, 61);\n}\n\nQTabBar::tab:disabled {\n	color: rgb(139, 139, 139)\n}\n\n\nQTabBar::tab:selected, QTabBar::tab:hover {\nbackground: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3d3d3d, stop: 0.4 rgb(141, 141, 141), stop: 0.5 rgb(141, 141, 141), stop: 1.0 #3d3d3d);\n}\n\nQTabBar::tab:!selected {\nmargin-top: 4px; /* make non-selected tabs look smaller */\n}\n\nQTabBar::tab:selected {\n/* expand/overlap to the left and right by 4px */\nmargin-left: -3px;\nmargin-right: -3px;\n}\nQTabBar::tab:first:selected {\nmargin-left: 0; /* the first selected tab has nothing to overlap with on the left */\n}\nQTabBar::tab:last:selected {\nmargin-right: 0; /* the last selected tab has nothing to overlap with on the right */\n}\nQTabBar::tab:only-one {\nmargin: 0; /* if there is only one tab, we don't want overlapping margins */\n}\n\n\nQWidget\n{\n	background-color: #fff;\n\n\n}\n\n\n/*-----QLabel-----*/\nQLabel\n{\n	background-color: transparent;\n	color: #454544;\n	font-weight: bold;\n	font-size: 16px;\n\n}\n#mapTitle {\n	font-size: 24px\n}\n\n#containerlabel {\n	font-size: 24px\n}\n\n/*-----QPushButton-----*/\nQPushButton\n{\n	background-color: #5c55e9;\n	color: #fff;\n	font-size: 13px;\n	font-weight: bold;\n	border-top-right-radius: 15px;\n	border-top-left-radius: 0px;\n	border-bottom-right-radius: 0px;\n	border-bottom-left-radius: 15px;\n	padding: 10px;\n\n}\n\n\nQPushButton::disabled\n{\n	background-color: #5c5c5c;\n	color: rgb(158, 158, 158)\n\n}\n\n\nQPushButton::hover\n{\n	background-color: #5564f2;\n\n}\n\n\nQPushButton::pressed\n{\n	background-color: #3d4ef2;\n\n}\n\n\n/*-----QCheckBox-----*/\nQCheckBox\n{\n	background-color: transparent;\n	color: #5c55e9;\n	font-size: 10px;\n	font-weight: bold;\n	border: none;\n	border-radius: 5px;\n\n}\n\n\n/*-----QCheckBox-----*/\nQCheckBox::indicator\n{\n    background-color: #323232;\n    border: 1px solid darkgray;\n    width: 12px;\n    height: 12px;\n\n}\n\n\nQCheckBox::indicator:checked\n{\n    image:url(&quot;./ressources/check.png&quot;);\n	background-color: #5c55e9;\n    border: 1px solid #5c55e9;\n\n}\n\n\nQCheckBox::indicator:unchecked:hover\n{\n    border: 1px solid #5c55e9;\n\n}\n\n\nQCheckBox::disabled\n{\n	color: #656565;\n\n}\n\n\nQCheckBox::indicator:disabled\n{\n	background-color: #656565;\n	color: #656565;\n    border: 1px solid #656565;\n\n}\n\n\n/*-----QLineEdit-----*/\nQLineEdit\n{\n	background-color: #c2c7d5;\n	color: #2a547f;\n	border: none;\n	padding: 5px;\n\n}\n\n\n/*-----QListView-----*/\nQListView\n{\n	background-color: #5c55e9;\n	color: #fff;\n	font-size: 14px;\n	font-weight: bold;\n	show-decoration-selected: 0;\n	border-radius: 4px;\n	padding-left: -15px;\n	padding-right: -15px;\n	padding-top: 5px;\n\n}\n\n\nQListView:disabled\n{\n	background-color: #5c5c5c;\n\n}\n\n\nQListView::item\n{\n	background-color: #454e5e;\n	border: none;\n	padding: 10px;\n	border-radius: 0px;\n	padding-left : 10px;\n	height: 32px;\n\n}\n\n\nQListView::item:selected\n{\n	color: #000;\n	background-color: #fff;\n\n}\n\n\nQListView::item:!selected\n{\n	color:white;\n	background-color: transparent;\n	border: none;\n	padding-left : 10px;\n\n}\n\n\nQListView::item:!selected:hover\n{\n	color: #fff;\n	background-color: #5564f2;\n	border: none;\n	padding-left : 10px;\n\n}\n\n\nQTextEdit\n{\n	color: black;\n}\n\nQTextBrowser\n{\n	color: #ffb113;\n}\n\n\n/*-----QTableView &amp; QTableWidget-----*/\nQTableView\n{\n    background-color: #fff;\n	border: 1px solid gray;\n    color: #454544;\n    gridline-color: gray;\n    outline : 0;\n\n}\n\n\nQTableView::item:hover\n{\n    background-color: #bcbdbb;\n    color: #000;\n\n}\n\n\nQTableView::item:selected\n{\n	background-color: #5c55e9;\n    color: #fff;\n\n}\n\n\nQTableView::item:selected:disabled\n{\n    background-color: #1a1b1c;\n    border: 2px solid #525251;\n    color: #656565;\n\n}\n\n\nQTableCornerButton::section\n{\n	background-color: #ced5e3;\n	border: none;\n    color: #fff;\n\n}\n\n\nQHeaderView::section\n{\n	color: #2a547f;\n	border: 0px;\n	background-color: #ced5e3;\n	padding: 5px;\n\n}\n\n\nQHeaderView::section:disabled\n{\n    background-color: #525251;\n    color: #656565;\n\n}\n\n\nQHeaderView::section:checked\n{\n    color: #fff;\n    background-color: #5c55e9;\n\n}\n\n\nQHeaderView::section:checked:disabled\n{\n    color: #656565;\n    background-color: #525251;\n\n}\n\n\nQHeaderView::section::vertical::first,\nQHeaderView::section::vertical::only-one\n{\n    border-top: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::vertical\n{\n    border-top: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::horizontal::first,\nQHeaderView::section::horizontal::only-one\n{\n    border-left: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::horizontal\n{\n    border-left: 1px solid #353635;\n\n}\n\n\n/*-----QScrollBar-----*/\nQScrollBar:horizontal\n{\n    background-color: transparent;\n    height: 8px;\n    margin: 0px;\n    padding: 0px;\n\n}\n\n\nQScrollBar::handle:horizontal\n{\n    border: none;\n	min-width: 100px;\n    background-color: #7e92b7;\n\n}\n\n\nQScrollBar::add-line:horizontal,\nQScrollBar::sub-line:horizontal,\nQScrollBar::add-page:horizontal,\nQScrollBar::sub-page:horizontal\n{\n    width: 0px;\n    background-color: #d8dce6;\n\n}\n\n\nQScrollBar:vertical\n{\n    background-color: transparent;\n    width: 8px;\n    margin: 0;\n\n}\n\n\nQScrollBar::handle:vertical\n{\n    border: none;\n	min-height: 100px;\n    background-color: #7e92b7;\n\n}\n\n\nQScrollBar::add-line:vertical,\nQScrollBar::sub-line:vertical,\nQScrollBar::add-page:vertical,\nQScrollBar::sub-page:vertical\n{\n    height: 0px;\n    background-color: #d8dce6;\n\n}</string>
-        </property>
         <property name="tabPosition">
          <enum>QTabWidget::West</enum>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="Map">
          <property name="styleSheet">
-          <string notr="true">QTabBar::Tab {
-    background: rgb(61, 61, 61);\n	color: White;\n	border: 1px solid rgb(20, 20, 20);\n	border-radius: 3px;\n	padding: 3px;\n\n}\n\nQTabWidget::pane &gt; QWidget { /* The tab widget frame */\n    background: rgb(61, 61, 61);\n}\n\nQTabBar::tab:disabled {\n	color: rgb(139, 139, 139)\n}\n\n\nQTabBar::tab:selected, QTabBar::tab:hover {\nbackground: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3d3d3d, stop: 0.4 rgb(141, 141, 141), stop: 0.5 rgb(141, 141, 141), stop: 1.0 #3d3d3d);\n}\n\nQTabBar::tab:!selected {\nmargin-top: 4px; /* make non-selected tabs look smaller */\n}\n\nQTabBar::tab:selected {\n/* expand/overlap to the left and right by 4px */\nmargin-left: -3px;\nmargin-right: -3px;\n}\nQTabBar::tab:first:selected {\nmargin-left: 0; /* the first selected tab has nothing to overlap with on the left */\n}\nQTabBar::tab:last:selected {\nmargin-right: 0; /* the last selected tab has nothing to overlap with on the right */\n}\nQTabBar::tab:only-one {\nmargin: 0; /* if there is only one tab, we don't want overlapping margins */\n}\n\n\nQWidget\n{\n	background-color: #fff;\n\n\n}\n\n\n/*-----QLabel-----*/\nQLabel\n{\n	background-color: transparent;\n	color: #454544;\n	font-weight: bold;\n	font-size: 16px;\n\n}\n#mapTitle {\n	font-size: 24px\n}\n\n#containerlabel {\n	font-size: 24px\n}\n\n/*-----QPushButton-----*/\nQPushButton\n{\n	background-color: #5c55e9;\n	color: #fff;\n	font-size: 13px;\n	font-weight: bold;\n	border-top-right-radius: 15px;\n	border-top-left-radius: 0px;\n	border-bottom-right-radius: 0px;\n	border-bottom-left-radius: 15px;\n	padding: 10px;\n\n}\n\n\nQPushButton::disabled\n{\n	background-color: #5c5c5c;\n	color: rgb(158, 158, 158)\n\n}\n\n\nQPushButton::hover\n{\n	background-color: #5564f2;\n\n}\n\n\nQPushButton::pressed\n{\n	background-color: #3d4ef2;\n\n}\n\n\n/*-----QCheckBox-----*/\nQCheckBox\n{\n	background-color: transparent;\n	color: #5c55e9;\n	font-size: 10px;\n	font-weight: bold;\n	border: none;\n	border-radius: 5px;\n\n}\n\n\n/*-----QCheckBox-----*/\nQCheckBox::indicator\n{\n    background-color: #323232;\n    border: 1px solid darkgray;\n    width: 12px;\n    height: 12px;\n\n}\n\n\nQCheckBox::indicator:checked\n{\n    image:url(&quot;./ressources/check.png&quot;);\n	background-color: #5c55e9;\n    border: 1px solid #5c55e9;\n\n}\n\n\nQCheckBox::indicator:unchecked:hover\n{\n    border: 1px solid #5c55e9;\n\n}\n\n\nQCheckBox::disabled\n{\n	color: #656565;\n\n}\n\n\nQCheckBox::indicator:disabled\n{\n	background-color: #656565;\n	color: #656565;\n    border: 1px solid #656565;\n\n}\n\n\n/*-----QLineEdit-----*/\nQLineEdit\n{\n	background-color: #c2c7d5;\n	color: #2a547f;\n	border: none;\n	padding: 5px;\n\n}\n\n\n/*-----QListView-----*/\nQListView\n{\n	background-color: #5c55e9;\n	color: #fff;\n	font-size: 14px;\n	font-weight: bold;\n	show-decoration-selected: 0;\n	border-radius: 4px;\n	padding-left: -15px;\n	padding-right: -15px;\n	padding-top: 5px;\n\n}\n\n\nQListView:disabled\n{\n	background-color: #5c5c5c;\n\n}\n\n\nQListView::item\n{\n	background-color: #454e5e;\n	border: none;\n	padding: 10px;\n	border-radius: 0px;\n	padding-left : 10px;\n	height: 32px;\n\n}\n\n\nQListView::item:selected\n{\n	color: #000;\n	background-color: #fff;\n\n}\n\n\nQListView::item:!selected\n{\n	color:white;\n	background-color: transparent;\n	border: none;\n	padding-left : 10px;\n\n}\n\n\nQListView::item:!selected:hover\n{\n	color: #fff;\n	background-color: #5564f2;\n	border: none;\n	padding-left : 10px;\n\n}\n\n\nQTextEdit\n{\n	color: black;\n}\n\nQTextBrowser\n{\n	color: #ffb113;\n}\n\n\n/*-----QTableView &amp; QTableWidget-----*/\nQTableView\n{\n    background-color: #fff;\n	border: 1px solid gray;\n    color: #454544;\n    gridline-color: gray;\n    outline : 0;\n\n}\n\n\nQTableView::item:hover\n{\n    background-color: #bcbdbb;\n    color: #000;\n\n}\n\n\nQTableView::item:selected\n{\n	background-color: #5c55e9;\n    color: #fff;\n\n}\n\n\nQTableView::item:selected:disabled\n{\n    background-color: #1a1b1c;\n    border: 2px solid #525251;\n    color: #656565;\n\n}\n\n\nQTableCornerButton::section\n{\n	background-color: #ced5e3;\n	border: none;\n    color: #fff;\n\n}\n\n\nQHeaderView::section\n{\n	color: #2a547f;\n	border: 0px;\n	background-color: #ced5e3;\n	padding: 5px;\n\n}\n\n\nQHeaderView::section:disabled\n{\n    background-color: #525251;\n    color: #656565;\n\n}\n\n\nQHeaderView::section:checked\n{\n    color: #fff;\n    background-color: #5c55e9;\n\n}\n\n\nQHeaderView::section:checked:disabled\n{\n    color: #656565;\n    background-color: #525251;\n\n}\n\n\nQHeaderView::section::vertical::first,\nQHeaderView::section::vertical::only-one\n{\n    border-top: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::vertical\n{\n    border-top: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::horizontal::first,\nQHeaderView::section::horizontal::only-one\n{\n    border-left: 1px solid #353635;\n\n}\n\n\nQHeaderView::section::horizontal\n{\n    border-left: 1px solid #353635;\n\n}\n\n\n/*-----QScrollBar-----*/\nQScrollBar:horizontal\n{\n    background-color: transparent;\n    height: 8px;\n    margin: 0px;\n    padding: 0px;\n\n}\n\n\nQScrollBar::handle:horizontal\n{\n    border: none;\n	min-width: 100px;\n    background-color: #7e92b7;\n\n}\n\n\nQScrollBar::add-line:horizontal,\nQScrollBar::sub-line:horizontal,\nQScrollBar::add-page:horizontal,\nQScrollBar::sub-page:horizontal\n{\n    width: 0px;\n    background-color: #d8dce6;\n\n}\n\n\nQScrollBar:vertical\n{\n    background-color: transparent;\n    width: 8px;\n    margin: 0;\n\n}\n\n\nQScrollBar::handle:vertical\n{\n    border: none;\n	min-height: 100px;\n    background-color: #7e92b7;\n\n}\n\n\nQScrollBar::add-line:vertical,\nQScrollBar::sub-line:vertical,\nQScrollBar::add-page:vertical,\nQScrollBar::sub-page:vertical\n{\n    height: 0px;\n    background-color: #d8dce6;\n\n}</string>
+          <string notr="true"/>
          </property>
          <attribute name="title">
           <string>Network Maps</string>
@@ -97,7 +90,7 @@
           <item>
            <widget class="QTabWidget" name="networktabwidget">
             <property name="currentIndex">
-             <number>2</number>
+             <number>0</number>
             </property>
             <widget class="QWidget" name="networkmaptab">
              <attribute name="title">
@@ -108,19 +101,26 @@
                <widget class="QGraphicsView" name="containerMapView"/>
               </item>
               <item>
-               <layout class="QVBoxLayout" name="verticalLayout_2">
+               <layout class="QVBoxLayout" name="verticalLayout_2" stretch="3,7,1">
                 <item>
-                 <widget class="QTableView" name="containerlisttable">
-                  <attribute name="horizontalHeaderDefaultSectionSize">
-                   <number>80</number>
-                  </attribute>
-                  <attribute name="verticalHeaderDefaultSectionSize">
-                   <number>24</number>
-                  </attribute>
-                  <attribute name="verticalHeaderMinimumSectionSize">
-                   <number>12</number>
-                  </attribute>
-                 </widget>
+                 <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="5,2">
+                  <item>
+                   <widget class="QTableView" name="containerlisttable">
+                    <attribute name="horizontalHeaderDefaultSectionSize">
+                     <number>80</number>
+                    </attribute>
+                    <attribute name="verticalHeaderDefaultSectionSize">
+                     <number>24</number>
+                    </attribute>
+                    <attribute name="verticalHeaderMinimumSectionSize">
+                     <number>12</number>
+                    </attribute>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QTableView" name="allowedusertable"/>
+                  </item>
+                 </layout>
                 </item>
                 <item>
                  <widget class="QGraphicsView" name="detailsMapView"/>
@@ -131,17 +131,7 @@
                    <bool>false</bool>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">QPushButton::disabled {
-    background-color: #C2C7CB;
-    border: 0px solid #C2C7CB;
-    color:black
-}
-
-QPushButton::enabled {
-    background-color: #03DAC6;
-    border: 1px solid #03DAC6;
-    color:black
-}</string>
+                   <string notr="true"/>
                   </property>
                   <property name="text">
                    <string>Click on Container to Select</string>
@@ -171,24 +161,44 @@ QPushButton::enabled {
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton">
-                <property name="styleSheet">
-                 <string notr="true">QPushButton::disabled {
-    background-color: #C2C7CB;
-    border: 0px solid #C2C7CB;
-    color:black
-}
-
-QPushButton::enabled {
-    background-color: #03DAC6;
-    border: 1px solid #03DAC6;
-    color:black
-}</string>
-                </property>
-                <property name="text">
-                 <string>Saga Eject</string>
-                </property>
-               </widget>
+               <layout class="QHBoxLayout" name="horizontalLayout_12">
+                <item>
+                 <spacer name="horizontalSpacer_5">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton">
+                  <property name="styleSheet">
+                   <string notr="true"/>
+                  </property>
+                  <property name="text">
+                   <string>Saga Eject</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_6">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
               </item>
              </layout>
             </widget>
@@ -266,7 +276,14 @@ QPushButton::enabled {
                    <number>1</number>
                   </property>
                   <widget class="QWidget" name="committedcontainer">
-                   <layout class="QHBoxLayout" name="horizontalLayout_10">
+                   <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="0,1">
+                    <item>
+                     <widget class="QLabel" name="label">
+                      <property name="text">
+                       <string>Container Description: </string>
+                      </property>
+                     </widget>
+                    </item>
                     <item>
                      <widget class="QLabel" name="containerdescriplbl">
                       <property name="maximumSize">
@@ -276,7 +293,7 @@ QPushButton::enabled {
                        </size>
                       </property>
                       <property name="text">
-                       <string>Container Description</string>
+                       <string/>
                       </property>
                      </widget>
                     </item>
@@ -292,7 +309,11 @@ QPushButton::enabled {
                      </widget>
                     </item>
                     <item>
-                     <widget class="QLineEdit" name="newcontaineredit"/>
+                     <widget class="QLineEdit" name="newcontaineredit">
+                      <property name="enabled">
+                       <bool>false</bool>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </widget>
@@ -322,30 +343,17 @@ QPushButton::enabled {
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLabel" name="label">
-                  <property name="font">
-                   <font>
-                    <weight>75</weight>
-                    <bold>true</bold>
-                   </font>
+                 <spacer name="horizontalSpacer_2">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
                   </property>
-                  <property name="text">
-                   <string>Item Selected:</string>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
                   </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="selectedFileHeader">
-                  <property name="font">
-                   <font>
-                    <weight>75</weight>
-                    <bold>true</bold>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>FileName</string>
-                  </property>
-                 </widget>
+                 </spacer>
                 </item>
                </layout>
               </item>
@@ -403,7 +411,7 @@ QPushButton::enabled {
              <enum>QTabWidget::Rounded</enum>
             </property>
             <property name="currentIndex">
-             <number>2</number>
+             <number>1</number>
             </property>
             <property name="elideMode">
              <enum>Qt::ElideMiddle</enum>
@@ -457,24 +465,41 @@ QPushButton::enabled {
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="revertbttn">
-                <property name="text">
-                 <string>Revert</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-            <widget class="QWidget" name="containerschemtab">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <attribute name="title">
-              <string>(Under Construction)</string>
-             </attribute>
-             <layout class="QVBoxLayout" name="verticalLayout_11">
-              <item>
-               <widget class="QGraphicsView" name="maincontainerview"/>
+               <layout class="QHBoxLayout" name="horizontalLayout_11">
+                <item>
+                 <spacer name="horizontalSpacer_3">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="revertbttn">
+                  <property name="text">
+                   <string>Revert</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_4">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
               </item>
              </layout>
             </widget>
@@ -483,57 +508,48 @@ QPushButton::enabled {
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_7">
             <item>
-             <widget class="QSplitter" name="splitter_7">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <widget class="QLabel" name="commitmsgboxlbl">
-               <property name="maximumSize">
-                <size>
-                 <width>431</width>
-                 <height>19</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Commit Message</string>
-               </property>
-              </widget>
-              <widget class="QSplitter" name="splitter_6">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <widget class="QTextEdit" name="commitmsgEdit">
-                <property name="maximumSize">
-                 <size>
-                  <width>314</width>
-                  <height>54</height>
-                 </size>
+             <layout class="QGridLayout" name="gridLayout_2">
+              <item row="0" column="0">
+               <widget class="QLabel" name="commitmsgboxlbl">
+                <property name="text">
+                 <string>Commit Message</string>
                 </property>
                </widget>
-               <widget class="QPushButton" name="commitBttn">
-                <property name="maximumSize">
-                 <size>
-                  <width>112</width>
-                  <height>54</height>
-                 </size>
+              </item>
+              <item row="1" column="0">
+               <widget class="QTextEdit" name="commitmsgEdit">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
                 </property>
-                <property name="styleSheet">
-                 <string notr="true">QPushButton::disabled {
-    background-color: #C2C7CB;
-    border: 0px solid #C2C7CB;
-    color:black
-}
-
-QPushButton::enabled {
-    background-color: #03DAC6;
-    border: 1px solid #03DAC6;
-    color:black
-}</string>
+               </widget>
+              </item>
+              <item row="0" column="1" rowspan="2">
+               <widget class="QPushButton" name="commitBttn">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
                 </property>
                 <property name="text">
                  <string>Commit</string>
                 </property>
                </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QSplitter" name="splitter_7">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <widget class="QSplitter" name="splitter_6">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
               </widget>
              </widget>
             </item>
@@ -555,17 +571,7 @@ QPushButton::enabled {
               <item>
                <widget class="QPushButton" name="getstatusbttn">
                 <property name="styleSheet">
-                 <string notr="true">QPushButton::disabled {
-    background-color: #C2C7CB;
-    border: 0px solid #C2C7CB;
-    color:black
-}
-
-QPushButton::enabled {
-    background-color: #03DAC6;
-    border: 1px solid #03DAC6;
-    color:black
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>Get Status</string>
@@ -581,17 +587,7 @@ QPushButton::enabled {
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton::disabled {
-    background-color: #C2C7CB;
-    border: 0px solid #C2C7CB;
-    color:black
-}
-
-QPushButton::enabled {
-    background-color: #03DAC6;
-    border: 1px solid #03DAC6;
-    color:black
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>Add To Container</string>
@@ -599,7 +595,7 @@ QPushButton::enabled {
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="refreshcontainerbttn">
+               <widget class="QPushButton" name="containersyncbttn">
                 <property name="maximumSize">
                  <size>
                   <width>300</width>
@@ -607,20 +603,10 @@ QPushButton::enabled {
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton::disabled {
-    background-color: #C2C7CB;
-    border: 0px solid #C2C7CB;
-    color:black
-}
-
-QPushButton::enabled {
-    background-color: #03DAC6;
-    border: 1px solid #03DAC6;
-    color:black
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
-                 <string>Refresh Container</string>
+                 <string>Container Sync</string>
                 </property>
                </widget>
               </item>
@@ -633,17 +619,7 @@ QPushButton::enabled {
                  </size>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">QPushButton::disabled {
-    background-color: #C2C7CB;
-    border: 0px solid #C2C7CB;
-    color:black
-}
-
-QPushButton::enabled {
-    background-color: #03DAC6;
-    border: 1px solid #03DAC6;
-    color:black
-}</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>Remove From Container</string>
@@ -653,6 +629,29 @@ QPushButton::enabled {
              </layout>
             </item>
            </layout>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="EmailTab">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <attribute name="title">
+          <string>Email</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_11" stretch="3,7">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
+            <item>
+             <widget class="QTableView" name="tableView_2"/>
+            </item>
+            <item>
+             <widget class="QListView" name="listView"/>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QTableView" name="tableView"/>
           </item>
          </layout>
         </widget>
@@ -730,7 +729,7 @@ QPushButton::enabled {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1024</width>
+     <width>1071</width>
      <height>24</height>
     </rect>
    </property>
@@ -789,10 +788,8 @@ QMenu {
     <property name="title">
      <string>Profile</string>
     </property>
-    <addaction name="actionSign_In"/>
     <addaction name="actionSign_Out"/>
     <addaction name="separator"/>
-    <addaction name="actionSign_Up"/>
    </widget>
    <widget class="QMenu" name="menuContainer">
     <property name="font">
@@ -804,6 +801,7 @@ QMenu {
      <string>Container</string>
     </property>
     <addaction name="actionNew_Container"/>
+    <addaction name="actionCreate_Child_Container"/>
     <addaction name="actionFind_Local_Container"/>
     <addaction name="separator"/>
     <addaction name="actionContainer_Permission"/>
@@ -819,6 +817,8 @@ QMenu {
     </property>
     <addaction name="actionNew_Section"/>
     <addaction name="actionEnter_Section"/>
+    <addaction name="actionSection_Sync_Status"/>
+    <addaction name="actionInvite_Users_to_Section"/>
    </widget>
    <addaction name="menuProfile"/>
    <addaction name="menuContainer"/>
@@ -881,7 +881,7 @@ QMenu {
   </action>
   <action name="actionContainer_Permission">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Container Permission</string>
@@ -895,6 +895,29 @@ QMenu {
   <action name="actionSign_Up">
    <property name="text">
     <string>Sign Up</string>
+   </property>
+  </action>
+  <action name="actionSection_Sync_Status">
+   <property name="text">
+    <string>Section Synchronization</string>
+   </property>
+  </action>
+  <action name="actionwhat_sogi">
+   <property name="text">
+    <string>what'sogi</string>
+   </property>
+  </action>
+  <action name="actionCreate_Child_Container">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Create Child Container</string>
+   </property>
+  </action>
+  <action name="actionInvite_Users_to_Section">
+   <property name="text">
+    <string>Invite Users to Section</string>
    </property>
   </action>
  </widget>

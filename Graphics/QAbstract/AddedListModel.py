@@ -11,7 +11,7 @@ headers = ['File Name', 'Download?', 'Do Not Download?']
 
 class AddedListModel(QAbstractTableModel):
     def __init__(self, changes, newframe):
-        super(ConflictListModel, self).__init__()
+        super(AddedListModel, self).__init__()
         self.changes = changes
         self.currow=[]
         self.conflictdata = []
@@ -23,7 +23,7 @@ class AddedListModel(QAbstractTableModel):
         for fileheader in self.changes:
             if SERVERFILEADDED in self.changes[fileheader]['reason']:
                 self.conflictdata.append(fileheader)
-                self.conflictfilenames.append(self.newframe.filestrack[fileheader].file_name)
+                self.conflictfilenames.append(self.newframe.filestrack[fileheader].entity)
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:

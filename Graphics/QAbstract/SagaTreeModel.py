@@ -6,8 +6,8 @@ import time
 import os
 import glob
 import warnings
-from SagaApp.Container import Container
-from Config import typeRequired, typeInput, typeOutput, colorscheme,  JUSTCREATED, UNCHANGED, MD5CHANGED , CONTAINERFN,hexyellowshades,hexblueshades
+from SagaCore.Container import Container
+from SagaGuiModel.GuiModelConstants import roleRequired, roleInput, roleOutput, colorscheme,  JUSTCREATED, UNCHANGED, MD5CHANGED , CONTAINERFN,hexinputshades,hexblueshades
 FOLDERITEMS = 'folderitems'
 FOLDERNAME = 'foldername'
 
@@ -57,11 +57,11 @@ class SagaTreeNode(QAbstractItemModel):
 headers=['FolderView','Incoming','OutGoing']
 
 class SagaTreeModel(QAbstractItemModel):
-    def __init__(self, containerinfodict, desktopdir, sagaguimodel):
+    def __init__(self, containerinfodict, appdata_saga, sagaguimodel):
         QAbstractItemModel.__init__(self)
         self._root = SagaTreeNode(None)
         self.items=[]
-        self.desktopdir = desktopdir
+        self.appdata_saga = appdata_saga
         self.sagaguimodel = sagaguimodel
 
         self.rowmapper = {}
@@ -79,7 +79,7 @@ class SagaTreeModel(QAbstractItemModel):
         fullexpandedrow = 0
         for containerid, value in containerinfodict.items():
             icontainer = sagaguimodel.provideContainer(containerid)
-            # containyaml = os.path.join(self.desktopdir, 'ContainerMapWorkDir',containerid, CONTAINERFN)
+            # containyaml = os.path.join(self.appdata_saga, 'ContainerMapWorkDir',containerid, CONTAINERFN)
             #
             # icontainer = Container.LoadContainerFromYaml(containyaml)
             containers[containerid] = icontainer
@@ -88,9 +88,9 @@ class SagaTreeModel(QAbstractItemModel):
             self.rowmapper[containerid] = fullexpandedrow
             # self.containerrows[fullexpandedrow] = containerid
             fullexpandedrow+=1
-            for fileheader, fileinfo in icontainer.FileHeaders.items():
-                self.items[-1].addChild(SagaTreeNode([fileheader,fullexpandedrow,icontainer.containerId]))
-                self.rowmapper[containerid+'_'+fileheader] = fullexpandedrow
+            for citemid, citem in icontainer.containeritems.items():
+                self.items[-1].addChild(SagaTreeNode([citemid,fullexpandedrow,icontainer.containerId]))
+                self.rowmapper[containerid+'_'+citemid] = fullexpandedrow
                 fullexpandedrow += 1
                 # self.items[-1].addChild(SagaTreeNode(['g', 'h', 'i']))
         # self.items[-1].addChild(SagaTreeNode(['there', 'is', 'hope']))
@@ -99,16 +99,14 @@ class SagaTreeModel(QAbstractItemModel):
         self.inputconnections={}
         self.outputconnections = {}
         for containerid, value in containerinfodict.items():
-            # containyaml = os.path.join(self.desktopdir, 'ContainerMapWorkDir', containerid, CONTAINERFN)
-            icontainer = containers[containerid]
-
+            icontainer:Container = containers[containerid]
             fileoutputs=[]
             containerinputids =[]
-            for fileheader, fileinfo in icontainer.FileHeaders.items():
-                if fileinfo['type'] == typeOutput:
-                    fileoutputs.append(fileheader)
-                elif fileinfo['type']==typeInput:
-                    fromcontainerid = fileinfo['Container']
+            for citemid, citem in icontainer.containeritems.items():
+                if citem.containeritemrole== roleOutput:
+                    fileoutputs.append(citemid)
+                elif citem.containeritemrole== roleInput:
+                    fromcontainerid = citem.refcontainerid
                     containerinputids.append(fromcontainerid)
 
             inputlinelength = {}
@@ -122,15 +120,15 @@ class SagaTreeModel(QAbstractItemModel):
             # if 'Structures' == containerid:
             #     print('PartDesign')
             #     pass
-            for fileheader, fileinfo in icontainer.FileHeaders.items():
-                if fileinfo['type'] == typeInput:
-                    fromcontainerid = fileinfo['Container']
+            for citemid, citem in icontainer.containeritems.items():
+                if citem.containeritemrole == roleInput:
+                    fromcontainerid = citem.refcontainerid
                     fromcontainerrow=self.rowmapper[fromcontainerid]
-                    localfilerow=self.rowmapper[containerid + '_' + fileheader]
+                    localfilerow=self.rowmapper[containerid + '_' + citemid]
                     if fromcontainerid not in inputlinelength.keys():
                         inputlinelength[fromcontainerid]=ipath /(len(containerinputids)+1)
                         colori = 4 if (ipath-1)>4 else ipath-1
-                        inputlinecolor[fromcontainerid] = hexyellowshades[colori]
+                        inputlinecolor[fromcontainerid] = hexinputshades[colori]
                         inputspaths['hori'][fromcontainerrow] = {'direc': 'left',
                                                                  'length': inputlinelength[fromcontainerid],
                                                                  'linetype': 'container',
@@ -151,43 +149,43 @@ class SagaTreeModel(QAbstractItemModel):
                             inputspaths['vert'][row] = {'xlocs': [inputlinelength[fromcontainerid]],
                                                         'length': [sortverticalline(fromcontainerrow, localfilerow, row)],
                                                         'hexcolor': [inputlinecolor[fromcontainerid]]}
-                elif fileinfo['type'] == typeOutput:
-                    localfilerow = self.rowmapper[containerid + '_' + fileheader]
-                    outputlinelength[containerid+ '_' + fileheader] = opath/(len(fileoutputs)+1)
+                elif citem.containeritemrole == roleOutput:
+                    localfilerow = self.rowmapper[containerid + '_' + citemid] ##as output, which get row number (Start of line)
+                    outputlinelength[containerid+ '_' + citemid] = opath/(len(fileoutputs)+1)
                     coloro = 4 if (opath - 1) > 4 else opath-1
-                    outputlinecolor[containerid + '_' + fileheader] = hexblueshades[coloro]
+                    outputlinecolor[containerid + '_' + citemid] = hexblueshades[coloro]
                     outputspaths['hori'][localfilerow] = {'direc': 'right',
-                                                           'length': outputlinelength[containerid+ '_' + fileheader],
-                                                          'hexcolor': outputlinecolor[containerid + '_' + fileheader],
+                                                           'length': outputlinelength[containerid+ '_' + citemid],
+                                                          'hexcolor': outputlinecolor[containerid + '_' + citemid],
                                                           'linetype': 'file'}
-                    if len(fileinfo['Container'])==0:
+                    if len(citem.refcontainerid)==0:
                         outputspaths['hori'][localfilerow]['length'] = 0.1
                         outputspaths['hori'][localfilerow]['direc'] = 'NoOutput'
-                    for tocontainerid in fileinfo['Container']:
+                    for tocontainerid in citem.refcontainerid:
                         if tocontainerid not in self.rowmapper.keys():
                             continue
                         tocontainerrow = self.rowmapper[tocontainerid]
                         if tocontainerrow in outputspaths['hori'].keys():
-                            if outputlinelength[containerid+ '_' + fileheader] >outputspaths['hori'][tocontainerrow]['length']:
-                                outputspaths['hori'][tocontainerrow]['length']=outputlinelength[containerid+ '_' + fileheader]
+                            if outputlinelength[containerid+ '_' + citemid] >outputspaths['hori'][tocontainerrow]['length']:
+                                outputspaths['hori'][tocontainerrow]['length']=outputlinelength[containerid+ '_' + citemid]
                         else:
                             outputspaths['hori'][tocontainerrow]= {'direc': 'left',
-                                                                 'length': outputlinelength[containerid+ '_' + fileheader] ,
-                                                                   'hexcolor':outputlinecolor[containerid+ '_' + fileheader],
+                                                                 'length': outputlinelength[containerid+ '_' + citemid] ,
+                                                                   'hexcolor':outputlinecolor[containerid+ '_' + citemid],
                                                                   'linetype': 'container'}
                         rowpair = [tocontainerrow, localfilerow]
                         for row in range(min(rowpair), max(rowpair) + 1):
                             if row in outputspaths['vert'].keys():
-                                outputspaths['vert'][row]['xlocs'].append(outputlinelength[containerid+ '_' + fileheader])
+                                outputspaths['vert'][row]['xlocs'].append(outputlinelength[containerid+ '_' + citemid])
                                 outputspaths['vert'][row]['length'].append(
                                     sortverticalline(tocontainerrow, localfilerow, row))
                                 outputspaths['vert'][row]['hexcolor'].append(
-                                    outputlinecolor[containerid + '_' + fileheader])
+                                    outputlinecolor[containerid + '_' + citemid])
                             else:
-                                outputspaths['vert'][row] = {'xlocs': [outputlinelength[containerid+ '_' + fileheader]],
+                                outputspaths['vert'][row] = {'xlocs': [outputlinelength[containerid+ '_' + citemid]],
                                                             'length': [
                                                                 sortverticalline(tocontainerrow, localfilerow, row)],
-                                                             'hexcolor': [outputlinecolor[containerid+ '_' + fileheader]]}
+                                                             'hexcolor': [outputlinecolor[containerid+ '_' + citemid]]}
                     opath+=1
 
             self.inputconnections[containerid] = inputspaths
@@ -262,3 +260,6 @@ class SagaTreeModel(QAbstractItemModel):
 
             return node.data(index.column())
         return None
+
+    # def reset(self):
+

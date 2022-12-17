@@ -8,26 +8,26 @@ headers = ['Email']
 class UserListModel(QAbstractTableModel):
     def __init__(self, allowedUser):
         super(UserListModel, self).__init__()
-        userdata=[]
+        useremaillist=[]
         for email in allowedUser:
-            userdata.append([email])
-        self.userdata = userdata
+            useremaillist.append([email])
+        self.useremaillist = useremaillist
 
     def data(self, index, role):
         if role == Qt.DisplayRole:
             # See below for the nested-list data structure.
             # .row() indexes into the outer list,
             # .column() indexes into the sub-list
-            return self.userdata[index.row()][index.column()]
+            return self.useremaillist[index.row()][index.column()]
 
     def adduser(self, newemail):
-        self.userdata.append([newemail])
+        self.useremaillist.append([newemail])
 
     def listusers(self, allowedUser):
-        userdata = []
+        useremaillist = []
         for email in allowedUser:
-            userdata.append([email])
-        self.userdata = userdata
+            useremaillist.append([email])
+        self.useremaillist = useremaillist
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
@@ -39,16 +39,16 @@ class UserListModel(QAbstractTableModel):
 
     def rowCount(self, index):
         # The length of the outer list.
-        return len(self.userdata)
+        return len(self.useremaillist)
 
     def columnCount(self, index):
         # The following takes the first sub-list, and returns
         # the length (only works if all rows are an equal length)
-        return len(self.userdata[0])
+        return len(self.useremaillist[0])
 
     def userlist(self):
         userlist=[]
-        for line in self.userdata:
+        for line in self.useremaillist:
             userlist.append(line[0])
         return userlist
 
@@ -56,29 +56,29 @@ sectionheaders= ['Email', 'First Name', 'Last Name']
 class SectionUserListModel(QAbstractTableModel):
     def __init__(self, sectionUser):
         super(SectionUserListModel, self).__init__()
-        userdata=[]
+        useremaillist=[]
         for userinfo in sectionUser:
-            userdata.append([userinfo["email"] , userinfo["first_name"],  userinfo["last_name"]])
-        self.userdata = userdata
+            useremaillist.append([userinfo["email"] , userinfo["first_name"],  userinfo["last_name"]])
+        self.useremaillist = useremaillist
 
     def data(self, index, role):
         if role == Qt.DisplayRole:
             # See below for the nested-list data structure.
             # .row() indexes into the outer list,
             # .column() indexes into the sub-list
-            return self.userdata[index.row()][index.column()]
+            return self.useremaillist[index.row()][index.column()]
 
     def getemail(self, index):
-        return self.userdata[index.row()][0]
+        return self.useremaillist[index.row()][0]
 
     def adduser(self, userinfo):
-        self.userdata.append([userinfo["email"] , userinfo["first_name"],  userinfo["last_name"]])
+        self.useremaillist.append([userinfo["email"] , userinfo["first_name"],  userinfo["last_name"]])
 
     def listusers(self, sectionUser):
-        userdata=[]
+        useremaillist=[]
         for userinfo in sectionUser:
-            userdata.append([userinfo["email"] , userinfo["first_name"],  userinfo["last_name"]])
-        self.userdata = userdata
+            useremaillist.append([userinfo["email"] , userinfo["first_name"],  userinfo["last_name"]])
+        self.useremaillist = useremaillist
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
@@ -90,12 +90,12 @@ class SectionUserListModel(QAbstractTableModel):
 
     def rowCount(self, index):
         # The length of the outer list.
-        return len(self.userdata)
+        return len(self.useremaillist)
 
     def columnCount(self, index):
         # The following takes the first sub-list, and returns
         # the length (only works if all rows are an equal length)
-        return len(self.userdata[0])
+        return len(self.useremaillist[0])
 
     # def userlist(self):
     #     userlist=[]

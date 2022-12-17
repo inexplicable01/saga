@@ -6,11 +6,12 @@ import time
 import os
 import glob
 from datetime import datetime
-from SagaApp.Container import Container
-from SagaApp.FrameStruct import Frame
-from Config import SERVERFILEADDED,SERVERNEWREVISION, colorscheme, SERVERFILEDELETED, UPDATEDUPSTREAM, typeInput,typeRequired,typeOutput
-# from SagaApp.FileObjects import FileTrack
-# from SagaApp.Change import Change
+from SagaCore.Container import Container
+from SagaCore.Frame import Frame
+from SagaCore import *
+from SagaGuiModel.GuiModelConstants import SERVERFILEADDED,SERVERNEWREVISION, colorscheme, SERVERFILEDELETED, UPDATEDUPSTREAM
+# from SagaCore.FileObjects import FileTrack
+# from SagaCore.Change import Change
 
 FILENAME = 'File Name'
 # CURRENT = 'Current'
@@ -33,9 +34,10 @@ filetracktypes = ['','','','wffiletrack','nffiletrack','uffiletrack']
 
 class SyncListModel(QAbstractTableModel):
     def __init__(self, changes, newframe:Frame, maincontainer:Container, containeridtoname, option):
+        ## Setting up Models for the tables in Sync Pop up.
         super().__init__()
         self.containeridtoname = containeridtoname
-        self.refframe = maincontainer.getRefFrame()
+        self.refframe = maincontainer.refframe
         self.changes = changes
         self.currow=[]
         self.rowheader = []
@@ -57,22 +59,22 @@ class SyncListModel(QAbstractTableModel):
         self.actionstate = {}
         if option=='conflict':
             self.notice = False
-            for fileheader, change in self.changes.items():
+            for citemid, change in self.changes.items():
                 if change.conflict:
-                    self.actionstate[fileheader] = []
-                    self.rowheader.append(fileheader)
+                    self.actionstate[citemid] = []
+                    self.rowheader.append(citemid)
                     self.changearray.append(change)
         elif option=='notice':
             self.notice = True
-            for fileheader, change in self.changes.items():
+            for citemid, change in self.changes.items():
                 if change.noteworthy:
-                    self.actionstate[fileheader] = []
-                    self.rowheader.append(fileheader)
+                    self.actionstate[citemid] = []
+                    self.rowheader.append(citemid)
                     self.changearray.append(change)
 
             # if change.conflict:
             #     self.conflictdata.append(fileheader)
-            #     self.conflictfilenames.append(self.newframe.filestrack[fileheader].file_name)
+            #     self.conflictfilenames.append(self.newframe.filestrack[fileheader].entity)
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
@@ -98,47 +100,47 @@ class SyncListModel(QAbstractTableModel):
             col = index.column()
             change = self.changearray[row]
             print('goes through here as edit?')
-            self.actionstate[change.fileheader]=[{'main': True,
+            self.actionstate[change.citemid]=[{'main': True,
                                                         'newfileheader': value,
                                                         'filetrack': change.wffiletrack,
                                                         'filetracktype': filetracktypes[col],
-                                                        'filetype': change.filetype,
+                                                        'filerole': change.filetype,
                                                         'change': change
                                                         }]
         if role == Qt.CheckStateRole:
-            print('goes through here right?')
+            # print('goes through here right?')
             row = index.row()
             col = index.column()
             change = self.changearray[row]
             ### figure out which one is main
             if value: ## adding
-                if len(self.actionstate[change.fileheader])==0:
-                    self.actionstate[change.fileheader].append({'main':True,
+                if len(self.actionstate[change.citemid])==0:
+                    self.actionstate[change.citemid].append({'main':True,
                         'filetrack':getattr(change, filetracktypes[col]),
                                                                 'header':self.headers[col],
                                                                 'filetracktype': filetracktypes[col],
-                                                                'filetype':change.filetype,
+                                                                'filerole':change.filerole,
                                                                 'change':change
                     })
                 else:
-                    self.actionstate[change.fileheader].append({'main':False,
+                    self.actionstate[change.citemid].append({'main':False,
                                                                 'filetrack':getattr(change, filetracktypes[col]),
                                                                 'filetracktype':filetracktypes[col],
                                                                 'header': self.headers[col],
-                                                                'filetype':change.filetype,
+                                                                'filerole':change.filerole,
                                                                 'change':change
                     })
             else: ## removing
-                if len(self.actionstate[change.fileheader]) == 0:
+                if len(self.actionstate[change.citemid]) == 0:
                     print('there should be nothing to remove')
                 else:
-                    for action in self.actionstate[change.fileheader]:
+                    for action in self.actionstate[change.citemid]:
                         if action['header']==self.headers[col]:
-                            self.actionstate[change.fileheader].remove(action)
-                    if len(self.actionstate[change.fileheader]) == 0:
+                            self.actionstate[change.citemid].remove(action)
+                    if len(self.actionstate[change.citemid]) == 0:
                         print('resolve action should reset')
                     else:
-                        self.actionstate[change.fileheader][0]['main'] = True
+                        self.actionstate[change.citemid][0]['main'] = True
             self.checks[QPersistentModelIndex(index)] = value
             return True
         return False
@@ -173,9 +175,9 @@ class SyncListModel(QAbstractTableModel):
         change= self.changearray[row]
         if role == Qt.DisplayRole:
             if self.headers[col]==FILENAME:
-                return change.fileheader
+                return change.citemid
             elif self.headers[col]==DESCRIPTION:
-                return change.description.format(change.fileheader)
+                return change.description.format(change.citemid)
             elif self.headers[col]=='No':
                 if change.inputscenariono in [1,2,3,4,5,6,7,8,9,10]:
                     return 'Input Scen ' + str(change.inputscenariono)
@@ -185,16 +187,16 @@ class SyncListModel(QAbstractTableModel):
             elif self.headers[col]==self.CURRENTREVX:
                 if change.conflict:
                     if change.alterinput:
-                        if len(self.actionstate[change.fileheader])>0:
-                            return self.actionstate[change.fileheader][0]['newfileheader']
-                    if change.filetype==typeInput:
+                        if len(self.actionstate[change.citemid])>0:
+                            return self.actionstate[change.citemid][0]['newfileheader']
+                    if change.filetype==roleInput:
                         if change.inputscenariono==3:
                             return 'Keep File Added'
                         elif change.inputscenariono==6:
                             return "Ignore Newest Frame deleted"
                         elif change.inputscenariono in [5,7]:
-                            return 'Local Copy is using ' + change.wffiletrack.connection.Rev + ' from container ' + \
-                                       self.containeridtoname[change.wffiletrack.connection.refContainerId]
+                            return 'Local Copy is using ' + change.wffiletrack.Rev + ' from container ' + \
+                                       self.containeridtoname[change.wffiletrack.refContainerId]
                     else:
                         if change.reqoutscenariono == 3:
                             return 'Keep File Added'
@@ -208,7 +210,7 @@ class SyncListModel(QAbstractTableModel):
                             else:
                                 return 'Local Copy is from ' + change.lffiletrack.lastupdated
                 elif change.noteworthy:
-                    if change.filetype==typeInput:
+                    if change.filerole==roleInput:
                         if change.inputscenariono == 1:
                             return 'New Input added to container.'
                         elif change.inputscenariono == 2:
@@ -216,56 +218,56 @@ class SyncListModel(QAbstractTableModel):
                         elif change.inputscenariono == 4:
                             return "Reject new File Add. (This effectively remove fileheader from newest frame)"
                         elif change.inputscenariono == 5:
-                            return 'Input file added.  Using ' + change.wffiletrack.connection.Rev + ' from container ' + \
-                                   self.containeridtoname[change.wffiletrack.connection.refContainerId]
+                            return 'Input file added.  Using ' + change.wffiletrack.Rev + ' from container ' + \
+                                   self.containeridtoname[change.wffiletrack.refContainerId]
                         elif change.inputscenariono == 7:
-                            return 'Using ' + change.wffiletrack.connection.Rev + ' from container ' + \
-                                   self.containeridtoname[change.wffiletrack.connection.refContainerId]
+                            return 'Using ' + change.wffiletrack.Rev + ' from container ' + \
+                                   self.containeridtoname[change.wffiletrack.refContainerId]
                         elif change.inputscenariono == 8:
-                            return 'Input file {} added.  Input file synced to {} from container {}'.format(change.fileheader,
-                                    change.wffiletrack.connection.Rev, self.containeridtoname[change.wffiletrack.connection.refContainerId])
+                            return 'Input file {} added.  Input file synced to {} from container {}'.format(change.citemid,
+                                    change.wffiletrack.Rev, self.containeridtoname[change.wffiletrack.refContainerId])
                         elif change.inputscenariono ==9:
-                            return 'Input {} removed'.format(change.fileheader)
+                            return 'Input {} removed'.format(change.citemid)
                         elif change.inputscenariono == 10:
-                            if change.lffiletrack.connection.Rev!=change.wffiletrack.connection.Rev:
-                                return 'Input file {} synced to {} from container {}. This file has been updated in this container since last commit.'.format(change.fileheader,
-                                       change.wffiletrack.connection.Rev, self.containeridtoname[change.wffiletrack.connection.refContainerId])
+                            if change.lffiletrack.Rev!=change.wffiletrack.Rev:
+                                return 'Input file {} synced to {} from container {}. This file has been updated in this container since last commit.'.format(change.citemid,
+                                       change.wffiletrack.Rev, self.containeridtoname[change.wffiletrack.refContainerId])
 
                             else:
-                                return 'Input file {} synced to {} from container {}'.format(change.fileheader,
-                                        change.wffiletrack.connection.Rev, self.containeridtoname[change.wffiletrack.connection.refContainerId])
+                                return 'Input file {} synced to {} from container {}'.format(change.citemid,
+                                        change.wffiletrack.Rev, self.containeridtoname[change.wffiletrack.refContainerId])
                     else:
                         if change.reqoutscenariono == 1:
                             return 'New File added to container.'
                         elif change.reqoutscenariono == 2:
                             return "File deleted from container."
                         elif change.reqoutscenariono == 4:
-                            return "Reject new File Add. (This effectively remove {} from newest frame)".format(change.fileheader)
+                            return "Reject new File Add. (This effectively remove {} from newest frame)".format(change.citemid)
                         elif change.reqoutscenariono == 5:
                             return "File Added.  Working Identical to newest Frame"
                         elif change.reqoutscenariono == 7:
                             return "Local File identical to file in newest Frame."
                         elif change.reqoutscenariono == 8:
-                            return "File {} Added.".format(change.fileheader)
+                            return "File {} Added.".format(change.citemid)
                         elif change.reqoutscenariono == 9:
-                            return "File {} removed.".format(change.fileheader)
+                            return "File {} removed.".format(change.citemid)
                         elif change.reqoutscenariono == 10:
-                            return "File {} edited from last commit.".format(change.fileheader)
+                            return "File {} edited from last commit.".format(change.citemid)
             elif self.headers[col]==self.NEWESTREVX:
                 if self.newframe: ## if new frame exist
-                    if change.nffiletrack:  ## if fileheader exist for this fileheader
-                        if change.filetype ==typeInput:
-                            return 'Newest Rev''s Input is ' + change.nffiletrack.connection.Rev + ' from container ' + \
-                                   self.containeridtoname[change.wffiletrack.connection.refContainerId]
+                    if change.nffiletrack:  ## if citemid exist for this citemid
+                        if change.filetype ==roleInput:
+                            return 'Newest Rev''s Input is ' + change.nffiletrack.Rev + ' from container ' + \
+                                   self.containeridtoname[change.wffiletrack.refContainerId]
                         else:
                             return 'Latest Updated :   ' + change.nffiletrack.lastupdated
-                    else:## if fileheader doesn't exist for this fileheader
+                    else:## if citemid doesn't exist for this citemid
                         # if change.inputscenariono==3 or change.reqoutscenariono==3:
-                        #     return 'Follow Newest Frame and and Remove {}'.format(change.fileheader)
+                        #     return 'Follow Newest Frame and and Remove {}'.format(change.citemid)
                         if change.inputscenariono==2 or change.reqoutscenariono==2:
-                            return 'Newest Frame Removed {}'.format(change.fileheader)
+                            return 'Newest Frame Removed {}'.format(change.citemid)
                         elif change.inputscenariono==1 or change.reqoutscenariono==1:
-                            return 'Newest Frame does not have this {} either'.format(change.fileheader)
+                            return 'Newest Frame does not have this {} either'.format(change.citemid)
                 else:
                     return 'No Newer Frame'
             elif self.headers[col]==UPSTREAM:
@@ -275,7 +277,7 @@ class SyncListModel(QAbstractTableModel):
                     return 'NA'
             elif self.headers[col]==ACTION:
                 if change.conflict:
-                    return self.explainselected(change.fileheader, change)
+                    return self.explainselected(change.citemid, change)
                 elif change.noteworthy:
                     return change.description
         elif role == Qt.CheckStateRole and col in self.checkcolumns:
@@ -327,22 +329,22 @@ class SyncListModel(QAbstractTableModel):
         # the length (only works if all rows are an equal length)
         return len(self.headers)
 
-    def explainselected(self, fileheader, change):
+    def explainselected(self, citemid, change):
         # for col in self.checkcolumns:
         #     checkboxindex = self.index(row, col)
         #     if self.checkState(QPersistentModelIndex(checkboxindex)):
-        #         self.actionstate[fileheader]
+        #         self.actionstate[citemid]
         if change.alterinput:
-            return 'Please type into the Current Rev cell a new fileheader name for the altered input as a working file.'
+            return 'Please type into the Current Rev cell a new citemid name for the altered input as a working file.'
 
-        if len(self.actionstate[fileheader])==0:
+        if len(self.actionstate[citemid])==0:
             if change.inputscenariono in [1,3,4] or change.reqoutscenariono in [1,3,4]:
                 return 'Please select only one option'
             else:
                 return 'Please select at least one option.'
         else:
             copies=[]
-            for action in self.actionstate[fileheader]:
+            for action in self.actionstate[citemid]:
                 if action['main']:
                     mainaction = action
                 else:
@@ -375,13 +377,13 @@ class SyncListModel(QAbstractTableModel):
                 return 'Saga will continue to use your editted version as the working copy.  \n\n'
         else:
             if action['filetracktype']=='uffiletrack':
-                return 'Create copy' + filetrack.file_name + '_' + filetrack.lastupdated  + ' .\n\n'
+                return 'Create copy' + filetrack.entity + '_' + filetrack.lastupdated  + ' .\n\n'
             elif action['filetracktype']=='nffiletrack':
-                return 'Create copy' +  filetrack.file_name + '_' + filetrack.lastupdated  + ' .\n\n'
+                return 'Create copy' +  filetrack.entity + '_' + filetrack.lastupdated  + ' .\n\n'
             elif action['filetracktype']=='lffiletrack':
-                return 'Create ' + self.currentrev +' copy named ' + filetrack.file_name + '_' + filetrack.lastupdated  + '.\n\n'
+                return 'Create ' + self.currentrev +' copy named ' + filetrack.entity + '_' + filetrack.lastupdated  + '.\n\n'
             elif action['filetracktype']=='wffiletrack':
-                return 'Create your current working file as ' + filetrack.file_name + '_' + self.currentrev +'_edited.\n\n'
+                return 'Create your current working file as ' + filetrack.entity + '_' + self.currentrev +'_edited.\n\n'
 
 
 # 'wffiletrack','lffiletrack','nffiletrack','uffiletrack'
@@ -390,7 +392,7 @@ class SyncListModel(QAbstractTableModel):
 #         super().__init__()
 #
 #         self.containeridtoname = containeridtoname
-#         self.refframe = maincontainer.getRefFrame()
+#         self.refframe = maincontainer.refframe
 #         self.changes = changes
 #         self.currow=[]
 #         self.rowheader = []
@@ -412,7 +414,7 @@ class SyncListModel(QAbstractTableModel):
 #
 #             # if change.conflict:
 #             #     self.conflictdata.append(fileheader)
-#             #     self.conflictfilenames.append(self.newframe.filestrack[fileheader].file_name)
+#             #     self.conflictfilenames.append(self.newframe.filestrack[fileheader].entity)
 #
 #     def headerData(self, section, orientation, role=Qt.DisplayRole):
 #         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
@@ -477,10 +479,10 @@ class SyncListModel(QAbstractTableModel):
 #                     return 'Same as ' + self.currentrev
 #             elif self.headers[col]==self.CURRENTREVX:
 #                 if change.lffiletrack:
-#                     if change.lffiletrack.connection.connectionType.name==typeInput:
+#                     if change.lffiletrack.containeritemrole.name==roleInput:
 #
-#                         return self.CURRENTREVX +  ' uses ' + change.lffiletrack.connection.Rev + ' from container ' + \
-#                                self.containeridtoname[change.lffiletrack.connection.refContainerId]
+#                         return self.CURRENTREVX +  ' uses ' + change.lffiletrack.Rev + ' from container ' + \
+#                                self.containeridtoname[change.lffiletrack.refContainerId]
 #                     else:
 #                         return 'Last Updated :   ' + change.lffiletrack.lastupdated
 #                 else:
@@ -544,7 +546,7 @@ class SyncListModel(QAbstractTableModel):
 #         for fileheader, change in self.changes.items():
 #             if change.conflict:
 #                 self.conflictdata.append(fileheader)
-#                 self.conflictfilenames.append(self.newframe.filestrack[fileheader].file_name)
+#                 self.conflictfilenames.append(self.newframe.filestrack[fileheader].entity)
 #
 #     def headerData(self, section, orientation, role=Qt.DisplayRole):
 #         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
@@ -617,7 +619,7 @@ class SyncListModel(QAbstractTableModel):
 #         for fileheader in self.changes:
 #             if SERVERFILEADDED in self.changes[fileheader]['reason']:
 #                 self.conflictdata.append(fileheader)
-#                 self.conflictfilenames.append(self.newframe.filestrack[fileheader].file_name)
+#                 self.conflictfilenames.append(self.newframe.filestrack[fileheader].entity)
 #
 #     def headerData(self, section, orientation, role=Qt.DisplayRole):
 #         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
@@ -690,7 +692,7 @@ class SyncListModel(QAbstractTableModel):
 #         for fileheader in self.changes:
 #             if SERVERFILEDELETED in self.changes[fileheader]['reason']:
 #                 self.conflictdata.append(fileheader)
-#                 self.conflictfilenames.append(self.workingframe.filestrack[fileheader].file_name)
+#                 self.conflictfilenames.append(self.workingframe.filestrack[fileheader].entity)
 #
 #     def headerData(self, section, orientation, role=Qt.DisplayRole):
 #         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
@@ -761,7 +763,7 @@ class SyncListModel(QAbstractTableModel):
 #             if UPDATEDUPSTREAM in self.changes[fileheader]['reason']:
 #                 self.conflictdata.append(fileheader)
 #                 self.upstreamfileupdate.append({'frame':changes[fileheader]['upstreamframe'],
-#                                                 'fileheader':fileheader,
+#                                                 'citemid':fileheader,
 #                                                 'fromcontainer':changes[fileheader]['fromcontainer']
 #                                                 })
 #
@@ -798,13 +800,13 @@ class SyncListModel(QAbstractTableModel):
 #
 #         if role == Qt.DisplayRole:
 #             upstreamframe = self.upstreamfileupdate[row]['frame']
-#             fileheader = self.upstreamfileupdate[row]['fileheader']
+#             fileheader = self.upstreamfileupdate[row]['citemid']
 #             fromcontainer= self.upstreamfileupdate[row]['fromcontainer']
 #             # See below for the nested-list data structure.
 #             # .row() indexes into the outer list,
 #             # .column() indexes into the sub-list
 #             if col==0:
-#                 return upstreamframe.filestrack[fileheader].file_name
+#                 return upstreamframe.filestrack[fileheader].entity
 #             elif col==1:
 #                 return fromcontainer.containerName + ' @ ' + upstreamframe.FrameName
 #             elif col==2:

@@ -1,15 +1,17 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from SagaApp.Container import Container
-from Config import CHANGEREASONORDER,sagaworkingfiles,typeRequired, typeInput, typeOutput, colorscheme,  JUSTCREATED, UNCHANGED, MD5CHANGED,typeUnversioned
+from SagaCore.Container import Container,ContainerFileStatus
+# from SagaGuiModel.SagaGuiContainerOperations import *
+from SagaCore.ContainerItem import ContainerItem, ContainerItemType
+from SagaGuiModel.GuiModelConstants import CHANGEREASONORDER,sagaworkingfiles,roleRequired, roleInput, roleOutput, colorscheme,  JUSTCREATED, UNCHANGED, MD5CHANGED,roleUnversioned , foregroundcolorscheme
 from datetime import datetime
 import os
-from SagaApp.FileObjects import FileTrack
+from SagaCore.Track import FileTrack, FolderTrack
 from os.path import join
 import warnings
 import glob
-from SagaApp.FrameStruct import Frame
+from SagaCore.Frame import Frame
 # from SagaGuiModel.SagaSync import SagaSync
 
 STATUSCOLUMNHEADER='Status'
@@ -19,157 +21,120 @@ class ContainerFileModel(QAbstractTableModel):
     def __init__(self, maincontainer:Container, sagasync, sagaguimodel):
 
         super(ContainerFileModel, self).__init__()
-        self.containerfiles=[]
+        self.containerfolderstatus=[]
         self.headers = [FILENAMECOLUMNHEADER, 'Role', STATUSCOLUMNHEADER, 'Last Edited', 'Rev Committed', 'Commit Message']
         self.maincontainer = maincontainer
         self.sagasync = sagasync
         self.containidtoname = []
         self.sagaguimodel = sagaguimodel
         if self.maincontainer is not None:
-            self.gathermodeldatafromContainer()
+            self.containerfolderstatus = self.maincontainer.containerFolderStatus()
 
-    def latestRevFor(self,maincontainer:Container,fileheader, refframe):#lastcommit, commitmessage
-        if fileheader not in refframe.filestrack.keys():
-            return 'Rev Next', 'Not Committed Yet'
-        # curmd5 = maincontainer.getRefFrame().filestrack[fileheader].md5
-        # # print(self.revnum, self.workingFrame.FrameName)
-        # lastsamerevnum = maincontainer.revnum
-        lastloopframe = refframe
-        try:
-            lastrevupdated = lastloopframe.filestrack[fileheader].lastupdated
-            revyaml = lastrevupdated + '.yaml'
-            if revyaml in maincontainer.memoryframesdict.keys():
-                pastframe = maincontainer.memoryframesdict[revyaml]
-                return lastrevupdated, pastframe.commitMessage
-            else:
-                return lastrevupdated, 'Missing Commit Message.'
-        except:
-            return 'Rev0', 'work in progress'
-        # while lastsamerevnum > 1:
-        #     lastsamerevnum -= 1
-        #
-        #     if revyaml in maincontainer.memoryframesdict.keys():
-        #
-        #         if fileheader in pastframe.filestrack.keys():
-        #             if curmd5 != pastframe.filestrack[fileheader].md5:
-        #                 return lastloopframe.FrameName, lastloopframe.commitMessage
-        #                 # returns Rev where md5 was still the same which is one Rev(this+1)
-        #             if lastsamerevnum == 1:
-        #                 return 'Rev' + str(lastsamerevnum), pastframe.commitMessage
-        #         else:
-        #             return 'Rev' + str(lastsamerevnum + 1), pastframe.commitMessage
-        #         lastloopframe = pastframe
-        #     else:
-        #         warnings.warn('Rev' + str(lastsamerevnum) + '.yaml  cannot be found. Incomplete history')
 
-    def gathermodeldatafromContainer(self):
-        # print('begin gather model data' + datetime.now().isoformat())
-        filedir = os.listdir(self.maincontainer.containerworkingfolder)
-        containerfiledict={typeInput:[],typeRequired:[], typeOutput:[]}
-        refframe = self.maincontainer.getRefFrame()
-        wf = self.maincontainer.workingFrame
-        for fileheader in self.maincontainer.FileHeaders.keys():
-            filetype = wf.filestrack[fileheader].connection.connectionType.name
-            lastcommit, commitmessage = self.latestRevFor(self.maincontainer,fileheader, refframe)
-            filedict = {'fileheader': fileheader,
-                'fileinfo': self.maincontainer.FileHeaders[fileheader],
-                'filetype':filetype,
-                'change': None,
-                'filetrack': None ,
-                'lastcommit': lastcommit, 'commitmessage': commitmessage}
-            if fileheader in wf.filestrack.keys():
-                filedict['filetrack']=wf.filestrack[fileheader]
-            else:
-                missingfiletrack = FileTrack(FileHeader='---',
-                                             containerworkingfolder=self.maincontainer.containerworkingfolder,
-                                             file_name='---', style=None)
-                filedict['filetrack'] = missingfiletrack
 
-            containerfiledict[filetype].append(filedict)
-
-            if wf.filestrack[fileheader].file_name in filedir:
-                filedir.remove(wf.filestrack[fileheader].file_name)
-        self.containerfiles = containerfiledict[typeInput] + containerfiledict[typeRequired] + containerfiledict[typeOutput]
-        # print('should be end' + datetime.now().isoformat())
-        for unbookedfile in filedir:
-            if unbookedfile in sagaworkingfiles or unbookedfile.startswith('~$'):
-                continue
-            unversionedfiletrack=FileTrack(FileHeader='---', containerworkingfolder=self.maincontainer.containerworkingfolder,
-                          file_name=unbookedfile, style=typeUnversioned)
-            self.containerfiles.append({'fileheader': '---',
-                'fileinfo': {'type':typeUnversioned, 'Container':'here'},
-                'filetype':typeUnversioned,
-                'change': None,
-                'filetrack': unversionedfiletrack ,
-                'lastcommit': None, 'commitmessage': None})
-        # print('end gather model data' + datetime.now().isoformat())
+    # def gathermodeldatafromContainer(self):
+    #     # print('begin gather model data' + datetime.now().isoformat())
+    #     filedir = os.listdir(self.maincontainer.containerworkingfolder)
+    #     containerfiledict={roleInput:[],roleRequired:[], roleOutput:[]}
+    #     refframe = self.maincontainer.refframe
+    #     wf = self.maincontainer.workingFrame
+    #     for citemid in self.maincontainer.containeritems.keys():
+    #         if citemid in wf.filestrack.keys():
+    #             filetype = wf.filestrack[citemid].connection.containeritemrole.name
+    #             lastcommit, commitmessage = self.latestRevFor(self.maincontainer, citemid, refframe)
+    #             filedict = {'citemid': citemid,
+    #                         'fileinfo': self.maincontainer.containeritemid[citemid],
+    #                         'filerole': filetype,
+    #                         'change': None,
+    #                         'filetrack': wf.filestrack[citemid],
+    #                         'lastcommit': lastcommit, 'commitmessage': commitmessage}
+    #             if wf.filestrack[citemid].entity in filedir:
+    #                 filedir.remove(wf.filestrack[citemid].entity)
+    #         else:
+    #             filerole= self.maincontainer.containeritems[citemid].containeritemrole
+    #             filedict = {'citemid': citemid,
+    #                         'fileinfo': self.maincontainer.containeritems[citemid],
+    #                         'filerole': filerole,
+    #                         'change': None,
+    #                         'filetrack': FileTrack.createMissingTrack(citemid),
+    #                         'lastcommit': 'missing', 'commitmessage': 'missing'}
+    #         containerfiledict[filerole].append(filedict)
+    #
+    #
+    #     self.containerfiles = containerfiledict[roleInput] + containerfiledict[roleRequired] + containerfiledict[roleOutput]
+    #     # print('should be end' + datetime.now().isoformat())
+    #     for unbookedfile in filedir:
+    #         if unbookedfile in sagaworkingfiles or unbookedfile.startswith('~$'):
+    #             continue
+    #         unversionedfiletrack=FileTrack( containerworkingfolder=self.maincontainer.containerworkingfolder,
+    #                       filename=unbookedfile, containeritemid='---')
+    #         self.containerfiles.append({'citemid': '---',
+    #             'fileinfo': {'type':roleUnversioned, 'Container':'here'},
+    #             'filerole':roleUnversioned,
+    #             'change': None,
+    #             'filetrack': unversionedfiletrack ,
+    #             'lastcommit': None, 'commitmessage': None})
+    #     # print('end gather model data' + datetime.now().isoformat())
 
     def data(self, index, role):
-
         if index.isValid():
             c = index.column()
             r = index.row()
-            rowdict = self.containerfiles[r]
-            fileheader = rowdict['fileheader']
+            s:ContainerFileStatus = self.containerfolderstatus[r]
             if role == Qt.DisplayRole:
-                # if self.headers[c]=='FileHeader':
-                #     return rowdict['fileheader']
                 if self.headers[c]=='Role':
-                    if rowdict['filetype'] == typeInput:
-                        id = rowdict['filetrack'].connection.refContainerId
-                        containername = self.sagaguimodel.containerinfodict[id]['ContainerDescription']
-                        return typeInput + ' From ' + containername
-                    elif rowdict['filetype'] == typeOutput:
-                        strout = typeOutput + ' To '
-                        for containerid in rowdict['fileinfo']['Container']:
+                    if s.citem.containeritemrole == roleInput:
+                        upstreamcontainer = self.sagaguimodel.provideContainer(s.citem.refcontainerid)
+                        return roleInput + ' From ' + upstreamcontainer.containerName
+                    elif s.citem.containeritemrole  == roleOutput:
+                        strout = roleOutput + ' To '
+                        for containerid in s.citem.refcontainerid:
                             try:
-                                containername = self.sagaguimodel.containerinfodict[containerid]['ContainerDescription']
+                                container = self.sagaguimodel.provideContainer(containerid)
                             except:
-                                containername = containerid
-                            strout = strout + containername + ','
+                                container = containerid
+                            strout = strout + container.containerName + ','
                         return strout
-                    elif rowdict['filetype'] == typeRequired:
-                        return typeRequired
+                    elif s.citem.containeritemrole == roleRequired:
+                        return roleRequired
                 elif self.headers[c]==STATUSCOLUMNHEADER:
-                    if rowdict['filetype'] in [typeOutput,typeRequired]:
-                        if rowdict['change']:
-                            return ', '.join(rowdict['change']['reason'])
+                    if s.citem.containeritemrole in [roleOutput,roleRequired]:
+                        if s.change:
+                            return ', '.join(s.change['reason'])
                         else:
                             return 'Added'
-                    elif rowdict['filetype'] ==typeInput:
-                        return self.maincontainer.getRefFrame().filestrack[fileheader].connection.Rev
+                    elif s.citem.containeritemrole ==roleInput:
+                        return self.maincontainer.workingFrame.filestrack[s.citemid].connection.Rev
                 elif self.headers[c]=='FileName':
                     pass
                 elif self.headers[c]=='Last Edited':
-                    if rowdict['filetype'] in [typeOutput,typeInput,typeRequired]:
-                        return datetime.fromtimestamp(rowdict['filetrack'].lastEdited).strftime('%m/%d/%y  %H:%M')
+                    if s.citem.containeritemrole in [roleOutput,roleInput,roleRequired]:
+                        try:
+                            return datetime.fromtimestamp(s.filetrack.lastEdited).strftime('%m/%d/%y  %H:%M')
+                        except:
+                            return '---'
                     else:
                         return '---'
                 elif self.headers[c]=='Rev Committed':
-                    return rowdict['lastcommit']
+                    return s.lastcommit
                 elif self.headers[c]=='Commit Message':
-                    return rowdict['commitmessage']
+                    return s.commitmessage
                 return '---'
             elif role ==Qt.BackgroundColorRole:
-
-                filetype = self.containerfiles[index.row()]['filetype']
-                return QColor(colorscheme[filetype])
+                return QColor(colorscheme[s.citem.containeritemrole])
             elif role == Qt.ForegroundRole:
-                if self.containerfiles[index.row()]['filetype'] == typeOutput:
-                    return QColor(Qt.white)
-                else:
-                    return QColor(Qt.black)
+                return QColor(foregroundcolorscheme[s.citem.containeritemrole])
 
     def update(self, newcontainer= None):
         if newcontainer is not None:
             self.maincontainer = newcontainer
-        self.gathermodeldatafromContainer()
-        for i,rowdict in enumerate(self.containerfiles):
-            if rowdict['fileheader'] in self.sagasync.changes.keys():
-                rowdict['change']  = self.sagasync.changes[rowdict['fileheader']]
-                # self.containerfiles[i]['change'] = changes[rowdict['fileheader']]
+        self.containerfolderstatus = self.maincontainer.containerFolderStatus()
+        for i,s in enumerate(self.containerfolderstatus):
+            if s.citemid in self.sagasync.changes.keys():
+                s.change  = self.sagasync.changes[s.citemid]
+                # self.containerfolderstatus[i]['change'] = changes[rowdict['citemid']]
             else:
-                rowdict['change'] = None
+                s.change  = None
         self.layoutChanged.emit()
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
@@ -177,13 +142,13 @@ class ContainerFileModel(QAbstractTableModel):
             return self.headers[section]
             # return 'Column {}'.format(section + 1)
         if orientation == Qt.Vertical and role == Qt.DisplayRole:
-            rowdict = self.containerfiles[section]
-            return rowdict['fileheader']
+            s = self.containerfolderstatus[section]
+            return s.citem.containeritemname
         # return super().headerData(section, orientation, role)
 
     def rowCount(self, index):
         # The length of the outer list.
-        return len(self.containerfiles)
+        return len(self.containerfolderstatus)
 
     def columnCount(self, index):
         # The following takes the first sub-list, and returns
@@ -194,7 +159,7 @@ class ContainerFileModel(QAbstractTableModel):
             return len(self.headers)
 
     def reset(self):
-        self.containerfiles=[]
+        self.containerfolderstatus=[]
         self.maincontainer=None
         self.layoutChanged.emit()
 
@@ -235,20 +200,22 @@ class ContainerFileDelegate(QStyledItemDelegate):
     def __init__(self):
         super(ContainerFileDelegate, self).__init__()
     def paint(self,painter:QPainter, option, index:QModelIndex):
-        filetrack = index.model().containerfiles[index.row()]['filetrack']
-        change = index.model().containerfiles[index.row()]['change']
+        s:ContainerFileStatus = index.model().containerfolderstatus[index.row()]
+        change = index.model().containerfolderstatus[index.row()].change
         header = index.model().headers[index.column()]
 
 
         if FILENAMECOLUMNHEADER==header:
             painter.setPen(QPen(QBrush(Qt.black),0.5))
-            painter.setBrush(QBrush(colorscheme[filetrack.connection.connectionType.name]))
+            painter.setBrush(QBrush(colorscheme[s.citem.containeritemrole]))
             painter.drawRect(option.rect)
-
-            file_name, file_extension = os.path.splitext(filetrack.file_name)
-
-            bottomright = QPointF(option.rect.left() + option.rect.width() * 0.2, option.rect.bottom())
-            picRect = QRectF(option.rect.topLeft(), bottomright)
+            if type(s.citem.track)==FileTrack:
+                entityname = s.citem.track.entity
+            elif type(s.citem.track)==FolderTrack:
+                entityname = s.citem.track.entity
+            else:
+                entityname = 'ContainerFileDelegateMissingTrackType'
+            filename, file_extension = os.path.splitext(entityname)
             if file_extension in ['.docx', '.doc']:
                 qpic = QImage('Graphics/FileIcons/Word.png')
             elif file_extension in ['.pptx', '.ppt']:
@@ -261,26 +228,33 @@ class ContainerFileDelegate(QStyledItemDelegate):
                 qpic = QImage('Graphics/FileIcons/txticon.png')
             elif file_extension in ['.pdf']:
                 qpic = QImage('Graphics/FileIcons/pdficon.png')
+            elif file_extension =='':
+                qpic = QImage('Graphics/FileIcons/foldericon.png')
             else:
                 qpic = QImage('Graphics/FileIcons/genericfile.png')
 
-            if not filetrack.ctnrootpath == '.':
-                qpic = QImage('Graphics/FileIcons/foldericon.png')
+            if filename=='MISSING':
+                qpic = QImage('Graphics/FileIcons/questionmark.png')
+            # qpic = QImage('Graphics/FileIcons/foldericon.png')
+
+
+            bottomright = QPointF(option.rect.left() + option.rect.width() * 0.2, option.rect.bottom())
+            picRect = QRectF(option.rect.topLeft(), bottomright)
             painter.drawImage(picRect, qpic)
 
             topleft = QPointF(option.rect.left()+option.rect.width()*0.2,  option.rect.top())
             textrect = QRectF(topleft, option.rect.bottomRight())
-            if filetrack.connection.connectionType.name in [typeOutput]:
-                textcolor = Qt.white
+
+            painter.setPen(QPen(QBrush(foregroundcolorscheme[s.citem.containeritemrole]), 1))
+            if type(s.citem.track) == FileTrack:
+                painter.drawText(textrect, Qt.AlignCenter, s.citem.track.entity)
             else:
-                textcolor = Qt.black
-            painter.setPen(QPen(QBrush(textcolor), 1))
-            painter.drawText(textrect, Qt.AlignCenter, filetrack.file_name)
+                painter.drawText(textrect, Qt.AlignCenter, s.citem.track.entity)
         elif STATUSCOLUMNHEADER==header:
             if change:
                 # changenum = len(change['reason'])
-                painter.setPen(QPen(QBrush(colorscheme[filetrack.connection.connectionType.name]), 0.5))
-                painter.setBrush(QBrush(colorscheme[filetrack.connection.connectionType.name]))
+                painter.setPen(QPen(QBrush(colorscheme[s.citem.containeritemrole]), 0.5))
+                painter.setBrush(QBrush(colorscheme[s.citem.containeritemrole]))
                 painter.drawRect(option.rect)
 
                 # StatusIcons
@@ -307,17 +281,6 @@ class ContainerFileDelegate(QStyledItemDelegate):
                     painter.setPen(QPen(QBrush(Qt.green), 1))
                     painter.setBrush(QBrush(Qt.green))
                     painter.drawEllipse(QRectF(tl, br))
-
-                # for ic, changereason in enumerate(change.reason):
-                #     painter.setBrush(QBrush(colorscheme[changereason]))
-                #     reasonnum = CHANGEREASONORDER.index(changereason)
-                #     intv = option.rect.width()/len(CHANGEREASONORDER)
-                #     tl = QPointF(option.rect.left() +  intv * reasonnum + intv*0.1, option.rect.top()+0.2*option.rect.height())
-                #     br = QPointF(option.rect.left() + intv * (reasonnum+1)- intv*0.1, option.rect.bottom()-0.2*option.rect.height())
-                #     textrect = QRectF(tl, br)
-                #     painter.setPen(QPen(QBrush(colorscheme[changereason]), 1))
-                #     painter.setBrush(QBrush(colorscheme[changereason]))
-                #     painter.drawRect(textrect)
             else:
                 QStyledItemDelegate.paint(self, painter, option, index)
         else:

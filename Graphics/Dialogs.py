@@ -2,7 +2,8 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from SagaApp.FileObjects import FileTrack
+from SagaCore.Track import FileTrack
+from SagaCore.ContainerItem import ContainerItem
 from os.path import join
 from Config import sourcecodedirfromconfig
 # uic.loadUi(join(sourcecodedirfromconfig, "Graphics","UI","newContainer.ui"), self)
@@ -75,17 +76,16 @@ class ErrorMessage(QMessageBox):
 #
 #     def getInputs(self):
 #         if self.exec_() == QDialog.Accepted:
-#             return {'Container': self.ContainerId, 'type': typeInput}
+#             return {'Container': self.ContainerId, 'type': roleInput}
 #         else:
 #             return None
 
 class removeFileDialog(QDialog):
-    def __init__(self, fileheader,candelete, candeletemesssage):
+    def __init__(self, citem:ContainerItem,candelete, candeletemesssage):
         super().__init__()
 
         uic.loadUi(join(sourcecodedirfromconfig, "Graphics", "UI", "removeFileDialog.ui"), self)
-        self.fileheader = fileheader
-        self.fileNameLabel.setText(self.fileheader)
+        self.fileNameLabel.setText(citem.containeritemname)
 
         if not candelete:
             self.deletewarninglbl.setText(candeletemesssage)
@@ -134,21 +134,20 @@ class alteredinputFileDialog(QDialog):
 
         uic.loadUi(join(sourcecodedirfromconfig, "Graphics", "UI", "alteredinputFileDialog.ui"), self)
         self.alterfiletrack = alterfiletrack
-        self.old_filename_lbl.setText(alterfiletrack.file_name)
-        self.old_fileheader_lbl.setText(alterfiletrack.FileHeader)
+        self.old_filename_lbl.setText(alterfiletrack.entity)
+        self.old_fileheader_lbl.setText(alterfiletrack.containeritemid)
 
-        linkstr= alterfiletrack.connection.refContainerId+'_'+alterfiletrack.connection.branch + '_'+ alterfiletrack.connection.Rev
-        self.nfilename_edit.setText(linkstr + '_' + alterfiletrack.file_name)
-        self.nfileheader_edit.setText(linkstr + '_' + alterfiletrack.FileHeader)
+        linkstr= alterfiletrack.refContainerId+'_'+alterfiletrack.branch + '_'+ alterfiletrack.Rev
+        self.nfilename_edit.setText(linkstr + '_' + alterfiletrack.entity)
+        self.nfileheader_edit.setText(linkstr + '_' + alterfiletrack.containeritemid)
         # self.containerName_label.setText(self.containerName)
-        # self.fileName_label.setText(fileheader)
+        # self.entity_label.setText(fileheader)
     def getInputs(self):
         if self.exec_() == QDialog.Accepted:
 
             return { 'alterfiletrack':self.alterfiletrack,
                     'nfileheader': self.nfileheader_edit.text(),
-                    'nfilename': self.nfilename_edit.text(),
-                    'persist': self.persist_cb.checkState()}
+                    'nfilename': self.nfilename_edit.text()}
         else:
             return None
 

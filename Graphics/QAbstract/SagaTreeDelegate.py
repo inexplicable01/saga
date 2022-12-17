@@ -5,7 +5,7 @@ from PyQt5.QtCore import *
 import time
 import os
 import glob
-from Config import typeRequired, typeInput, typeOutput, colorscheme , JUSTCREATED, UNCHANGED, MD5CHANGED
+from SagaGuiModel.GuiModelConstants import roleRequired, roleInput, roleOutput, colorscheme , JUSTCREATED, UNCHANGED, MD5CHANGED
 
 
 def arrowpolygon(rect: QRectF, xlocpct, direc):
@@ -63,7 +63,7 @@ class SagaTreeDelegate(QStyledItemDelegate):
             elif currow in inputspaths['hori'].keys():
                 if inputspaths['hori'][currow]['linetype']=='file':
                     painter.setPen(QPen(QBrush(Qt.white), 1))
-                    painter.setBrush(QBrush(colorscheme[typeInput]))
+                    painter.setBrush(QBrush(colorscheme[roleInput]))
                     painter.drawRect(option.rect)
                     painter.setPen(QPen(QBrush(Qt.black), 4))
                     painter.drawText(option.rect, Qt.AlignLeft, index.internalPointer().data(0))
@@ -73,7 +73,7 @@ class SagaTreeDelegate(QStyledItemDelegate):
             elif currow in outputspaths['hori'].keys():
                 if outputspaths['hori'][currow]['linetype'] == 'file':
                     painter.setPen(QPen(QBrush(Qt.white), 1))
-                    painter.setBrush(QBrush(colorscheme[typeOutput]))
+                    painter.setBrush(QBrush(colorscheme[roleOutput]))
                     painter.drawRect(option.rect)
                     painter.setPen(QPen(QBrush(Qt.white), 4))
                     painter.drawText(option.rect, Qt.AlignLeft, index.internalPointer().data(0))

@@ -2,16 +2,17 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from SagaApp.Container import Container
-from SagaApp.FrameStruct import Frame
+from SagaCore.Container import Container
+from SagaCore.Frame import Frame
 import math
 import os
 import glob
 from datetime import datetime
-from Config import typeOutput,typeRequired, typeInput, colorscheme, CONTAINERFN
+from SagaCore.Track import FileTrack
+from SagaGuiModel.GuiModelConstants import roleOutput,roleRequired, roleInput, colorscheme, CONTAINERFN
 
 def weekstrfromtimestamp(commitUTCdatetime):
-    weeksago = math.floor((datetime.utcnow().timestamp() - commitUTCdatetime) / (3600*4))
+    weeksago = math.floor((datetime.utcnow().timestamp() - commitUTCdatetime) / (3600*24*7))
     return 'week -' + str(weeksago), weeksago
 
 class GanttListModel(QAbstractTableModel):
@@ -30,7 +31,7 @@ class GanttListModel(QAbstractTableModel):
         self.containernametoid = {}
 
         for containerid in containerids:
-                # Container.LoadContainerFromYaml(os.path.join(desktopdir, 'ContainerMapWorkDir', containerid,CONTAINERFN))##ATTENTION
+                # Container.LoadContainerFromYaml(os.path.join(appdata_saga, 'ContainerMapWorkDir', containerid,CONTAINERFN))##ATTENTION
             self.containerheaders.append(containerinfodict[containerid]['ContainerDescription'])
             self.containeridtoname[containerid]=containerinfodict[containerid]['ContainerDescription']
             self.containernametoid[containerinfodict[containerid]['ContainerDescription']] = containerid
@@ -61,11 +62,11 @@ class GanttListModel(QAbstractTableModel):
         workingnotes=[]
         for containerid in containerids:
 
-            # yamllist = glob.glob(os.path.join(desktopdir, 'ContainerMapWorkDir', containerid, 'Main', 'Rev*.yaml'))
+            # yamllist = glob.glob(os.path.join(appdata_saga, 'ContainerMapWorkDir', containerid, 'Main', 'Rev*.yaml'))
             containerframes[containerid]={}
             icontainer = self.sagaguimodel.provideContainer(containerid)
             for revyaml, pastframe  in icontainer.memoryframesdict.items():
-                # pastframe = Frame.loadRefFramefromYaml(yamlfn,os.path.join(desktopdir, 'ContainerMapWorkDir', containerid))
+                # pastframe = Frame.loadRefFramefromYaml(yamlfn,os.path.join(appdata_saga, 'ContainerMapWorkDir', containerid))
                 weekstr, weeksago = weekstrfromtimestamp(pastframe.commitUTCdatetime)
                 if weeksago < weekstocheck:
                     containerframes[containerid][pastframe.commitUTCdatetime]= pastframe
@@ -95,27 +96,35 @@ class GanttListModel(QAbstractTableModel):
                 if not revi==0:
                     previoustimestamp = sortedTimestamps[revi-1]
                     prevframe = containerframes[containerid][previoustimestamp]
-                    for fileheader, filetrack in pastframe.filestrack.items():
-                        if containerid == 'CustomerRequirements' and fileheader=='CustomerReq':
-                            a = 4
-                        if filetrack.connection.connectionType.name == typeOutput:
-                            if fileheader not in prevframe.filestrack.keys():
+                    for citemid, filetrack in pastframe.filestrack.items():
+                        # if containerid == 'CustomerRequirements' and citemid=='CustomerReq':
+                        #     a = 4
+                        if filetrack.containeritemrole == roleOutput:
+                            if citemid not in prevframe.filestrack.keys():
                                 self.weeksdict[weekstr][containerid]['cellinfo']['outputchanged'] +=1
-                                transferpair[filetrack.md5] = {'containerid':containerid,
-                                                               'weekstr':weekstr,
-                                                               'fileheader':fileheader,
-                                                               'file_name':filetrack.file_name,
-                                                               'toinput':[]}
-                            elif not prevframe.filestrack[fileheader].md5 == filetrack.md5:
+                                if type(filetrack)==FileTrack:
+                                    transferpair[citemid] = {'containerid': containerid,
+                                                                   'weekstr': weekstr,
+                                                                   'citemid': citemid,
+                                                                   'filename': filetrack.entity,
+                                                                   'toinput': []}
+                                else:
+                                    transferpair[citemid] = {'containerid': containerid,
+                                                                   'weekstr': weekstr,
+                                                                   'citemid': citemid,
+                                                                   'filename': filetrack.entity,
+                                                                   'toinput': []}
+
+                            elif not prevframe.filestrack[citemid].md5 == filetrack.md5:
                                 self.weeksdict[weekstr][containerid]['cellinfo']['outputchanged'] +=1
                                 # workingnotes.append([])
                                 transferpair[filetrack.md5] = {'containerid':containerid,
                                                                'weekstr':weekstr,
-                                                               'fileheader': fileheader,
-                                                               'file_name': filetrack.file_name,
+                                                               'citemid': citemid,
+                                                               'filename': filetrack.entity,
                                                                'toinput':[],
                                                                'md5':filetrack.md5}
-                        # elif filetrack.style !=typeInput:
+                        # elif filetrack.style !=roleInput:
                         #     if not prevframe.filestrack[fileheader].md5 == filetrack.md5:
                         #         self.weeksdict[weekstr][containerid]['cellinfo']['outputchanged']
 
@@ -131,7 +140,7 @@ class GanttListModel(QAbstractTableModel):
                     previoustimestamp = sortedTimestamps[revi-1]
                     prevframe = containerframes[containerid][previoustimestamp]
                     for fileheader, filetrack in pastframe.filestrack.items():
-                        if filetrack.connection.connectionType.name == typeInput:
+                        if filetrack.containeritemrole == roleInput:
                             if fileheader not in prevframe.filestrack.keys():
                                 if filetrack.md5 in transferpair.keys():
                                     transferpair[filetrack.md5]['toinput'].append({
@@ -157,8 +166,8 @@ class GanttListModel(QAbstractTableModel):
         #         if outputchanged: ## Only switch to True if true
         #                         transferpair[filetrack.md5] = {'containerid':containerid,
         #                                                        'weekstr':weekstr,
-        #                                                        'fileheader': fileheader,
-        #                                                        'file_name': filetrack.file_name,
+        #                                                        'citemid': fileheader,
+        #                                                        'filename': filetrack.entity,
         #                                                        'toinput':[],
         #                                                        'md5':filetrack.md5}
 
@@ -168,8 +177,8 @@ class GanttListModel(QAbstractTableModel):
             self.weeksdict[pair['weekstr']][pair['containerid']]['transfer']={
                 'fromcontainerid': pair['containerid'],
                 'fromweekstr': pair['weekstr'],
-                'fileheader': pair['fileheader'],
-                'file_name': pair['file_name'],
+                'citemid': pair['citemid'],
+                'filename': pair['filename'],
                 'md5' : md5,
                 'toinput':pair['toinput']
             }
@@ -265,7 +274,7 @@ class GanttListDelegate(QStyledItemDelegate):
             symbolrect = QRectF(QPointF(symmidpoint+ QPointF(-w*0.08,-h*0.2)),
                                 QPointF(symmidpoint+ QPointF(w*0.08,h*0.2)))
 
-            painter.setBrush(QBrush(colorscheme[typeOutput]))
+            painter.setBrush(QBrush(colorscheme[roleOutput]))
             painter.drawRect(symbolrect)
             painter.setPen(QPen(QBrush(Qt.black), 2))
             painter.drawText(symbolrect, Qt.AlignCenter, str(cellinfo['outputchanged']))
@@ -278,7 +287,7 @@ class GanttListDelegate(QStyledItemDelegate):
             symbolrect = QRectF(QPointF(symmidpoint + QPointF(-w * 0.08, -h * .2)),
                                 QPointF(symmidpoint + QPointF(w * 0.08, h * 0.2)))
 
-            painter.setBrush(QBrush(colorscheme[typeInput]))
+            painter.setBrush(QBrush(colorscheme[roleInput]))
             painter.drawRect(symbolrect)
             painter.setPen(QPen(QBrush(Qt.black), 2))
             painter.drawText(symbolrect, Qt.AlignCenter, str(cellinfo['inputchanged']))
@@ -290,7 +299,7 @@ class GanttListDelegate(QStyledItemDelegate):
             ## how many symbols
             symmidpoint = option.rect.topLeft() + QPointF(w *2/ 4, h / 2)
             painter.setPen(QPen(QBrush(Qt.transparent), 2))
-            painter.setBrush(QBrush(colorscheme[typeRequired]))
+            painter.setBrush(QBrush(colorscheme[roleRequired]))
             painter.drawEllipse(symmidpoint, w*0.4,h*0.4)
             painter.setPen(QPen(QBrush(Qt.black), 2))
             painter.drawText(option.rect, Qt.AlignCenter, str(len(cellinfo['frames'])))
@@ -304,8 +313,8 @@ class GanttListDelegate(QStyledItemDelegate):
                 # {
                 #     'fromcontainerid': pair['containerid'],
                 #     'fromweekstr': pair['weekstr'],
-                #     'fileheader': fileheader,
-                #     'file_name': filetrack.file_name,
+                #     'citemid': fileheader,
+                #     'filename': filetrack.entity,
                 #     'md5': md5,
                 #     'tpinput': pair['toinput']
                 # }

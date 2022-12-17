@@ -1,111 +1,32 @@
-from Graphics.ContainerMap import ContainerMap
-from Graphics.DetailedMap import DetailedMap
+from Graphics.PYQTView.ContainerVerse import ContainerMap
+# from Graphics.PYQTView.DetailedMap import DetailedMap
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from Config import BASE,  CONTAINERFN, colorscheme, typeRequired,typeInput,typeOutput, TEMPCONTAINERFN
+from SagaGuiModel.GuiModelConstants import TEMPCONTAINERFN
 from Graphics.GuiUtil import RotatedHeaderView
-import shutil
 
 import os
 # from tester import CustomModel, CustomNode
 from Graphics.QAbstract.SagaTreeDelegate import SagaTreeDelegate
-from Graphics.QAbstract.SagaTreeModel import SagaTreeModel, SagaTreeNode
+from Graphics.QAbstract.SagaTreeModel import SagaTreeModel
 from Graphics.QAbstract.ContainerListModel import ContainerListModel
+from Graphics.QAbstract.AllowedUserListModel import AllowedUserListModel
+from Graphics.PYQTView.ContainerDetailMap import ContainerDetailMap
 # from Graphics.PopUps.GanttChartPopUp import GanttChartPopUp
 from Graphics.QAbstract.GanttListModel import GanttListModel, GanttListDelegate
     # GanttListDelegate
-from SagaApp.Container import Container
 from SagaGuiModel import sagaguimodel
-from datetime import datetime
-
-def makeganttchartlegend(view):
-    scene = QGraphicsScene()
-    view.setScene(scene)
-    # print(view.size())
-
-    print(view.rect())
-    rect = view.rect()
-    w = rect.width()*1.2
-    # w = option.rect.width()
-    h = rect.height()*1.2
-
-    hinternvals= h/4
-
-    e = QGraphicsEllipseItem(0.0, 0.0, w/4, hinternvals*0.9)
-    e.setBrush(QBrush(colorscheme[typeRequired], style = Qt.SolidPattern))
-    scene.addItem(e)
-    centertext = QGraphicsTextItem('No. of Commits')
-    centertext.setPos(QPointF(w/4,0))
-
-    scene.addItem(centertext)
-    ## how many symbols
-
-    topleft = QPointF(0,hinternvals)
-    symbolrect = QRectF(QPointF(topleft),
-                        QPointF(topleft+ QPointF(hinternvals * 0.9, hinternvals * 0.9)))
-    r1 = QGraphicsRectItem(symbolrect)
-    r1.setBrush(QBrush(colorscheme[typeOutput]))
-    scene.addItem(r1)
-    inputtext = QGraphicsTextItem('No. of Output Updates')
-    inputtext.setPos(QPointF(w/4,hinternvals))
-    scene.addItem(inputtext)
-
-    topleft = QPointF(0,hinternvals*2)
-    symbolrect = QRectF(QPointF(topleft),
-                        QPointF(topleft+ QPointF(hinternvals * 0.9, hinternvals * 0.9)))
-    r2 = QGraphicsRectItem(symbolrect)
-    r2.setBrush(QBrush(colorscheme[typeInput]))
-    scene.addItem(r2)
-    outputtext = QGraphicsTextItem('No. of Input Updates')
-    outputtext.setPos(QPointF(w/4,hinternvals*2))
-    scene.addItem(outputtext)
-
-    view.setBackgroundBrush(QBrush(Qt.gray, Qt.SolidPattern));
-
-    #     w = option.rect.width()
-    #     h = option.rect.height()
-    #     ## how many symbols
-    #
-    #
-    #
-    #     painter.setPen(QPen(QBrush(Qt.black), 2))
-    #     painter.drawText(symbolrect, Qt.AlignCenter, str(cellinfo['outputchanged']))
-    # painter.setPen(QPen(QBrush(Qt.transparent), 2))
-    # painter.setBrush(QBrush(Qt.yellow))
-    # painter.drawEllipse(symmidpoint, w * 0.4, h * 0.4)
-    # painter.setPen(QPen(QBrush(Qt.black), 2))
-    # painter.drawText(option.rect, Qt.AlignCenter, str(len(cellinfo['frames'])))
-
-    # def drawoutputchangedsymbol(painter, option, cellinfo):
-
-    #
-    # def drawinputchangedsymbol(painter, option, cellinfo):
-    #     w = option.rect.width()
-    #     h = option.rect.height()
-    #     ## how many symbols
-    #     symmidpoint = option.rect.topLeft() + QPointF(w * 1 / 4, h / 2)
-    #     symbolrect = QRectF(QPointF(symmidpoint + QPointF(-w * 0.08, -h * .2)),
-    #                         QPointF(symmidpoint + QPointF(w * 0.08, h * 0.2)))
-    #
-    #     painter.setBrush(QBrush(colorscheme[typeOutput]))
-    #     painter.drawRect(symbolrect)
-    #     painter.setPen(QPen(QBrush(Qt.black), 2))
-    #     painter.drawText(symbolrect, Qt.AlignCenter, str(cellinfo['inputchanged']))
-    #     # painter.drawRect(QRectF(midpoint, option.rect.topRight()))
-    #
-    # if len(cellinfo['frames']) > 0:
-
 
 
 class MapTab():
     def __init__(self, mainguihandle):
         self.index = 0
-
         self.detailsMapView = mainguihandle.detailsMapView
         self.containerMapView = mainguihandle.containerMapView
         # self.returncontlist = mainguihandle.returncontlist
         self.containerlisttable = mainguihandle.containerlisttable
+        self.allowedusertable = mainguihandle.allowedusertable
         # self.generateContainerBttn = mainguihandle.generateContainerBttn
         self.mainguihandle = mainguihandle
         self.dlContainerBttn = mainguihandle.dlContainerBttn
@@ -117,11 +38,7 @@ class MapTab():
         self.networktabwidget =  mainguihandle.networktabwidget
         self.networktabwidget.setElideMode(Qt.ElideNone)
         self.containerlisttable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
-        makeganttchartlegend(self.ganttlegendview)
-
-
-
+        self.allowedusertable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         # self.ganttChartBttn = mainguihandle.ganttChartBttn
         # self.ganttChartBttn.clicked.connect(self.showGanttChart)
         # self.generateContainerBttn.clicked.connect(self.generateContainerMap)
@@ -130,23 +47,19 @@ class MapTab():
         # self.ganttbttn.clicked.connect(self.shoFwGanttChart)
         # self.sagatreemodel = SagaTreeModel()
         self.sagatreeviewcolumnmoved = False
-
         # self.sagatreeview.expandAll()
         # self.sagatreeview.setColumnWidth(0,200)
         self.sagatreeview.header().setSectionResizeMode(QHeaderView.Stretch)
-
         self.selecteddetail = {'selectedobjname': None}
-
         ###########Gui Variables##############
-        self.detailedmap = DetailedMap(self.detailsMapView, self.selecteddetail)
+        self.detailedmap = ContainerDetailMap(self.detailsMapView, self.selecteddetail)
         self.containermap = ContainerMap({}, self.containerMapView, self.selecteddetail, self.detailedmap,self.mainguihandle)
         # self.mainguihandle.tabWidget.currentChanged.connect(self.refreshMapTab)
         self.gantttable.clicked.connect(self.updateCommitMessages)
         self.gantttable.setHorizontalHeader(RotatedHeaderView(self.gantttable))
         self.gantttable.setItemDelegate(GanttListDelegate())
 
-
-
+        self.allowedusertable.setModel(AllowedUserListModel([]))
 
     def updateCommitMessages(self, listtable):
         containername= listtable.model().containerheaders[listtable.row()]
@@ -185,8 +98,8 @@ class MapTab():
             self.containermap.plot()
         else:
             # print('generateContainerMap loadcontstart ' + datetime.now().isoformat())
-            for containerID in containerinfodict.keys():
-                self.containermap.addActiveContainers(sagaguimodel.provideContainer(containerID))
+            for containerid in containerinfodict.keys():
+                self.containermap.addActiveContainers(sagaguimodel.provideContainer(containerid))
             # print('generateContainerMap loadcont end  ' + datetime.now().isoformat())
             self.containermap.editcontainerConnections()
             # print('1  ' + datetime.now().isoformat())
@@ -200,7 +113,7 @@ class MapTab():
 
     def generateSagaTree(self, containerinfodict):
         # print('SagaTree start ' + datetime.now().isoformat())
-        self.sagatreeview.setModel(SagaTreeModel(containerinfodict, sagaguimodel.desktopdir, sagaguimodel))
+        self.sagatreeview.setModel(SagaTreeModel(containerinfodict, sagaguimodel.appdata_saga, sagaguimodel))
         self.sagatreeview.setItemDelegate(SagaTreeDelegate())
         self.sagatreeview.clicked.connect(self.sagatreeclicked)
         if not self.sagatreeviewcolumnmoved:
@@ -225,7 +138,10 @@ class MapTab():
         self.containermap.reset()
         self.detailedmap.reset()
         self.containerlisttable.setModel(ContainerListModel({}))
-
+        # self.allowedusertable.setModel(AllowedUserListModel({}))
+        self.sagatreeview.setModel(SagaTreeModel({}, sagaguimodel.appdata_saga, sagaguimodel))
+        self.sagatreeviewcolumnmoved = False
+        self.gantttable.setModel(GanttListModel({}, sagaguimodel))
         # self.gantttable.setHorizontalHeader(RotatedHeaderView(self.gantttable))
 
     def updatecontainertodl(self, listtable):
@@ -237,7 +153,20 @@ class MapTab():
         index = listtable.model().index(rownumber, 0)
         # self.dlcontainerid = listtable.model().data(index, 0)
         self.dlcontainername = containername
+        # listtable.model().containeridindex[rownumber]
         self.dlcontainerid = listtable.model().containernametoid[containername]
+        # print(listtable.model().containeridindex[rownumber])
+        containerid = listtable.model().containeridindex[rownumber]
+        # print(listtable.model().containerinfodict[id])
+        # print(listtable.model().containerinfodict[id]['containerdict']['containerName'])
+        self.allowedusertable.model().listusers(listtable.model().containerinfodict[containerid]['containerdict']['allowedUser'])
+        print(listtable.model().containerinfodict[containerid]['containerdict']['allowedUser'])
+        self.dlContainerBttn.setEnabled(True)
+        self.dlContainerBttn.setText('Click to Download Container ' + containername)
+        self.dlcontainerid = containerid
+        self.dlcontainername = containername
+        self.detailedmap.selectedobj(containerid, self.containermap.containeridtoname)
+        # self.allowedusertable
 
 
     def downloadcontainer(self):
@@ -245,14 +174,16 @@ class MapTab():
                                                                   + ' container folder.')
         if newcontparentdirpath:
             containerworkingdir = os.path.join(newcontparentdirpath, self.dlcontainername)
-            if not os.path.exists(containerworkingdir):
+
+            if sagaguimodel.folderHasContainer(containerworkingdir) or \
+                    sagaguimodel.folderHasContainer(newcontparentdirpath) or  \
+                    os.path.exists(containerworkingdir):
+                self.mainguihandle.errout('Container exists in location already.  Container download canceled.')
+            else:
                 os.mkdir(containerworkingdir)###ATTENTION, Needs better error capture.
-                containerworkingfolder, sagaguimodel.maincontainer = sagaguimodel.downloadContainer(containerworkingdir, self.dlcontainerid, ismaincontainer=True)##ATTENTION
+                sagaguimodel.downloadContainer(containerworkingdir, self.dlcontainerid, ismaincontainer=True)##ATTENTION
                 self.mainguihandle.maincontainertab.readcontainer(os.path.join(containerworkingdir,TEMPCONTAINERFN))  ###ATTENTION Should be calling Model and Gui ReSet
                 self.mainguihandle.maintabwidget.setCurrentIndex(self.mainguihandle.maincontainertab.index)
-            else:
-                print('Container exists already...')
-                # shutil.rmtree(contdir)
 
 
 

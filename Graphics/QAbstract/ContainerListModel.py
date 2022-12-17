@@ -10,13 +10,21 @@ class ContainerListModel(QAbstractTableModel):
     def __init__(self, containerinfodict):
         super(ContainerListModel, self).__init__()
         containdata=[]
+        containeridindex=[]
         containernametoid={}
         for containerid, containvalue in containerinfodict.items():
             containernametoid[containvalue['ContainerDescription']]=containerid
             for branch in containvalue['branches']:
-                row = [ containvalue['ContainerDescription'] ,
-                       branch['revcount'], lorem.sentence()]
+                if branch['name']=='Empty':
+                    continue
+                row = [ containvalue['containerdict']['containerName'],
+                       branch['revcount'],
+                        containvalue['containerdict']['description']
+                     # lorem.sentence()
+                        ]
                 containdata.append(row)
+                containeridindex.append(containerid)
+        self.containeridindex=containeridindex
         self.containernametoid=containernametoid
         self.containerinfodict = containerinfodict
         self.containdata = containdata

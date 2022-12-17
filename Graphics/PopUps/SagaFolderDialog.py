@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from Config import typeInput,typeRequired,typeOutput, CONTAINERFN
+from SagaGuiModel.GuiModelConstants import roleInput,roleRequired,roleOutput, CONTAINERFN, NEWCONTAINERFN
 from os.path import join, normpath
 import os
 from os.path import join
@@ -17,10 +17,10 @@ class SagaFolderDelegate(QStyledItemDelegate):
     def paint(self,painter:QPainter, option, index:QModelIndex):
         filepath = index.model().filePath(index)
         if os.path.isdir(filepath) and index.column()==0:
-            if os.path.exists(join(filepath, CONTAINERFN)):
+            if os.path.exists(join(filepath, CONTAINERFN)) or os.path.exists(join(filepath, NEWCONTAINERFN)) :
                 baseindex = index.model().index('C:/')
-                print(baseindex.data())
-                print(index.model().rowCount(baseindex))
+                # print(baseindex.data())
+                # print(index.model().rowCount(baseindex))
                 tl = option.rect.topLeft()
                 br = tl + QPointF(option.rect.height(), option.rect.height())
                 iconrect = QRectF(tl, br)
@@ -92,6 +92,9 @@ class SagaFolderDialog(QDialog):
         if os.path.exists(join(filepath, CONTAINERFN)):
             self.containerselected = True
             self.containeryaml  = join(filepath, CONTAINERFN)
+        elif os.path.exists(join(filepath, NEWCONTAINERFN)):
+            self.containerselected = True
+            self.containeryaml  = join(filepath, NEWCONTAINERFN)
         else:
             self.containerselected = False
             self.containeryaml = None

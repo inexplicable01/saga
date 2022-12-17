@@ -23,7 +23,7 @@ class DeletedListModel(QAbstractTableModel):
         for fileheader in self.changes:
             if SERVERFILEDELETED in self.changes[fileheader]['reason']:
                 self.conflictdata.append(fileheader)
-                self.conflictfilenames.append(self.newframe.filestrack[fileheader].file_name)
+                self.conflictfilenames.append(self.newframe.filestrack[fileheader].entity)
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:

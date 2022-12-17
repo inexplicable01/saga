@@ -5,7 +5,7 @@ from PyQt5.QtCore import *
 import time
 import os
 import glob
-from Config import typeRequired, typeInput, typeOutput, colorscheme , JUSTCREATED, UNCHANGED, MD5CHANGED
+from SagaGuiModel.GuiModelConstants import roleRequired, roleInput, roleOutput, colorscheme , JUSTCREATED, UNCHANGED, MD5CHANGED
 
 
 def createBeginRect(painter, cellrect, qtbrushcolor, squaresidepx, pxlinewidth):

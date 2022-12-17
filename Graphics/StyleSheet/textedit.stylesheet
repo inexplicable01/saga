@@ -1,0 +1,25 @@
+QLineEdit::disabled {
+    background-color: #C2C7CB;
+}
+
+QLineEdit::enabled {
+    background-color: #F1F1F2;
+}
+
+QTextEdit::disabled {
+    background-color: #C2C7CB;
+    color:black;
+}
+
+QTextEdit::enabled {
+    background-color: #F1F1F2;
+    color:black;
+}
+
+QTextBrowser::disabled {
+    background-color: #C2C7CB;
+}
+
+QTextBrowser::enabled {
+    background-color: #F1F1F2;
+}

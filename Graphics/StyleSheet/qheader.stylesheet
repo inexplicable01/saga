@@ -1,0 +1,25 @@
+   QHeaderView::section	{
+    color: #2a547f;
+    border: 0px;
+    background-color: #ced5e3;
+    padding: 5px;		}
+
+   QHeaderView::section:disabled	{
+   	    background-color: #525251;
+   	    color: #656565;		}
+
+   QHeaderView::section:checked	{
+   color: #fff;
+   background-color: #5c55e9;
+   }
+
+   QHeaderView::section:checked:disabled	{
+        color: #656565;
+        background-color: #525251;
+        }
+
+
+   QHeaderView::section::vertical::first,	QHeaderView::section::vertical::only-one	{	    border-top: 1px solid #353635;		}			
+   QHeaderView::section::vertical	{	    border-top: 1px solid #353635;		}			
+   QHeaderView::section::horizontal::first,	QHeaderView::section::horizontal::only-one	{	    border-left: 1px solid #353635;		}			
+   QHeaderView::section::horizontal	{	    border-left: 1px solid #353635;		}		

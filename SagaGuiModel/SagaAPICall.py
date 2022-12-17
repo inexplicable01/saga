@@ -1,209 +1,218 @@
 import os
 from os.path import join, exists
 import requests
-from Config import BASE, CONTAINERFN, TEMPCONTAINERFN
-from SagaApp.SagaUtil import makefilehidden, ensureFolderExist, unhidefile
-from SagaApp.FrameStruct import Frame
-from SagaApp.Container import Container
-from SagaApp.FileObjects import FileTrack
+from Config import BASE
+from SagaGuiModel.GuiModelConstants import CONTAINERFN, TEMPCONTAINERFN
+from SagaCore.SagaUtil import makefilehidden, ensureFolderExist, unhidefile
+from SagaCore.Frame import Frame
+from SagaCore.Container import Container
+from SagaCore.Track import FileTrack
 import json
 from Graphics.Dialogs import downloadProgressBar
 from PyQt5.QtGui import QGuiApplication
 from datetime import datetime
 from PyQt5.QtWidgets import *
-
+import warnings
 
 
 class SagaAPICall():
-    def __init__(self, authtoken = None):
+    def __init__(self, authtoken = None ):
         self.authtoken = authtoken
         self.errormessageboxhandle = None
+        self.mainguihandle = None
+        self.exptimestamp = None
 
 
-    def callhandling(self, URL, data):
-
-
+    def callhandling(self, URL, METHOD, data = None , expectedkeys={}, headers=None, decodeformat=None, files=None):
+        callreport={'missingkeys' :[],}
+        predictedCallBehaviour = False
+        errtext=''
         try:
-            response = requests.post(URL, data=data)
-            response.raise_for_status()
+            if METHOD=='GET':
+                response = requests.get(URL, headers=headers, data=data)
+            elif METHOD=='POST':
+                response = requests.post(URL, headers=headers, data=data, files=files)
+            else:
+                raise('Wrong Method')
+
+            if response.status_code == 200:
+                # print("The request was a success!")
+                predictedCallBehaviour=True
+                # Code here will only run if the request is successful
+            elif response.status_code == 201:
+                # print("The request was a success!")
+                predictedCallBehaviour=True
+                self.mainguihandle.errout('Sign Up Successful')
+                # Code here will only run if the request is successful
+            elif response.status_code == 401:
+                print("Auth Failed")
+                predictedCallBehaviour = True
+                # response.raise_for_status()
+                # Code here will only run if the request is successful
+            elif response.status_code == 404:
+                # predictedCallBehaviour = True
+                response.raise_for_status()
+                errtext = errtext + 'Results not found for url : ' + URL + '\n'
             # Code here will only run if the request is successful
         except requests.exceptions.HTTPError as errh:
-            print(errh)
+            errtext = errtext + errh.__str__() + '\n'
         except requests.exceptions.ConnectionError as errc:
-            print(errc)
+            errtext = errtext + errc.__str__() + '\n'
         except requests.exceptions.Timeout as errt:
-            print(errt)
+            errtext = errtext + errt.__str__() + '\n'
         except requests.exceptions.RequestException as err:
-            print(err)
-        if response.status_code == 200:
-            print("The request was a success!")
-            # Code here will only run if the request is successful
-        elif response.status_code == 404:
-            print("Result not found!")
+            errtext = errtext + err.__str__() + '\n'
+
+
+
+        if not predictedCallBehaviour:
+            self.mainguihandle.errout(errtext)
+        try:
+            if decodeformat:
+                resp = json.loads(response.content.decode(decodeformat))
+            else:
+                resp = json.loads(response.content)
+            for key in expectedkeys:
+                if key not in resp.keys():
+                    warnings.warn('In call :' +URL, '\n Expected return key :' + key+ 'Missing')
+                    # callreport['missingkeys'].append(key)
+                    resp[key]:None
+            return predictedCallBehaviour, resp
+        except Exception as e:
+            returndict = {}
+            for key in expectedkeys:
+                returndict[key] = None
+            return predictedCallBehaviour, returndict
+
 
 
     def signInCall(self, email, password):
         # print(self.email.text())
-        expectedreturnkeysindict = ['status', 'message', 'auth_token', 'useremail', 'first_name', 'current_sectionname',
-                                    'current_sectionid', 'sectionname_list', 'sectionid_list', 'last_name',
-                                    'exptimestamp', 'version_num']
+        expectedreturnkeysindict = ['success', 'message','failmessage','e', 'auth_token', 'exptimestamp']
         payload = {'email': email,
                    'password': password}
-        response = requests.post(BASE + 'auth/login',data=payload)
-        signinresp = json.loads(response.content)
+        success = False
+        predictedCallBehaviour, respdict= self.callhandling(BASE + 'auth/login','POST', data=payload, expectedkeys=expectedreturnkeysindict)
+        if respdict['success']:
+            success = True
+            self.authtoken = respdict['auth_token']
+            self.exptimestamp = respdict['exptimestamp']
+        return respdict['success'], respdict
 
-        if signinresp['status']=='success':
-            status = 'success'
-            self.authtoken = signinresp['auth_token']
-        else:
-            status = 'failed'
-        return {'status': status, 'usertokeninfo':signinresp}
+    def newUserSignUpCall(self, email, password, firstname, lastname, sectionid ):
+        payload = {'email': email,
+                   'password': password,
+                   'first_name':firstname,
+                   'last_name':lastname,
+                   'sectionid':sectionid
+                   }
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e', 'auth_token', 'exptimestamp']
+        predictedCallBehaviour, respdict = self.callhandling(BASE + 'auth/register','POST', data=payload, expectedkeys=expectedreturnkeysindict)
+        # signupresponse = response.json()
+        if respdict['success']:
+            self.authtoken = respdict['auth_token']
+            self.exptimestamp = respdict['exptimestamp']
+        return respdict['success'], respdict
 
-    def newUserSignUpCall(self,formentry):
-        response = requests.post(BASE + 'auth/register',
-                                 data=formentry)
-        signupresponse = response.json()
-        # if signupresponse['status'] == 'success':
-        #     self.authtoken = signupresponse['auth_token']
-        return signupresponse
-
-    def authUserDetails(self,tokenfile):
+    def authUserDetails(self):
         if self.authtoken is None:
-            return {'userstatusstatement': 'Need to sign in first before asking for details',
-                'signinsuccess': False} , None
-        try:
-            # with open(tokenfile) as json_file:
-            #     token = json.load(json_file)
-
-            response = requests.get(
-                BASE + '/auth/userdetails',
-                headers={"Authorization": 'Bearer ' + self.authtoken}
-            )
-            usertoken = response.json()
-            if usertoken['status'] == 'success':
-                # self.userdata = usertoken['data']
-                userdata = usertoken['data']
-                # self.authtoken = token['auth_token']
-                userstatusstatement = 'User ' + userdata['email'] + \
-                                      ' Signed in to Section ' + userdata['current_sectionname']
-                signinsuccess = True
-            else:
-                # self.authtoken= None
-                userdata = None
-                userstatusstatement = 'Please sign in'
-                signinsuccess = False
-        except Exception as e:
-            # print('No User Signed in yet')
-            userstatusstatement = 'Please sign in'
-            signinsuccess = False
-            userdata = None
-        return {'userstatusstatement': userstatusstatement,
-                'signinsuccess': signinsuccess} , userdata
+            return False , None
+        expectedreturnkeysindict=['success', 'message', 'failmessage', 'e','usersessiondict']
+        headers={"Authorization": 'Bearer ' + self.authtoken}
+        predictedCallBehaviour,resp = self.callhandling(BASE + 'auth/userdetails', 'GET',  expectedkeys=expectedreturnkeysindict, headers=headers, )
+        # userresponse = json.loads(response.content)
+        if resp['success']:
+            return resp['success'], resp['usersessiondict']
+        else:
+            return False, None
 
     def getAvailableSectionsCall(self):
-        # headers = {'Authorization': 'Bearer ' + self.authtoken}
-        response = requests.get(BASE + 'SECTION/List')
 
-        sectiondict = json.loads(response.content)
-        # sectioninfo = resp['sectioninfo']
-        # currentsection = resp['currentsection']
-        return sectiondict
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e','sectioninfo']
+        # headers = {'Authorization': 'Bearer ' + self.authtoken}
+        predictedCallBehaviour,resp, = self.callhandling(BASE + 'SECTION/List', 'GET',  expectedkeys=expectedreturnkeysindict)
+        if resp['success']:
+            sectiondicts = resp['sectioninfo']
+        else:
+            sectiondicts={}
+        return resp['success'],sectiondicts
 
     def getListofSectionsforUser(self):
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e','sectioninfo','currentsection']
         headers = {'Authorization': 'Bearer ' + self.authtoken}
-        response = requests.get(BASE + 'USER/getusersections', headers=headers)
-
-        resp = json.loads(response.content)
+        # response = requests.get(BASE + '', headers=headers)
+        predictedCallBehaviour,resp= self.callhandling(BASE + 'USER/getusersections', 'GET', headers = headers, expectedkeys=expectedreturnkeysindict)
+        # resp = json.loads(response.content)
         sectioninfo = resp['sectioninfo']
         currentsection = resp['currentsection']
-        return sectioninfo, currentsection
+        return resp['success'],sectioninfo, currentsection
 
-    def downloadContainerCall(self, containerworkingfolder, containerId, ismaincontainer=False):
-        # print()
+    def downloadContainerCall(self,containerId):
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e','fullframelist','containerdict','revnum']
         print('start of downloadcall'+ datetime.now().isoformat())
         headers = {'Authorization': 'Bearer ' + self.authtoken}
-        response = requests.get(BASE + 'CONTAINERS/containerID', headers=headers, data={'containerID': containerId})
-        ensureFolderExist(join(containerworkingfolder, 'Main', 'Rev1.yaml'))## Hack 'File name is needed but not used.'ATTENTION
-        dlcontent = json.loads(response.content.decode('utf-8'))
-        requestfailed = False
-        if requestfailed:
-            return
-        for yamlfn, framedict in dlcontent['fullframelist'].items():
-            frame = Frame.LoadFrameFromDict(framedict, containerworkingfolder, yamlfn)
-            frame.writeoutFrameYaml(authorized=True)
-        cont = Container.LoadContainerFromDict(dlcontent['containerdict'],containerworkingfolder, CONTAINERFN, ismaincontainer=ismaincontainer)
-        cont.save()
-        if ismaincontainer:
-            cont.save(TEMPCONTAINERFN)
-            cont.yamlfn = TEMPCONTAINERFN
-        # # if exists(join(containerworkingfolder, 'containerstate.yaml')):
-        # #     unhidefile(join(containerworkingfolder, 'containerstate.yaml'))
-        # # open(join(newcontparentdirpath, containerId, 'containerstate.yaml'), 'wb').write(response.content)
-        # makefilehidden(join(newcontparentdirpath, containerId, 'containerstate.yaml'))
-        # self.downloadFrame(newcontparentdirpath, authtoken, containerId, BASE)
-        print('end of downloadcall' + datetime.now().isoformat())
-        return containerworkingfolder, cont
 
-    @classmethod
-    def downloadFrame(cls, refpath, authtoken, containerId, BASE, branch='Main'):
-        payload = {'containerID': containerId,
-                   'branch': branch}
-        headers = {
-            'Authorization': 'Bearer ' + authtoken
-        }
-        response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
-        # print(response.headers)
-        # print(response.content)
-        # request to FRAMES to get the latest frame from the branch as specified in currentbranch
-        branch = 'Main'
-        # response also returned the name of the branch
-        if not os.path.exists(join(refpath, containerId, branch)):
-            os.mkdir(join(refpath, containerId, branch))
+        predictedCallBehaviour, resp= self.callhandling(BASE + 'CONTAINERS/containerID', 'GET', headers=headers,data={'containerID': containerId},
+                                             decodeformat='utf-8', expectedkeys=expectedreturnkeysindict)
 
-        frameyamlDL = join(refpath, containerId, branch, response.headers['file_name'])
-        if os.path.exists(frameyamlDL):
-            unhidefile(frameyamlDL)
-        open(frameyamlDL, 'wb').write(response.content)
-        makefilehidden(join(refpath, containerId, branch))
-        return frameyamlDL
+        if resp['success']:
+            fullframelist = resp['fullframelist']
+            containerdict = resp['containerdict']
+        else:
+            fullframelist = {}
+            containerdict = {}
+        # print('end of downloadcall' + datetime.now().isoformat())
+        return resp['success'], fullframelist,containerdict
 
-    def downloadFileCall(self, filetrack:FileTrack, containerworkingfolder, newfilename=None ):
+    # @classmethod
+    # def downloadFrame(cls, refpath, authtoken, containerId, BASE, branch='Main'):
+    #     payload = {'containerID': containerId,
+    #                'branch': branch}
+    #     headers = {
+    #         'Authorization': 'Bearer ' + authtoken
+    #     }
+    #     response = requests.get(BASE + 'FRAMES', headers=headers, data=payload)
+    #     # print(response.headers)
+    #     # print(response.content)
+    #     # request to FRAMES to get the latest frame from the branch as specified in currentbranch
+    #     branch = 'Main'
+    #     # response also returned the name of the branch
+    #     if not os.path.exists(join(refpath, containerId, branch)):
+    #         os.mkdir(join(refpath, containerId, branch))
+    #
+    #     frameyamlDL = join(refpath, containerId, branch, response.headers['filename'])
+    #     if os.path.exists(frameyamlDL):
+    #         unhidefile(frameyamlDL)
+    #     open(frameyamlDL, 'wb').write(response.content)
+    #     makefilehidden(join(refpath, containerId, branch))
+    #     return frameyamlDL
+
+    def downloadTrackCall(self, fullfilepath , md5, filename, lastEdited):
         response = requests.get(BASE + 'FILES',
-                                data={'md5': filetrack.md5,
-                                      'file_name': filetrack.file_name})
+                                data={'md5': md5,
+                                      'filename': filename})
         # Loops through the filestrack in curframe and request files listed in the frame
         # ATTENTION, MOST OF THE STUFF BELOW DOES NOT BELOW IN THIS CLASS
         if response.headers['status']=='Success':
-            if newfilename is None:
-                fn = os.path.join(containerworkingfolder, filetrack.ctnrootpath, filetrack.file_name)
-            else:
-                fn = os.path.join(containerworkingfolder, filetrack.ctnrootpath, newfilename)
-            if not filetrack.ctnrootpath == '.':
-                ensureFolderExist(fn)
-            progress = downloadProgressBar(response.headers['file_name'])
+            progress = downloadProgressBar(response.headers['filename'])
             dataDownloaded = 0
             progress.updateProgress(dataDownloaded)
-            with open(fn, 'wb') as f:
+            with open(fullfilepath, 'wb') as f:
                 for data in response.iter_content(1024):
                     dataDownloaded += len(data)
                     f.write(data)
                     percentDone = 100 * dataDownloaded/len(response.content)
                     progress.updateProgress(percentDone)
                     QGuiApplication.processEvents()
+            os.utime(fullfilepath, (lastEdited, lastEdited))
         else:
-            # open(fn,'w').write('Terrible quick bug fix')
-            ####ATTENTION
-            # # There should be a like a nuclear warning here is this imples something went wrong with the server and the frame bookkeeping system
-            # # This might be okay meanwhile as this is okay to break during dev but not during production.
-            raise('could not find file ' + filetrack.md5 + ' on server')
+            warnings.warn('could not find file ' + md5 + ' on server')
         # saves the content into file.
-        os.utime(fn, (filetrack.lastEdited, filetrack.lastEdited))
-        return fn#,self.filestrack[fileheader]
+
+        # return fn#,self.filestrack[fileheader]
 
 
-
-
-    def downloadbranch(self,containerworkingfolder, cont:Container, branch='Main'):
+    def downloadbranchcall(self,containerworkingfolder, cont:Container, branch='Main'):
         payload = {'containerID': cont.containerId,
                    'branch': branch}
         headers = {
@@ -224,126 +233,234 @@ class SagaAPICall():
             open(join(containerworkingfolder, branch, rev), 'wb').write(revyaml.content)
             makefilehidden(join(containerworkingfolder,branch, rev))
 
-
-
     def getContainerInfoDict(self):
-        response = requests.get(BASE + 'CONTAINERS/List', headers={"Authorization": 'Bearer ' + self.authtoken})
-        containerinfodict = json.loads(response.content)
-        if not containerinfodict:
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e','containerinfodict']
+        headers = {'Authorization': 'Bearer ' + self.authtoken}
+        predictedCallBehaviour, resp= self.callhandling( BASE + 'CONTAINERS/List', 'GET', headers=headers,data={},
+                                             decodeformat='utf-8', expectedkeys=expectedreturnkeysindict)
+        if not resp['success']:
             containerinfodict = {
                 'EMPTY': {'ContainerDescription': 'empty', 'branches': [{'name': 'Empty', 'revcount': 0}]}}
-        return containerinfodict
+        else:
+            containerinfodict = resp['containerinfodict']
+        return resp['success'], containerinfodict
 
-    def commitToServer(self,containerdictjson, framedictjson, updateinfojson, filesToUpload,commitmessage, containerId, currentbranch):
-        response = requests.post(BASE + 'SAGAOP/commit',
-                                 headers={"Authorization": 'Bearer ' + self.authtoken},
-                                 data={'containerID': containerId,
-                                       'containerdictjson': containerdictjson,
-                                       'framedictjson': framedictjson,
-                                       'branch': currentbranch,
-                                       'updateinfo': updateinfojson,
-                                       'commitmsg':commitmessage},  files=filesToUpload)
-        return response
+    def getContainerInfoDict(self):
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e','containerinfodict']
+        headers = {'Authorization': 'Bearer ' + self.authtoken}
+        predictedCallBehaviour, resp= self.callhandling( BASE + 'CONTAINERS/List', 'GET', headers=headers,data={},
+                                             decodeformat='utf-8', expectedkeys=expectedreturnkeysindict)
+        if not resp['success']:
+            containerinfodict = {
+                'EMPTY': {'ContainerDescription': 'empty', 'branches': [{'name': 'Empty', 'revcount': 0}]}}
+        else:
+            containerinfodict = resp['containerinfodict']
+        return resp['success'], containerinfodict
+
+    def commitNewRevisionCall(self,containerdictjson, framedictjson, updateinfojson, filesToUpload,commitmessage, containerId, currentbranch):
+        data = {'containerID': containerId,
+                'containerdictjson': containerdictjson,
+                'framedictjson': framedictjson,
+                'branch': currentbranch,
+                'updateinfo': updateinfojson,
+                'commitmsg': commitmessage}
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e','yamlframefn','framecontent']
+        headers = {'Authorization': 'Bearer ' + self.authtoken}
+
+        predictedCallBehaviour,  resp= self.callhandling( BASE + 'SAGAOP/commit', 'POST', headers=headers,data=data,
+                                             decodeformat='utf-8', expectedkeys=expectedreturnkeysindict, files=filesToUpload)
+
+        if resp['success']:
+            # Updating new frame information
+            yamlframefn = resp['yamlframefn']
+            yamlcontent = resp['framecontent']
+        else:
+            yamlframefn = None
+            yamlcontent = None
+        return resp['success'], resp , yamlframefn , yamlcontent
+
+    def addChildContainerCall(self,childcontaineritemrole,childcontainername, parentcontainerid):
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e','parentcontainerdict','childcontainerdict']
+        print('start of downloadcall'+ datetime.now().isoformat())
+        headers = {'Authorization': 'Bearer ' + self.authtoken}
+
+        predictedCallBehaviour,  resp= self.callhandling(BASE + 'CONTAINERS/containerID', 'GET', headers=headers,
+                                             data={'parentcontainerid': parentcontainerid,
+                                                   'childcontainername':childcontainername,
+                                                   'childcontaineritemrole':childcontaineritemrole},
+                                             decodeformat='utf-8', expectedkeys=expectedreturnkeysindict)
+        success = resp['success']
+        parentcontainerdict = resp['parentcontainerdict']
+        childcontainerdict= resp['childcontainerdict']
+        yamlframefn = resp['yamlframefn']
+        yamlcontent = resp['yamlcontent']
+        return success,parentcontainerdict, childcontainerdict, yamlframefn , yamlcontent
+
 
     def commitNewContainerToServer(self,  payload,filesToUpload):
-        url = BASE + 'SAGAOP/newContainer'
         headers = {  'Authorization': 'Bearer ' + self.authtoken}
-        response = requests.request("POST", url, headers=headers, data=payload, files=filesToUpload)
-        resp = response.json()
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e','containerdictjson','framedictjson']
+        predictedCallBehaviour, resp= self.callhandling(BASE + 'SAGAOP/newContainer', 'POST', headers=headers,
+                                             data=payload,
+                                             decodeformat='utf-8', expectedkeys=expectedreturnkeysindict, files=filesToUpload)
+
+        success = resp['success']
         returncontdict = resp['containerdictjson']
         returnframedict = resp['framedictjson']
-        alloweduser = returncontdict['allowedUser']
-        servermessage = response.headers['response']
-        return returncontdict,returnframedict, servermessage
+        # alloweduser = returncontdict['allowedUser']
+        message = resp['message']
+        return success,returncontdict,returnframedict, message
 
     def sectionSwitchCall(self, newsectionid):
         payload = {'newsectionid': newsectionid}
         headers = {'Authorization': 'Bearer ' + self.authtoken}
-        switchresponse = requests.post(BASE + 'USER/switchusersection', headers=headers, data=payload)
-        resp = json.loads(switchresponse.content)
-        report = resp['report']##ATTENTION...Imean comone
-        usersection = resp['usersection']
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e',
+                                    'sectionname']
+        predictedCallBehaviour, resp= self.callhandling(BASE + 'USER/switchusersection', 'POST', headers=headers,
+                                             data=payload,
+                                             decodeformat='utf-8', expectedkeys=expectedreturnkeysindict)
 
-        self.errormessageboxhandle.setText(report['status'])
-        if report['status'] == 'User Current Section successfully changed':
+        # usersection = resp['usersection']
+
+        self.errormessageboxhandle.setText(resp['message'])
+        if resp['success']:
             self.errormessageboxhandle.setIcon(QMessageBox.Information)
         else:
             self.errormessageboxhandle.setIcon(QMessageBox.Critical)
             ## if we arrived here, then that means either
         self.errormessageboxhandle.exec_()
-        return report, usersection
+        return resp['success'], resp['sectionname']
 
-    def addUserToContainerCall(self,userdata,emailtoadd,current_sectionid,containerId):
+    def addEmailsToSectionCall(self, emailsToInvite, sectionid):
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e']
+        headers = {'Authorization': 'Bearer ' + self.authtoken}
 
-        expectedresponse=[]
-        response = requests.post(BASE + 'PERMISSIONS/AddUserToContainer',
-                                 headers={"Authorization": 'Bearer ' + self.authtoken},
-                                 json={"email": userdata['email'],
+        predictedCallBehaviour, resp= self.callhandling(BASE + 'SECTION/addemailstosection', 'POST', headers=headers,
+                                             data={'emailsToInvite': emailsToInvite,
+                                                   'sectionid':sectionid},
+                                             decodeformat='utf-8', expectedkeys=expectedreturnkeysindict)
+        success = resp['success']
+        if success:
+            servermessage = resp['message']
+        else:
+            servermessage = resp['failmessage']
+        # response = requests.post(BASE + 'USER/addemailstosection', headers=headers, data=payload)
+        # addemailresponse = json.loads(response.content)
+        # report = resp['addemailresponse']##ATTENTION...Imean comone
+        # usersection = resp['usersection']
+        return success, servermessage
+
+    def addUserToContainerCall(self,usersess,emailtoadd,current_sectionid,containerId):
+
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e', 'allowedUser']
+        headers = {'Authorization': 'Bearer ' + self.authtoken}
+        data = {"email": usersess.email,
                                        "new_email": emailtoadd,
                                        "sectionid": current_sectionid,
                                        "containerId": containerId,
                                        }
-                                 )
-        permissionsresponse = json.loads(response.content)
+        predictedCallBehaviour, resp= self.callhandling(BASE + 'PERMISSIONS/AddUserToContainer', 'POST', headers=headers,
+                                             data=data,
+                                             decodeformat='utf-8', expectedkeys=expectedreturnkeysindict)
 
-        print(permissionsresponse['ServerMessage'])
-        if permissionsresponse['result']:
-            self.maincontainer.setAllowedUser(permissionsresponse['allowedUser'])
-        return permissionsresponse, self.maincontainer.allowedUser
+        # if permissionsresponse['result']:
+        #     self.maincontainer.setAllowedUser(permissionsresponse['allowedUser'])
+        # return permissionsresponse, self.maincontainer.allowedUser
 
-        return permissionsresponse
+        return resp['success'], resp['allowedUser'], resp['message']
 
     def shouldModelSwitchCall(self,containerId):
         payload = {'containerid': containerId}
         headers = {'Authorization': 'Bearer ' + self.authtoken}
-
-        permissionsresponse = requests.get(BASE + 'USER/checkcontainerpermissions', headers=headers, data=payload)
-        print(permissionsresponse.headers['message'])
-        # permissionsresponsecontent = json.loads(permissionsresponse.content)
-        permissionsresponsecontent = json.loads(permissionsresponse.content)
-        goswitch = permissionsresponsecontent['goswitch']
-        newsectionid=permissionsresponsecontent['sectionid']
-        message =permissionsresponse.headers['message']
-
-        if newsectionid is None:
-            # print('shouldModelSwitch call produced some sort of error')
-            self.errormessageboxhandle.setText(message)
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e', 'message','goswitch','sectionid']
+        predictedCallBehaviour, resp= self.callhandling(BASE + 'USER/checkcontainerpermissions', 'GET', headers=headers,
+                                             data=payload,
+                                             decodeformat='utf-8', expectedkeys=expectedreturnkeysindict)
+        # permissionsresponse = requests.get(BASE + 'USER/checkcontainerpermissions', headers=headers, data=payload)
+        # print(resp.headers['message'])
+        # Variable should be call managed or unmanaged.CallSuccess perhaps.
+        goswitch = resp['goswitch']
+        sectionid=resp['sectionid']
+        if not resp['success']:
+            self.errormessageboxhandle.setText(resp['failmessage'])
             self.errormessageboxhandle.exec_()
-        return goswitch, newsectionid
+        return resp['success'],goswitch, sectionid
+
+
 
     def getNewestFrame(self, maincontainer:Container, sectionid):
         ## This is the only place that knows of a later revision.
-        notlatestrev = False
+        ### Get the Latest Frame Rev number of a container in the section
         payload = {'containerID': maincontainer.containerId, 'sectionid':sectionid}
-
-        headers = {
-            'Authorization': 'Bearer ' + self.authtoken
-        }
-        # print('1' + datetime.now().isoformat())
-        response = requests.get(BASE + 'CONTAINERS/newestframeofcontainer', headers=headers, data=payload)
-        # print('2' + datetime.now().isoformat())
-        resp = json.loads(response.content)
+        headers = {'Authorization': 'Bearer ' + self.authtoken        }
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e', 'message','framedict','newestrevnum']
+        predictedCallBehaviour, resp= self.callhandling(BASE + 'CONTAINERS/newestframeofcontainer', 'GET', headers=headers,
+                                             data=payload,
+                                             decodeformat='utf-8', expectedkeys=expectedreturnkeysindict)
         newestframe = Frame.LoadFrameFromDict(resp['framedict'])
         newestrevnum = resp['newestrevnum']
-        return newestframe,newestrevnum
+        return resp['success'],newestframe,newestrevnum
 
     def getLatestRevNumCall(self, sectionid):
-        ## This is the only place that knows of a later revision.
+        ### Get the Latest Container Rev number of EVERY container in the section
         notlatestrev = False
-        payload = { 'sectionid':sectionid}
-
-        headers = {
-            'Authorization': 'Bearer ' + self.authtoken
-        }
-        response = requests.get(BASE + 'CONTAINERS/newestrevnum', headers=headers, data=payload)
-        resp = json.loads(response.content)
-
-        newestrevnumsinsection = resp
-        return newestrevnumsinsection
+        payload = {'sectionid':sectionid}
+        headers = {'Authorization': 'Bearer ' + self.authtoken}
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e', 'latestrevdict']
+        predictedCallBehaviour, resp= self.callhandling(BASE + 'CONTAINERS/newestrevnum', 'GET', headers=headers,
+                                             data=payload,
+                                             decodeformat='utf-8', expectedkeys=expectedreturnkeysindict)
+        if resp['success']:
+            latestrevdict = resp['latestrevdict']
+        else:
+            latestrevdict= None
+        return resp['success'], latestrevdict
 
     def getNewVersionCall(self, installPath):
         response = requests.get(BASE + 'GENERAL/UpdatedInstallation',
                                 headers={"Authorization": 'Bearer ' + self.authtoken})
         open(installPath, 'wb').write(response.content)
 
+    def pingDownstreamCall(self,downstreamcontainerid, citemid, upstreamcontainerid):
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e']
+        payload = {'downstreamcontainerid': downstreamcontainerid,
+                   'citemid':citemid,
+                   'upstreamcontainerid':upstreamcontainerid}
+        headers = {'Authorization': 'Bearer ' + self.authtoken}
+
+        predictedCallBehaviour, resp= self.callhandling(BASE + 'PING/PingContainerToUpdateInputs', 'POST', headers=headers,data=payload,
+                                             decodeformat='utf-8', expectedkeys=expectedreturnkeysindict)
+    def newSectionCall(self, newsectionname, newsectiondesp):
+        headers = {'Authorization': 'Bearer ' + self.authtoken}
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e','newsection']
+        # expectedreturnkeysindict = ['status', ]
+        payload = {'newsectionname': newsectionname, 'newsectiondescription':newsectiondesp}
+        predictedCallBehaviour, resp= self.callhandling(BASE + 'SECTION/newsection', 'POST', headers=headers, data=payload,
+                                             decodeformat='utf-8', expectedkeys=expectedreturnkeysindict)
+        success = resp['success']
+        newsection = resp['newsection']
+        return success, newsection
+
+    def getContainerPermissionsCall(self, email, current_sectionid, containerId):
+        expectedreturnkeysindict = ['success', 'message', 'failmessage', 'e',
+                                    'allowedUser', 'sectionUser']
+
+        headers = {'Authorization': 'Bearer ' + self.authtoken}
+        payload ={"email": email,
+         "current_sectionid": current_sectionid,
+         "containerId": containerId}
+        predictedCallBehaviour, resp = self.callhandling(BASE + 'PERMISSIONS/getByContainer', 'GET', headers=headers,
+                                                         data=payload,
+                                                         decodeformat='utf-8', expectedkeys=expectedreturnkeysindict)
+        if resp['success']:
+            allowedUser = resp['allowedUser']
+            sectionUser= resp['sectionUser']
+        else:
+            allowedUser= []
+            sectionUser=[]
+
+        return resp['success'], allowedUser, sectionUser
+
+    def reset(self):
+        self.authtoken = None
 

@@ -32,10 +32,10 @@ class switchSectionDialog(QDialog):
     def switchusersection(self):
         # print(self.comboboxid[self.existingsectionbox.currentIndex()])
         switchtosectionid = self.comboboxid[self.existingsectionbox.currentIndex()]
-        report, usersection = sagaguimodel.sectionSwitch(switchtosectionid)
-        if report['status'] =='User Current Section successfully changed':##ATTENTION...Imean comone
-            self.cursectionlbl.setText(usersection)
-            self.newsection = usersection
+        success, newsectionname = sagaguimodel.sectionSwitch(switchtosectionid)
+        if success:
+            self.cursectionlbl.setText(newsectionname)
+            self.newsection = newsectionname
         else:
             self.cursectionlbl.setText('Error Occured.  Your current section has not change')
 

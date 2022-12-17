@@ -5,36 +5,37 @@ from PyQt5.QtCore import *
 import time
 import os
 import glob
-from Config import typeRequired, typeInput, typeOutput, colorscheme,  JUSTCREATED, UNCHANGED, MD5CHANGED
+from SagaGuiModel.GuiModelConstants import  colorscheme,  JUSTCREATED, UNCHANGED, MD5CHANGED
+from SagaCore import roleInput, roleOutput,roleRequired
 
 
 
 class HistoryListModel(QAbstractTableModel):
+    ## Model for Main Container Gannt chart,
     def __init__(self, historyinfodict):
         super(HistoryListModel, self).__init__()
         self.currow=[]
-
-        self.filetype=typeRequired
+        self.filetype=roleRequired
         if len(historyinfodict.keys()) == 0:
             self.initiatilized = False
             self.containdata= []
-            self.fileheaderlist=[]
+            self.citemnamelist=[]
             self.revheaders=[]
         else:
             self.initiatilized = True
-            self.revheaders, self.containdata, self.fileheaderlist = self.sorthistory(historyinfodict)
+            self.revheaders, self.containdata, self.citemnamelist = self.sorthistory(historyinfodict)
 
     def load(self, historyinfodict):
         self.currow = []
-        self.filetype = typeRequired
+        self.filetype = roleRequired
         if len(historyinfodict.keys()) == 0:
             self.initiatilized = False
             self.containdata= []
-            self.fileheaderlist=[]
+            self.citemnamelist=[]
             self.revheaders=[]
         else:
             self.initiatilized = True
-            self.revheaders, self.containdata, self.fileheaderlist = self.sorthistory(historyinfodict)
+            self.revheaders, self.containdata, self.citemnamelist = self.sorthistory(historyinfodict)
         self.layoutChanged.emit()
 
 
@@ -48,7 +49,7 @@ class HistoryListModel(QAbstractTableModel):
             sortdict[rev] = revdetails['timestamp']
             revheaders.append(rev)
         self.commitmsg = []
-        fileheaderlist = []
+        citemidlist = []
 
 
         def mysort(element):
@@ -58,26 +59,28 @@ class HistoryListModel(QAbstractTableModel):
         # This way, you can through in some complex functions to tailer to the sorting.
 
         revheaders.sort(key=mysort)
-
+        citemnamelist=[]
         for revs in historyinfodict.keys():
-            # fileheaderlist =  historyinfodict[revs]['frame'].filestrack.keys() + fileheaderlist
-            fileheaderlist = fileheaderlist + list(
-                set(historyinfodict[revs]['frame'].filestrack.keys()) - set(fileheaderlist))
+            # citemidlist =  historyinfodict[revs]['frame'].filestrack.keys() + citemidlist
+            citemidlist = citemidlist + list(
+                set(historyinfodict[revs]['frame'].filestrack.keys()) - set(citemidlist))
+            citemnamelist = citemnamelist + list(
+                set(historyinfodict[revs]['frame'].provideEntityNames()) - set(citemnamelist))
         blahdict = {}
 
-        for fileheader in fileheaderlist:
-            blahdict[fileheader] = []
+        for citemid in citemidlist:
+            blahdict[citemid] = []
             for revi, rev in enumerate(revheaders):  ## Rev headers already sorted by timestamp
                 self.commitmsg.append(historyinfodict[rev]['frame'].commitMessage)
-                if fileheader in historyinfodict[rev]['frame'].filestrack.keys():
-                    ## if rev has fileheader,  we need to find out whether it was just created
+                if citemid in historyinfodict[rev]['frame'].filestrack.keys():
+                    ## if rev has citemid,  we need to find out whether it was just created
                     if revi == 0:  ## assumes first rev is history dict is rev1
                         status = JUSTCREATED
                     else:  ## if it exists, and not Rev1, first check if it exists in last rev
-                        if fileheader in historyinfodict[revheaders[revi - 1]][
-                            'frame'].filestrack.keys():  ## if fileheader exists in last rev
-                            previousmd5 = historyinfodict[revheaders[revi - 1]]['frame'].filestrack[fileheader].md5
-                            thismd5 = historyinfodict[rev]['frame'].filestrack[fileheader].md5
+                        if citemid in historyinfodict[revheaders[revi - 1]][
+                            'frame'].filestrack.keys():  ## if citemid exists in last rev
+                            previousmd5 = historyinfodict[revheaders[revi - 1]]['frame'].filestrack[citemid].md5
+                            thismd5 = historyinfodict[rev]['frame'].filestrack[citemid].md5
                             if thismd5 != previousmd5:
                                 status = MD5CHANGED
                             else:
@@ -87,39 +90,40 @@ class HistoryListModel(QAbstractTableModel):
                     if revi == (len(revheaders) - 1):  ## latest rev
                         existsInNext = True  ## just assumes it exists in the next rev.
                     else:  ### not latest rev
-                        if fileheader in historyinfodict[revheaders[revi + 1]]['frame'].filestrack.keys():
+                        if citemid in historyinfodict[revheaders[revi + 1]]['frame'].filestrack.keys():
                             existsInNext = True
                         else:
                             existsInNext = False
-                    md5 = historyinfodict[rev]['frame'].filestrack[fileheader].md5
-                    type = historyinfodict[rev]['frame'].filestrack[fileheader].connection.connectionType.name
+                    md5 = historyinfodict[rev]['frame'].filestrack[citemid].md5
+                    type = historyinfodict[rev]['frame'].filestrack[citemid].containeritemrole
+                    entity = historyinfodict[rev]['frame'].filestrack[citemid].entity
                 else:
                     md5 = None
                     type = None
                     status = None
                     existsInNext = None
-                blahdict[fileheader].append({"md5": md5, "type": type, "status": status, "existsInNext": existsInNext})
+                blahdict[citemid].append({"md5": md5, "type": type, "status": status, "existsInNext": existsInNext, 'entity':entity})
 
-        for fileheader in fileheaderlist:
-            row = blahdict[fileheader]
+        for citemid in citemidlist:
+            row = blahdict[citemid]
             containdata.append(row)
 
-        return revheaders, containdata, fileheaderlist
+        return revheaders, containdata, citemnamelist
 
     def individualfilehistory(self,changesbyfile):
         filestatus={}
-        for fileheader, changearr in changesbyfile.items():
+        for citemname, changearr in changesbyfile.items():
             status='missing'
-            filestatus[fileheader]=[]
+            filestatus[citemname]=[]
             for irow, change in enumerate(changearr):
                 if change['md5']=='missing':
                     continue
                 else:
                     if status=='missing':
-                        filestatus[fileheader].append(irow)
+                        filestatus[citemname].append(irow)
                         status = change['md5']
                     elif not status == change['md5']:
-                        filestatus[fileheader].append(irow)
+                        filestatus[citemname].append(irow)
                         status = change['md5']
 
         self.filestatus=filestatus
@@ -144,12 +148,12 @@ class HistoryListModel(QAbstractTableModel):
                 # else:
 
 
-    def edithighlight(self, fileheader, type):
+    def edithighlight(self, citemname, type):
 
-        if fileheader not in self.filestatus.keys():
+        if citemname not in self.filestatus.keys():
             self.currow = []
         else:
-            self.currow = self.filestatus[fileheader]
+            self.currow = self.filestatus[citemname]
         self.filetype=type
 
 
@@ -157,7 +161,7 @@ class HistoryListModel(QAbstractTableModel):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.revheaders[section]
         if orientation == Qt.Vertical and role == Qt.DisplayRole:
-            return self.fileheaderlist[section]
+            return self.citemnamelist[section]
             # return 'Column {}'.format(section + 1)
         # if orientation == Qt.Vertical and role == Qt.DisplayRole:
         #     return 'Row {}'.format(section + 1)
@@ -181,6 +185,6 @@ class HistoryListModel(QAbstractTableModel):
     def reset(self):
 
         self.containdata = []
-        self.fileheaderlist = []
+        self.citemidlist = []
         self.revheaders = []
         self.layoutChanged.emit()
